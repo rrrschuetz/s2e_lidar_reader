@@ -1,5 +1,6 @@
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDurabilityPolicy
 from sensor_msgs.msg import LaserScan
 from sensor_msgs.msg import Joy
 from std_msgs.msg import String
