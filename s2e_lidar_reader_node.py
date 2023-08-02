@@ -26,7 +26,7 @@ class s2eLidarReaderNode(Node):
             LaserScan,
             '/scan',
             self.lidar_callback,
-            qos_repository
+            qos_profile
         )
 
         self.subscription_joy = self.create_subscription(
