@@ -1,4 +1,4 @@
-import rclpy
+import rclpy, math
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDurabilityPolicy
 from sensor_msgs.msg import LaserScan
@@ -17,6 +17,7 @@ class s2eLidarReaderNode(Node):
             reliability=QoSReliabilityPolicy.BEST_EFFORT,
             durability=QoSDurabilityPolicy.VOLATILE)
 
+        self._color = np.zeros(3240)
         self._X = 0.0 
         self._Y = 0.0
         self._motor = PwmMotor()
@@ -74,6 +75,8 @@ class s2eLidarReaderNode(Node):
         scan_data += ','.join(str(e) for e in scan_interpolated)
         #scan_data += ','.join(str(e) for e in scan)
 
+        scan_data += ','.join(str(e) for e in self._color)
+
         # Write the scan data to a file
         with open('/home/rrrschuetz/test/file.txt', 'a') as f:
             f.write(scan_data + '\n')
@@ -97,21 +100,22 @@ class s2eLidarReaderNode(Node):
         VPIX2 = 120
         HFOV = 70.8
         VFOV = 55.6
+        cxy=[]
 
+        self.get_logger().info('blob detected: %s' % msg.data)
         try:
-            cxy=[]
             cxy=eval(msg.data)
         except (SyntaxError) as e:
             self.get_logger().error('Failed to get blob coordinates: %s' % str(e))
         if len(cxy) >0:
 
             alphaH=(HPIX2-cxy[0])/HPIX2*HFOV/2*math.pi/180
-            #alphaV=(VPIX2-cxy[1])/VPIX2*VFOV/2*math.pi/180
+            alphaV=(VPIX2-cxy[1])/VPIX2*VFOV/2*math.pi/180
 
-            color = np.zeros(3240)
-            idx = int(alphaH/math.pi*1620)+1620
-            color[idx] = 1.0
-            self.get_logger().info('blob detected at angle: %s' % alphaH)
+            self._color = np.zeros(3240)
+            idx = int(alphaV/math.pi*1620)+1620
+            self._color[idx] = 1.0
+            self.get_logger().info('blob detected at angle: %s' % alphaV)
             self.get_logger().info('index value color array: %s' % idx)
 
 
