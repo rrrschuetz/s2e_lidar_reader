@@ -10,7 +10,12 @@ from .Motor import PwmMotor
 class s2eLidarReaderNode(Node):
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
-        
+        qos_profile = QoSProfile(
+            depth=1,
+            history=QoSHistoryPolicy.KEEP_LAST,
+            reliability=QoSReliabilityPolicy.BEST_EFFORT,
+            durability=QoSDurabilityPolicy.VOLATILE)
+
         self._X = 0.0 
         self._Y = 0.0
         self._motor = PwmMotor()
@@ -20,7 +25,7 @@ class s2eLidarReaderNode(Node):
             LaserScan,
             '/scan',
             self.lidar_callback,
-            10
+            qos_repository
         )
 
         self.subscription_joy = self.create_subscription(
@@ -79,15 +84,35 @@ class s2eLidarReaderNode(Node):
         self._X = msg.axes[2]
         self._Y = msg.axes[1]
         self._motor.setMotorModel(
-            int(1000*self._Y*(1+self._X)),
-            int(1000*self._Y*(1+self._X)),
-            int(1000*self._Y*(1-self._X)),
-            int(1000*self._Y*(1-self._X)))
+            int(700*self._Y*(1+self._X)),
+            int(700*self._Y*(1+self._X)),
+            int(700*self._Y*(1-self._X)),
+            int(700*self._Y*(1-self._X)))
         
 
     def openmv_h7_callback(self, msg):
-        self.get_logger().info('blob detected: %s' % msg.data) 
-            
+
+        HPIX2 = 160
+        VPIX2 = 120
+        HFOV = 70.8
+        VFOV = 55.6
+
+        try:
+            cxy=[]
+            cxy=eval(msg.data)
+        except (SyntaxError) as e:
+            self.get_logger().error('Failed to get blob coordinates: %s' % str(e))
+        if len(cxy) >0:
+
+            alphaH=(HPIX2-cxy[0])/HPIX2*HFOV/2*math.pi/180
+            #alphaV=(VPIX2-cxy[1])/VPIX2*VFOV/2*math.pi/180
+
+            color = np.zeros(3240)
+            idx = int(alphaH/math.pi*1620)+1620
+            color[idx] = 1.0
+            self.get_logger().info('blob detected at angle: %s' % alphaH)
+            self.get_logger().info('index value color array: %s' % idx)
+
 
 def main(args=None):
     rclpy.init(args=args)
