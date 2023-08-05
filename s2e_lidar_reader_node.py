@@ -103,15 +103,16 @@ class s2eLidarReaderNode(Node):
 
         self.get_logger().info('blob detected: %s' % msg.data)
         try:
-            color,x1,x2=eval(msg.data)
+            print(msg.data)
+            color, x1, x2 = msg.data.split(',')
             #alphaH=(HPIX2-cxy[0])/HPIX2*HFOV/2*math.pi/180
-            alphaV1=(VPIX2-x1)/VPIX2*VFOV/2*math.pi/180
-            alphaV2=(VPIX2-x2)/VPIX2*VFOV/2*math.pi/180
+            alphaV1=(VPIX2-float(x1))/VPIX2*VFOV/2*math.pi/180
+            alphaV2=(VPIX2-float(x2))/VPIX2*VFOV/2*math.pi/180
 
             self._color = np.zeros(3240)
             idx1 = int(alphaV/math.pi*1620)+1620
             idx2 = int(alphaV/math.pi*1620)+1620
-            self._color[idx1:idx2+1] = color
+            self._color[idx1:idx2+1] = float(color)
             self.get_logger().info('blob inserted: %s,%s,%s' % (color,idx1,idx2))
 
         except (SyntaxError) as e:
