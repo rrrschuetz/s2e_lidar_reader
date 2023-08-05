@@ -29,7 +29,7 @@ while True:
         blobs.sort(key=lambda b: -b.pixels())
         img.draw_rectangle(blobs[0].rect())
         img.draw_cross(blobs[0].cx(), blobs[0].cy())
-        (a_x1,y,a_x2,h) = blobs[0].rect()
+        (_,a_y,_,a_h) = blobs[0].rect()
         a_pix=blobs[0].pixels()
 
     blobs = img.find_blobs(thresholds_red,0,roi,pixels_threshold=30, merge=True)
@@ -37,12 +37,12 @@ while True:
         blobs.sort(key=lambda b: -b.pixels())
         img.draw_rectangle(blobs[0].rect())
         img.draw_cross(blobs[0].cx(), blobs[0].cy())
-        (r_x1,r,r_x2,h) = blobs[0].rect()
+        (_,r_y,_,r_h) = blobs[0].rect()
         r_pix=blobs[0].pixels()
 
     if a_pix != 0 and a_pix >= r_pix:
-        print(1.0,a_x1,a_x2)
+        print(1.0,',',a_y,',',a_y+a_h)
     elif r_pix != 0 and r_pix >= a_pix:
-        print(2.0,r_x1,r_x2)
+        print(2.0,',',r_y,',',r_y+r_h)
 
     time.sleep(0.1)
