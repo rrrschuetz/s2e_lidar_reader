@@ -1,4 +1,4 @@
-# module imgprocess.py
+# module main.py for s2e_slidar_reader
 
 import sensor, image, time, math, pyb, lcd
 
@@ -21,7 +21,6 @@ while True:
     img.gamma_corr(gamma = 1.0, contrast = 1.0, brightness = 0.2)
     img.laplacian(2, sharpen=True)
 
-    cxy=[]
     a_pix = 0
     r_pix = 0
 
@@ -42,10 +41,8 @@ while True:
         r_pix=blobs[0].pixels()
 
     if a_pix != 0 and a_pix >= r_pix:
-        print("AMBER",a_x1,a_x2)
+        print(1.0,a_x1,a_x2)
     elif r_pix != 0 and r_pix >= a_pix:
-        print("RED",r_x1,r_x2)
-    else:
-        print("NONE")
+        print(2.0,r_x1,r_x2)
 
     time.sleep(0.1)
