@@ -44,7 +44,7 @@ class s2eLidarReaderNode(Node):
             10)
 
 
-    with open('/home/rrrschuetz/test/file.txt', 'w') as f:
+    with open('/home/rrrschuetz/test/file.txt', 'a') as f:
         f.write('X,Y,' + ','.join(['SCAN']*3240) + ','.join(['COLR']*3240) + '\n')
 
 
