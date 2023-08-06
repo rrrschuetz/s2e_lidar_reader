@@ -5,6 +5,7 @@ from rclpy.executors import SingleThreadedExecutor
 from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDurabilityPolicy
 from sensor_msgs.msg import LaserScan
 from sensor_msgs.msg import Joy
+from std_msgs.msg import String
 from .Motor import PwmMotor 
 import numpy as np
 import tensorflow as tf
