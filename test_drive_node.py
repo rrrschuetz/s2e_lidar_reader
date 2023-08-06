@@ -1,5 +1,4 @@
-import rclpy
-import time
+import rclpy, math, timeit
 from rclpy.node import Node
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDurabilityPolicy
@@ -67,7 +66,7 @@ class testDriveNode(Node):
                 x = np.arange(len(scan))
                 finite_vals = np.isfinite(scan)
                 scan_interpolated = np.interp(x,x[finite_vals],scan[finite_vals])
-                combined = np.concatenate((scan_interpolated, self._color), axis=1)
+                combined = np.hstack((scan_interpolated, self._color))
                 combined = np.reshape(combined, (1, -1))
                 predictions = self._model.predict(combined)
                 #scan = np.reshape(scan, (1, -1))
