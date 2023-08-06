@@ -68,7 +68,7 @@ class testDriveNode(Node):
                 finite_vals = np.isfinite(scan)
                 scan_interpolated = np.interp(x,x[finite_vals],scan[finite_vals])
                 scan_interpolated = np.reshape(scan_interpolated, (1, -1))
-                combined = np.hstack((scan_interpolated, self._color))
+                combined = np.concatenate((scan_interpolated, self._color), axis=1)
                 predictions = self._model.predict(combined)
                 #scan = np.reshape(scan, (1, -1))
                 #predictions = self._model.predict(scan)
