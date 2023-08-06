@@ -20,6 +20,7 @@ class testDriveNode(Node):
    
         self._X = 0.0 
         self._Y = 0.0
+        self._color = np.zeros(3240)
         self._motor = PwmMotor()
         self._motor.setMotorModel(0,0,0,0)
 
@@ -41,6 +42,12 @@ class testDriveNode(Node):
             qos_profile
         )
         
+        self.subscription_h7 = self.create_subscription(
+            String,
+            'openmv_topic',
+            self.openmv_h7_callback,
+            qos_profile)
+        
         self._processing = False
         self._model = tf.keras.models.load_model('/home/rrrschuetz/test/model')
 
@@ -60,7 +67,8 @@ class testDriveNode(Node):
                 finite_vals = np.isfinite(scan)
                 scan_interpolated = np.interp(x,x[finite_vals],scan[finite_vals])
                 scan_interpolated = np.reshape(scan_interpolated, (1, -1))
-                predictions = self._model.predict(scan_interpolated)
+                combined = np.hstack((scan_interpolated, self._color))
+                predictions = self._model.predict(combined)
                 #scan = np.reshape(scan, (1, -1))
                 #predictions = self._model.predict(scan)
                 #self.get_logger().info('Predicted axes: "%s"' % predictions)
@@ -92,7 +100,30 @@ class testDriveNode(Node):
             int(1000*self._Y*(1+self._X)),
             int(1000*self._Y*(1-self._X)),
             int(1000*self._Y*(1-self._X)))
-        
+
+
+    def openmv_h7_callback(self, msg):
+
+        HPIX2 = 160
+        VPIX2 = 120
+        HFOV = 70.8
+        VFOV = 55.6
+
+        #self.get_logger().info('blob detected: %s' % msg.data)
+        try:
+            color, y1, y2 = msg.data.split(',')
+            #alphaH=(HPIX2-cxy[0])/HPIX2*HFOV/2*math.pi/180
+            alphaV1=(float(y1)-VPIX2)/VPIX2*VFOV/2*math.pi/180
+            alphaV2=(float(y2)-VPIX2)/VPIX2*VFOV/2*math.pi/180
+
+            self._color = np.zeros(3240)
+            idx1 = int(alphaV1/math.pi*1620)+1620
+            idx2 = int(alphaV2/math.pi*1620)+1620
+            self._color[idx1:idx2+1] = float(color)
+            #self.get_logger().info('blob inserted: %s,%s,%s' % (color,idx1,idx2))
+
+        except (SyntaxError) as e:
+            self.get_logger().error('Failed to get blob coordinates: %s' % str(e))
 
 def main(args=None):
     rclpy.init(args=args)
