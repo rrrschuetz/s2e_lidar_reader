@@ -44,5 +44,6 @@ while True:
         print(1.0,',',a_y,',',a_y+a_h)
     elif r_pix != 0 and r_pix >= a_pix:
         print(2.0,',',r_y,',',r_y+r_h)
-
+    else:
+        printf(0.0,',',0,',',0)
     time.sleep(0.1)
