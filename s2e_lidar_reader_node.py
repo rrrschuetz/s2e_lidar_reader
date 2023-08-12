@@ -41,7 +41,8 @@ class s2eLidarReaderNode(Node):
             String,
             'openmv_topic',
             self.openmv_h7_callback,
-            10)
+            qos_profile
+        )
 
 
     with open('/home/rrrschuetz/test/file.txt', 'a') as f:
