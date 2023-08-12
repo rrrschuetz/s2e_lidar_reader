@@ -13,8 +13,8 @@ sensor.skip_frames(time = 2000)
 
 roi = [0,0,320,200]
 thresholds_amber=[(79, 58, 29, 4, 20, 77),(82, 18, 33, 16, 27, 76)]
-thresholds_red=[(23, 63, 7, 56, 2, 49)]
-
+#thresholds_red=[(23, 63, 7, 56, 2, 49)]
+thresholds_white = [(100, 73, -15, 4, -15, 4)]
 
 while True:
     img = sensor.snapshot()
@@ -32,7 +32,7 @@ while True:
         (_,a_y,_,a_h) = blobs[0].rect()
         a_pix=blobs[0].pixels()
 
-    blobs = img.find_blobs(thresholds_red,0,roi,pixels_threshold=30, merge=True)
+    blobs = img.find_blobs(thresholds_white,0,roi,pixels_threshold=30, merge=True)
     if blobs:
         blobs.sort(key=lambda b: -b.pixels())
         img.draw_rectangle(blobs[0].rect())
