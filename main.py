@@ -41,9 +41,13 @@ while True:
         r_pix=blobs[0].pixels()
 
     if a_pix != 0 and a_pix >= r_pix:
-        print(1.0,',',a_y,',',a_y+a_h)
+        data_str = "{},{},{}".format(1.0, a_y, a_y+a_h)
     elif r_pix != 0 and r_pix >= a_pix:
-        print(2.0,',',r_y,',',r_y+r_h)
+        data_str = "{},{},{}".format(2.0, r_y, r_y+r_h)
     else:
-        printf(0.0,',',0,',',0)
-    time.sleep(0.1)
+        data_str = "{},{},{}".format(0.0, 0, 0)
+
+    uart.write(data_str)
+    print(data_str)
+
+    time.sleep(0.05)
