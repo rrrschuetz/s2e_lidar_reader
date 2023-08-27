@@ -60,26 +60,27 @@ class testDriveNode(Node):
             self._counter += 1
             
             if self._counter % 1 == 0:
-                scan = np.array(msg.ranges)
-                #scan[scan == np.inf] = 0.0
-                scan[scan == np.inf] = np.nan
-                x = np.arange(len(scan))
-                finite_vals = np.isfinite(scan)
-                scan_interpolated = np.interp(x,x[finite_vals],scan[finite_vals])
-                combined = np.hstack((scan_interpolated, self._color))
-                combined = np.reshape(combined, (1, -1))
-                predictions = self._model.predict(combined)
-                #scan = np.reshape(scan, (1, -1))
-                #predictions = self._model.predict(scan)
-                #self.get_logger().info('Predicted axes: "%s"' % predictions)
-                self._X = predictions[0,0]
-                self._Y = predictions[0,1]
-                self._motor.setMotorModel(
-                    int(700*self._Y*(1+1.7*self._X)),
-                    int(700*self._Y*(1+1.7*self._X)),
-                    int(700*self._Y*(1-1.7*self._X)),
-                    int(700*self._Y*(1-1.7*self._X)))
-                
+                try:
+                    scan = np.array(msg.ranges)
+                    scan[scan == np.inf] = np.nan
+                    x = np.arange(len(scan))
+                    finite_vals = np.isfinite(scan)
+                    scan_interpolated = np.interp(x,x[finite_vals],scan[finite_vals])
+                    combined = np.hstack((scan_interpolated, self._color))
+                    combined = np.reshape(combined, (1, -1))
+                    predictions = self._model.predict(combined)
+                    self._X = predictions[0,0]
+                    self._Y = predictions[0,1]
+                    self.get_logger().info('Predicted axes: "%s"' % predictions)
+                    self._motor.setMotorModel(
+                        int(700*self._Y*(1+1.7*self._X)),
+                        int(700*self._Y*(1+1.7*self._X)),
+                        int(700*self._Y*(1-1.7*self._X)),
+                        int(700*self._Y*(1-1.7*self._X)))
+
+                except ValueError as e:
+                    self.get_logger().error('Model rendered nan: %s' % str(e))
+
             self._end_time = time.time() 
             self.get_logger().info('Scans processed "%s"' % self._counter)
             self.get_logger().info('Cycle time: "%s" seconds' % (self._end_time-self._start_time))

@@ -33,7 +33,7 @@ while True:
         (_,a_y,_,a_h) = blobs[0].rect()
         a_pix=blobs[0].pixels()
 
-    blobs = img.find_blobs(thresholds_white,0,roi,pixels_threshold=30, merge=True)
+    blobs = img.find_blobs(thresholds_amber,0,roi,pixels_threshold=30, merge=True)
     if blobs:
         blobs.sort(key=lambda b: -b.pixels())
         img.draw_rectangle(blobs[0].rect())
