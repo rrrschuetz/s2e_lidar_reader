@@ -115,8 +115,8 @@ class s2eLidarReaderNode(Node):
         #    int(700*self._Y*(1-self._X)),
         #    int(700*self._Y*(1-self._X)))
 
-        self.get_logger().info('Steering: "%s"' % self.servo_neutral+self._X*self.servo_ctl)
-        self.get_logger().info('Power: "%s"' % self.neutral_pulse+self._Y)
+        self.get_logger().info('Steering: "%f"' % self.servo_neutral+self._X*self.servo_ctl)
+        self.get_logger().info('Power: "%f"' % self.neutral_pulse+self._Y)
         #self._pwm.set_pwm(0, 0, servo_neutral+self._X*servo_ctl)
         #self._pwm.set_pwm(1, 0, neutral_pulse+self._Y)
 
