@@ -117,7 +117,7 @@ class s2eLidarReaderNode(Node):
 
         self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+self._X*self.servo_ctl))
         self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+self._Y))
-        #self._pwm.set_pwm(0, 0, servo_neutral+self._X*servo_ctl)
+        self._pwm.set_pwm(0, 0, servo_neutral+self._X*servo_ctl)
         #self._pwm.set_pwm(1, 0, neutral_pulse+self._Y)
 
     def openmv_h7_callback(self, msg):
