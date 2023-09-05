@@ -41,7 +41,7 @@ class s2eLidarReaderNode(Node):
 
         self.get_logger().info('calibrating ESC')
         self._pwm.set_pwm(1, 0, self.neutral_pulse)
-        time.sleep(10)
+        #time.sleep(10)
 
         self.subscription_lidar = self.create_subscription(
             LaserScan,
