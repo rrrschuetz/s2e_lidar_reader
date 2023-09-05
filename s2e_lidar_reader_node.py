@@ -105,7 +105,7 @@ class s2eLidarReaderNode(Node):
 
     def joy_callback(self, msg):
         #self.get_logger().info('Buttons: "%s"' % msg.buttons)
-        self.get_logger().info('Axes: "%s"' % msg.axes)
+        #self.get_logger().info('Axes: "%s"' % msg.axes)
         self._X = msg.axes[2]
         self._Y = msg.axes[1]
 
