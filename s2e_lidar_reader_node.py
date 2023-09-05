@@ -10,6 +10,16 @@ import numpy as np
 from Adafruit_PCA9685 import PCA9685
 
 class s2eLidarReaderNode(Node):
+
+    reverse_pulse = 204
+    neutral_pulse = 307
+    forward_pulse = 409
+
+    servo_min = 260  # Min pulse length out of 4096
+    servo_max = 375  # Max pulse length out of 4096
+    servo_neutral = int((servo_max+servo_min)/2)
+    servo_ctl = int((servo_max-servo_min)/2)
+
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
         qos_profile = QoSProfile(
@@ -28,15 +38,6 @@ class s2eLidarReaderNode(Node):
         # Initialize PCA9685
         self._pwm = PCA9685()
         self._pwm.set_pwm_freq(50)  # Set frequency to 50Hz
-
-        reverse_pulse = 204
-        neutral_pulse = 307
-        forward_pulse = 409
-
-        servo_min = 260  # Min pulse length out of 4096
-        servo_max = 375  # Max pulse length out of 4096
-        servo_neutral = int((servo_max+servo_min)/2)
-        servo_ctl = int((servo_max-servo_min)/2)
 
         self.get_logger().info('calibrating ESC')
         self._pwm.set_pwm(1, 0, neutral_pulse)
