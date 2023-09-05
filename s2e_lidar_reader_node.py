@@ -6,7 +6,8 @@ from sensor_msgs.msg import Joy
 from std_msgs.msg import String
 import numpy as np
 
-from .Motor import PwmMotor 
+#from .Motor import PwmMotor
+from Adafruit_PCA9685 import PCA9685
 
 class s2eLidarReaderNode(Node):
     def __init__(self):
@@ -20,8 +21,26 @@ class s2eLidarReaderNode(Node):
         self._color = np.zeros(3240)
         self._X = 0.0 
         self._Y = 0.0
-        self._motor = PwmMotor()
-        self._motor.setMotorModel(0,0,0,0)
+
+        #self._motor = PwmMotor()
+        #self._motor.setMotorModel(0,0,0,0)
+
+        # Initialize PCA9685
+        self._pwm = PCA9685()
+        self._pwm.set_pwm_freq(50)  # Set frequency to 50Hz
+
+        reverse_pulse = 204
+        neutral_pulse = 307
+        forward_pulse = 409
+
+        servo_min = 260  # Min pulse length out of 4096
+        servo_max = 375  # Max pulse length out of 4096
+        servo_neutral = int((servo_max+servo_min)/2)
+        servo_ctl = int((servo_max-servo_min)/2)
+
+        self.get_logger().info('calibrating ESC')
+        self._pwm.set_pwm(1, 0, neutral_pulse)
+        time.sleep(10)
 
         self.subscription_lidar = self.create_subscription(
             LaserScan,
@@ -85,15 +104,20 @@ class s2eLidarReaderNode(Node):
 
     def joy_callback(self, msg):
         #self.get_logger().info('Buttons: "%s"' % msg.buttons)
-        #self.get_logger().info('Axes: "%s"' % msg.axes)
+        self.get_logger().info('Axes: "%s"' % msg.axes)
         self._X = msg.axes[2]
         self._Y = msg.axes[1]
-        self._motor.setMotorModel(
-            int(700*self._Y*(1+self._X)),
-            int(700*self._Y*(1+self._X)),
-            int(700*self._Y*(1-self._X)),
-            int(700*self._Y*(1-self._X)))
-        
+
+        #self._motor.setMotorModel(
+        #    int(700*self._Y*(1+self._X)),
+        #    int(700*self._Y*(1+self._X)),
+        #    int(700*self._Y*(1-self._X)),
+        #    int(700*self._Y*(1-self._X)))
+
+        self.get_logger().info('Steering: "%s"' % servo_neutral+self._X*servo_ctl)
+        self.get_logger().info('Power: "%s"' % neutral_pulse+self._Y)
+        #self._pwm.set_pwm(0, 0, servo_neutral+self._X*servo_ctl)
+        #self._pwm.set_pwm(1, 0, neutral_pulse+self._Y)
 
     def openmv_h7_callback(self, msg):
 
