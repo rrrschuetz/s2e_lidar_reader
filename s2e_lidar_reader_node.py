@@ -128,7 +128,7 @@ class s2eLidarReaderNode(Node):
         VFOV = 55.6
 
         self._color = np.zeros(3240)
-        self.get_logger().info('blob detected: %s' % msg.data)
+        #self.get_logger().info('blob detected: %s' % msg.data)
         try:
             color, y1, y2 = msg.data.split(',')
             if float(color) > 0.0:
@@ -138,7 +138,7 @@ class s2eLidarReaderNode(Node):
                 idx1 = int(alphaV1/math.pi*1620)+1620
                 idx2 = int(alphaV2/math.pi*1620)+1620
                 self._color[idx1:idx2+1] = float(color)
-                self.get_logger().info('blob inserted: %s,%s,%s' % (color,idx1,idx2))
+                #self.get_logger().info('blob inserted: %s,%s,%s' % (color,idx1,idx2))
         except (SyntaxError) as e:
             self.get_logger().error('Failed to get blob coordinates: %s' % str(e))
 
