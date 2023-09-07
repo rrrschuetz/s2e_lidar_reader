@@ -4,6 +4,7 @@ from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDur
 from sensor_msgs.msg import LaserScan
 from sensor_msgs.msg import Joy
 from std_msgs.msg import String
+from sense_hat import SenseHat
 import numpy as np
 
 #from .Motor import PwmMotor
@@ -31,6 +32,29 @@ class s2eLidarReaderNode(Node):
         self._color = np.zeros(3240)
         self._X = 0.0 
         self._Y = 0.0
+
+        self._sense = SenseHat()
+        self._sense.clear()
+        self._sense.show_message("OK", text_colour=[255, 0, 0])
+
+        # Read temperature
+        temp = sense.get_temperature()
+        self.get_logger().info(f"Temperature: {temp}C")
+        # Read humidity
+        humidity = sense.get_humidity()
+        self.get_logger().info(f"Humidity: {humidity}%")
+        # Read pressure
+        pressure = sense.get_pressure()
+        self.get_logger().info(f"Pressure: {pressure}mbar")
+        # Read accelerometer data
+        accel = sense.get_accelerometer_raw()
+        self.get_logger().info(f"Accelerometer: x={accel['x']}, y={accel['y']}, z={accel['z']}")
+        # Read gyroscope data
+        gyro = sense.get_gyroscope_raw()
+        self.get_logger().info(f"Gyroscope: x={gyro['x']}, y={gyro['y']}, z={gyro['z']}")
+        # Read magnetometer data
+        mag = sense.get_compass_raw()
+        self.get_logger().info(f"Magnetometer: x={mag['x']}, y={mag['y']}, z={mag['z']}")
 
         #self._motor = PwmMotor()
         #self._motor.setMotorModel(0,0,0,0)
@@ -127,6 +151,9 @@ class s2eLidarReaderNode(Node):
         HFOV = 70.8
         VFOV = 55.6
 
+        blue = (0,0,255)
+        amber= (0,0,255)
+
         self._color = np.zeros(3240)
         #self.get_logger().info('blob detected: %s' % msg.data)
         try:
@@ -139,6 +166,15 @@ class s2eLidarReaderNode(Node):
                 idx2 = int(alphaV2/math.pi*1620)+1620
                 self._color[idx1:idx2+1] = float(color)
                 #self.get_logger().info('blob inserted: %s,%s,%s' % (color,idx1,idx2))
+
+                #here sense hat
+                ish1 = int(alphaV1/math.pi*4)+4
+                ish2 = int(alphaV2/math.pi*4)+4
+                self._sense.clear()
+                for i in range(ish1,ish2+1):
+                    self._sense.set_pixel(i,1,blue)
+                    self._sense.set_pixel(i,2,blue)
+
         except (SyntaxError) as e:
             self.get_logger().error('Failed to get blob coordinates: %s' % str(e))
 
