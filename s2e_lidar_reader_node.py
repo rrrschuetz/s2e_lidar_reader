@@ -38,22 +38,22 @@ class s2eLidarReaderNode(Node):
         self._sense.show_message("OK", text_colour=[255, 0, 0])
 
         # Read temperature
-        temp = sense.get_temperature()
+        temp = self._sense.get_temperature()
         self.get_logger().info(f"Temperature: {temp}C")
         # Read humidity
-        humidity = sense.get_humidity()
+        humidity = self._sense.get_humidity()
         self.get_logger().info(f"Humidity: {humidity}%")
         # Read pressure
-        pressure = sense.get_pressure()
+        pressure = self._sense.get_pressure()
         self.get_logger().info(f"Pressure: {pressure}mbar")
         # Read accelerometer data
-        accel = sense.get_accelerometer_raw()
+        accel = self._sense.get_accelerometer_raw()
         self.get_logger().info(f"Accelerometer: x={accel['x']}, y={accel['y']}, z={accel['z']}")
         # Read gyroscope data
-        gyro = sense.get_gyroscope_raw()
+        gyro = self._sense.get_gyroscope_raw()
         self.get_logger().info(f"Gyroscope: x={gyro['x']}, y={gyro['y']}, z={gyro['z']}")
         # Read magnetometer data
-        mag = sense.get_compass_raw()
+        mag = self._sense.get_compass_raw()
         self.get_logger().info(f"Magnetometer: x={mag['x']}, y={mag['y']}, z={mag['z']}")
 
         #self._motor = PwmMotor()
