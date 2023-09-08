@@ -176,8 +176,8 @@ class s2eLidarReaderNode(Node):
                     pixcol = red
                 self._sense.clear()
                 for i in range(ish1,ish2+1):
+                    self._sense.set_pixel(i,0,pixcol)
                     self._sense.set_pixel(i,1,pixcol)
-                    self._sense.set_pixel(i,2,pixcol)
 
         except (SyntaxError) as e:
             self.get_logger().error('Failed to get blob coordinates: %s' % str(e))
