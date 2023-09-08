@@ -157,11 +157,11 @@ class s2eLidarReaderNode(Node):
         self._color = np.zeros(3240)
         self.get_logger().info('blob detected: %s' % msg.data)
         try:
-            color, y1, y2 = msg.data.split(',')
+            color, x1, x2 = msg.data.split(',')
             if float(color) > 0.0:
                 #alphaH=(HPIX2-cxy[0])/HPIX2*HFOV/2*math.pi/180
-                alphaV1=(float(y1)-HPIX2)/HPIX2*HFOV/2*math.pi/180
-                alphaV2=(float(y2)-HPIX2)/HPIX2*HFOV/2*math.pi/180
+                alphaV1=(float(x1)-HPIX2)/HPIX2*HFOV/2*math.pi/180
+                alphaV2=(float(x2)-HPIX2)/HPIX2*HFOV/2*math.pi/180
                 idx1 = int(alphaV1/math.pi*320)+1620
                 idx2 = int(alphaV2/math.pi*320)+1620
                 self._color[idx1:idx2+1] = float(color)
