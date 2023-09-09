@@ -11,11 +11,11 @@ import numpy as np
 from Adafruit_PCA9685 import PCA9685
 
 class s2eLidarReaderNode(Node):
-
+    HPIX = 320
+    HFOV = 70.8
     reverse_pulse = 204
     neutral_pulse = 307
     forward_pulse = 409
-
     servo_min = 260  # Min pulse length out of 4096
     servo_max = 375  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
@@ -90,7 +90,7 @@ class s2eLidarReaderNode(Node):
 
 
     with open('/home/rrrschuetz/test/file.txt', 'a') as f:
-        f.write('X,Y,' + ','.join(['SCAN']*3240) + ','+','.join(['COLR']*3240)
+        f.write('X,Y,' + ','.join(['SCAN']*3240) + ','+','.join(['COLR']*HPIX)
             +',MAGX,MAGY,MAGZ,ACCX,ACCY,ACCZ,GYRX,GYRY,GYRZ\n')
 
     def lidar_callback(self, msg):
@@ -152,43 +152,30 @@ class s2eLidarReaderNode(Node):
         self._X = msg.axes[2]
         self._Y = msg.axes[1]
 
-        #self._motor.setMotorModel(
-        #    int(700*self._Y*(1+self._X)),
-        #    int(700*self._Y*(1+self._X)),
-        #    int(700*self._Y*(1-self._X)),
-        #    int(700*self._Y*(1-self._X)))
-
         #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+self._X*self.servo_ctl))
         #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+self._Y*40))
         self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
         self._pwm.set_pwm(1, 0, int(self.neutral_pulse+self._Y*40))
 
     def openmv_h7_callback(self, msg):
-
-        HPIX2 = 160
-        VPIX2 = 120
-        HFOV = 70.8
-        VFOV = 55.6
-
         blue = (0,0,255)
         red = (255,0,0)
 
-        self._color = np.zeros(3240)
+        self._color = np.zeros(HPIX)
         self.get_logger().info('blob detected: %s' % msg.data)
         try:
             color, x1, x2 = msg.data.split(',')
             if float(color) > 0.0:
-                #alphaH=(HPIX2-cxy[0])/HPIX2*HFOV/2*math.pi/180
                 alphaV1=(float(x1)-HPIX2)/HPIX2
                 alphaV2=(float(x2)-HPIX2)/HPIX2
                 idx1 = int(alphaV1*320)+1620
                 idx2 = int(alphaV2*320)+1620
-                self._color[idx1:idx2+1] = float(color)
-                self.get_logger().info('blob inserted: %s,%s,%s' % (color,idx1,idx2))
+                self._color[x1:x2+1] = float(color)
+                self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
 
                 # sense hat
-                ish1 = int(alphaV1*4)+4
-                ish2 = int(alphaV2*4)+4
+                ish1 = int(x1/8)
+                ish2 = int(x2/8)
                 if color == 1.0:
                     pixcol = blue
                 else:
