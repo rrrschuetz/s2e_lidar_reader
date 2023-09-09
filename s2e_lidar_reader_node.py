@@ -7,7 +7,6 @@ from std_msgs.msg import String
 from sense_hat import SenseHat
 import numpy as np
 
-#from .Motor import PwmMotor
 from Adafruit_PCA9685 import PCA9685
 
 class s2eLidarReaderNode(Node):
@@ -56,9 +55,6 @@ class s2eLidarReaderNode(Node):
         mag = self._sense.get_compass_raw()
         self.get_logger().info(f"Magnetometer: x={mag['x']}, y={mag['y']}, z={mag['z']}")
 
-        #self._motor = PwmMotor()
-        #self._motor.setMotorModel(0,0,0,0)
-
         # Initialize PCA9685
         self._pwm = PCA9685()
         self._pwm.set_pwm_freq(50)  # Set frequency to 50Hz
@@ -88,7 +84,6 @@ class s2eLidarReaderNode(Node):
             qos_profile
         )
 
-
     with open('/home/rrrschuetz/test/file.txt', 'a') as f:
         f.write('X,Y,' + ','.join(['SCAN']*3240) + ','+','.join(['COLR']*HPIX)
             +',MAGX,MAGY,MAGZ,ACCX,ACCY,ACCZ,GYRX,GYRY,GYRZ\n')
@@ -96,18 +91,6 @@ class s2eLidarReaderNode(Node):
     def lidar_callback(self, msg):
 
         # Convert the laser scan data to a string
-        #scan_data = "axes: {}\n".format(self._joy_msg.axes)
-
-        #scan_data += "angle_min: {}\n".format(msg.angle_min)
-        #scan_data += "angle_max: {}\n".format(msg.angle_max)
-        #scan_data += "angle_increment: {}\n".format(msg.angle_increment)
-        #scan_data += "time_increment: {}\n".format(msg.time_increment)
-        #scan_data += "scan_time: {}\n".format(msg.scan_time)
-        #scan_data += "range_min: {}\n".format(msg.range_min)
-        #scan_data += "range_max: {}\n".format(msg.range_max)
-        #scan_data += "ranges: {}\n".format(msg.ranges)
-        #scan_data += "intensities: {}\n".format(msg.intensities)
-
         scan = np.array(msg.ranges)
         #scan[scan == np.inf] = 0.0 
         scan[scan == np.inf] = np.nan
@@ -125,26 +108,17 @@ class s2eLidarReaderNode(Node):
         
         # add magentometer data
         mag = self._sense.get_compass_raw()
-        scan_data += ','+str({mag['x']})
-        scan_data += ','+str({mag['y']})
-        scan_data += ','+str({mag['z']})
-        
+        scan_data += ','+str({mag['x']})+','+str({mag['y']})+','+str({mag['z']})
         # add accelerometer data
         accel = self._sense.get_accelerometer_raw()
-        scan_data += ','+str({accel['x']})
-        scan_data += ','+str({accel['y']})
-        scan_data += ','+str({accel['z']})
-
+        scan_data += ','+str({accel['x']})+','+str({accel['y']})+','+str({accel['z']})
         # add gyroscope data
         gyro = self._sense.get_gyroscope_raw()
-        scan_data += ','+str({gyro['x']})
-        scan_data += ','+str({gyro['y']})
-        scan_data += ','+str({gyro['z']})
+        scan_data += ','+str({gyro['x']})+','+str({gyro['y']})+','+str({gyro['z']})
         
         # Write the scan data to a file
         with open('/home/rrrschuetz/test/file.txt', 'a') as f:
             f.write(scan_data + '\n')
-
 
     def joy_callback(self, msg):
         #self.get_logger().info('Buttons: "%s"' % msg.buttons)
@@ -162,26 +136,19 @@ class s2eLidarReaderNode(Node):
         red = (255,0,0)
 
         self._color = np.zeros(HPIX)
-        self.get_logger().info('blob detected: %s' % msg.data)
+        #self.get_logger().info('blob detected: %s' % msg.data)
         try:
             color, x1, x2 = msg.data.split(',')
             if float(color) > 0.0:
-                alphaV1=(float(x1)-HPIX2)/HPIX2
-                alphaV2=(float(x2)-HPIX2)/HPIX2
-                idx1 = int(alphaV1*320)+1620
-                idx2 = int(alphaV2*320)+1620
                 self._color[x1:x2+1] = float(color)
                 self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
-
                 # sense hat
-                ish1 = int(x1/8)
-                ish2 = int(x2/8)
                 if color == 1.0:
                     pixcol = blue
                 else:
                     pixcol = red
                 self._sense.clear()
-                for i in range(ish1,ish2+1):
+                for i in range(int(x1/8),int(x2/8)+1):
                     self._sense.set_pixel(0,7-i,pixcol)
                     #self._sense.set_pixel(1,7-i,pixcol)
 
