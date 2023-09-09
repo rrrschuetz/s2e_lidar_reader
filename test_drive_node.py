@@ -14,11 +14,11 @@ import pickle
 from Adafruit_PCA9685 import PCA9685
 
 class testDriveNode(Node):
-
+    HPIX = 320
+    HFOV = 70.8
     reverse_pulse = 204
     neutral_pulse = 307
     forward_pulse = 409
-
     servo_min = 260  # Min pulse length out of 4096
     servo_max = 375  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
@@ -95,48 +95,6 @@ class testDriveNode(Node):
                     scan[scan == np.inf] = np.nan
                     x = np.arange(len(scan))
                     finite_vals = np.isfinite(scan)
-                    scan_interpolated = np.interp(x,x[finite_vals],scan[finite_vals])
-
-                    # add color data
-                    combined = np.hstack((scan_interpolated, self._color))
-                    
-                    # add magentometer data
-                    mag = self._sense.get_compass_raw()
-                    combined.append({mag['x']})
-                    combined.append({mag['y']})
-                    combined.append({mag['z']})
-        
-                    # add accelerometer data
-                    accel = self._sense.get_accelerometer_raw()
-                    combined.append({accel['x']})
-                    combined.append({accel['y']})
-                    combined.append({accel['z']})
-
-                    # add gyroscope data
-                    gyro = self._sense.get_gyroscope_raw()
-                    combined.append({gyro['x']})
-                    combined.append({gyro['y']})
-                    combined.append({gyro['z']})
-                    
-                    combined = np.reshape(combined, (1, -1))
-                    predictions = self._model.predict(combined)
-                    self._X = predictions[0,0]
-                    self._Y = predictions[0,1]
-                    self.get_logger().info('Predicted axes: "%s"' % predictions)
-                    
-                    #self._motor.setMotorModel(
-                    #    int(700*self._Y*(1+1.7*self._X)),
-                    #    int(700*self._Y*(1+1.7*self._X)),
-                    #    int(700*self._Y*(1-1.7*self._X)),
-                    #    int(700*self._Y*(1-1.7*self._X)))
-        
-                    self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+self._X*self.servo_ctl))
-                    self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+self._Y*40))
-
-                    scan = np.array(msg.ranges)
-                    scan[scan == np.inf] = np.nan
-                    x = np.arange(len(scan))
-                    finite_vals = np.isfinite(scan)
                     scan_interpolated = np.interp(x, x[finite_vals], scan[finite_vals])
 
                     # add color data
@@ -166,15 +124,7 @@ class testDriveNode(Node):
                     predictions = self._model.predict(combined_standardized)
                     self._X = predictions[0, 0]
                     self._Y = predictions[0, 1]
-
                     self.get_logger().info('Predicted axes: "%s"' % predictions)
-
-                    # Uncomment below if you want to set the motor models
-                    # self._motor.setMotorModel(
-                    #     int(700*self._Y*(1+1.7*self._X)),
-                    #     int(700*self._Y*(1+1.7*self._X)),
-                    #     int(700*self._Y*(1-1.7*self._X)),
-                    #     int(700*self._Y*(1-1.7*self._X)))
 
                     self.get_logger().info('Steering: "%s"' % str(self.servo_neutral + self._X * self.servo_ctl))
                     self.get_logger().info('Power: "%s"' % str(self.neutral_pulse + self._Y * 40))
@@ -194,19 +144,12 @@ class testDriveNode(Node):
         else:
             self.get_logger().info('Scan skipped')
 
-
     def joy_callback(self, msg):
         #self.get_logger().info('Buttons: "%s"' % msg.buttons)
         #self.get_logger().info('Axes: "%s"' % msg.axes)
         self._X = msg.axes[2]
         self._Y = msg.axes[1]
         
-        #self._motor.setMotorModel(
-        #    int(1000*self._Y*(1+self._X)),
-        #    int(1000*self._Y*(1+self._X)),
-        #    int(1000*self._Y*(1-self._X)),
-        #    int(1000*self._Y*(1-self._X)))
-
         self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+self._X*self.servo_ctl))
         self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+self._Y*40))
                     
@@ -215,28 +158,17 @@ class testDriveNode(Node):
 
 
     def openmv_h7_callback(self, msg):
-
-        HPIX2 = 160
-        VPIX2 = 120
-        HFOV = 70.8
-        VFOV = 55.6
-
-        self._color = np.zeros(3240)
+        self._color = np.zeros(HPIX)
         self.get_logger().info('blob detected: %s' % msg.data)
         try:
-            color, y1, y2 = msg.data.split(',')
+            color, x1, x2 = msg.data.split(',')
             if float(color) > 0.0:
-                #alphaH=(HPIX2-cxy[0])/HPIX2*HFOV/2*math.pi/180
-                alphaV1=(float(x1)-HPIX2)/HPIX2
-                alphaV2=(float(x2)-HPIX2)/HPIX2
-                idx1 = int(alphaV1*320)+1620
-                idx2 = int(alphaV2*320)+1620
-                self._color[idx1:idx2+1] = float(color)
-                self.get_logger().info('blob inserted: %s,%s,%s' % (color,idx1,idx2))
+                self._color[x1:x2+1] = float(color)
+                self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
 
                 # sense hat
-                ish1 = int(alphaV1*4)+4
-                ish2 = int(alphaV2*4)+4
+                ish1 = int(x1/8)
+                ish2 = int(x2/8)
                 if color == 1.0:
                     pixcol = blue
                 else:
