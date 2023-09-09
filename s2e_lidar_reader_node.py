@@ -90,9 +90,8 @@ class s2eLidarReaderNode(Node):
 
 
     with open('/home/rrrschuetz/test/file.txt', 'a') as f:
-        f.write('X,Y,' + ','.join(['SCAN']*3240) + ','+','.join(['COLR']*3240) + 
-            '\n')
-            #',MAGX,MAGY,MAGZ,ACCX,ACCY,ACCZ,GYRX,GYRY,GYRZ\n')
+        f.write('X,Y,' + ','.join(['SCAN']*3240) + ','+','.join(['COLR']*3240)
+            +',MAGX,MAGY,MAGZ,ACCX,ACCY,ACCZ,GYRX,GYRY,GYRZ\n')
 
     def lidar_callback(self, msg):
 
@@ -125,22 +124,22 @@ class s2eLidarReaderNode(Node):
         scan_data += ','.join(str(e) for e in self._color)
         
         # add magentometer data
-        #mag = self._sense.get_compass_raw()
-        #scan_data += ','+str({mag['x']})
-        #scan_data += ','+str({mag['y']})
-        #scan_data += ','+str({mag['z']})
+        mag = self._sense.get_compass_raw()
+        scan_data += ','+str({mag['x']})
+        scan_data += ','+str({mag['y']})
+        scan_data += ','+str({mag['z']})
         
         # add accelerometer data
-        #accel = self._sense.get_accelerometer_raw()
-        #scan_data += ','+str({accel['x']})
-        #scan_data += ','+str({accel['y']})
-        #scan_data += ','+str({accel['z']})
+        accel = self._sense.get_accelerometer_raw()
+        scan_data += ','+str({accel['x']})
+        scan_data += ','+str({accel['y']})
+        scan_data += ','+str({accel['z']})
 
         # add gyroscope data
-        #gyro = self._sense.get_gyroscope_raw()
-        #scan_data += ','+str({gyro['x']})
-        #scan_data += ','+str({gyro['y']})
-        #scan_data += ','+str({gyro['z']})
+        gyro = self._sense.get_gyroscope_raw()
+        scan_data += ','+str({gyro['x']})
+        scan_data += ','+str({gyro['y']})
+        scan_data += ','+str({gyro['z']})
         
         # Write the scan data to a file
         with open('/home/rrrschuetz/test/file.txt', 'a') as f:
