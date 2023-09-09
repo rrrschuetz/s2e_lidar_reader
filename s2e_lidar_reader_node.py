@@ -90,8 +90,9 @@ class s2eLidarReaderNode(Node):
 
 
     with open('/home/rrrschuetz/test/file.txt', 'a') as f:
-        f.write('X,Y,' + ','.join(['SCAN']*3240) + ','+','.join(['COLR']*3240) + '\n')
-
+        f.write('X,Y,' + ','.join(['SCAN']*3240) + ','+','.join(['COLR']*3240) + 
+            '\n')
+            #',MAGX,MAGY,MAGZ,ACCX,ACCY,ACCZ,GYRX,GYRY,GYRZ\n')
 
     def lidar_callback(self, msg):
 
@@ -120,8 +121,27 @@ class s2eLidarReaderNode(Node):
         scan_data += ','.join(str(e) for e in scan_interpolated)+','
         #scan_data += ','.join(str(e) for e in scan)
 
+        # add color data
         scan_data += ','.join(str(e) for e in self._color)
+        
+        # add magentometer data
+        #mag = self._sense.get_compass_raw()
+        #scan_data += ','+str({mag['x']})
+        #scan_data += ','+str({mag['y']})
+        #scan_data += ','+str({mag['z']})
+        
+        # add accelerometer data
+        #accel = self._sense.get_accelerometer_raw()
+        #scan_data += ','+str({accel['x']})
+        #scan_data += ','+str({accel['y']})
+        #scan_data += ','+str({accel['z']})
 
+        # add gyroscope data
+        #gyro = self._sense.get_gyroscope_raw()
+        #scan_data += ','+str({gyro['x']})
+        #scan_data += ','+str({gyro['y']})
+        #scan_data += ','+str({gyro['z']})
+        
         # Write the scan data to a file
         with open('/home/rrrschuetz/test/file.txt', 'a') as f:
             f.write(scan_data + '\n')
@@ -160,24 +180,24 @@ class s2eLidarReaderNode(Node):
             color, x1, x2 = msg.data.split(',')
             if float(color) > 0.0:
                 #alphaH=(HPIX2-cxy[0])/HPIX2*HFOV/2*math.pi/180
-                alphaV1=(float(x1)-HPIX2)/HPIX2*HFOV/2*math.pi/180
-                alphaV2=(float(x2)-HPIX2)/HPIX2*HFOV/2*math.pi/180
-                idx1 = int(alphaV1/math.pi*320)+1620
-                idx2 = int(alphaV2/math.pi*320)+1620
+                alphaV1=(float(x1)-HPIX2)/HPIX2
+                alphaV2=(float(x2)-HPIX2)/HPIX2
+                idx1 = int(alphaV1*320)+1620
+                idx2 = int(alphaV2*320)+1620
                 self._color[idx1:idx2+1] = float(color)
-                #self.get_logger().info('blob inserted: %s,%s,%s' % (color,idx1,idx2))
+                self.get_logger().info('blob inserted: %s,%s,%s' % (color,idx1,idx2))
 
                 # sense hat
-                ish1 = int(alphaV1/math.pi*4)+4
-                ish2 = int(alphaV2/math.pi*4)+4
+                ish1 = int(alphaV1*4)+4
+                ish2 = int(alphaV2*4)+4
                 if color == 1.0:
                     pixcol = blue
                 else:
                     pixcol = red
                 self._sense.clear()
                 for i in range(ish1,ish2+1):
-                    self._sense.set_pixel(i,0,pixcol)
-                    self._sense.set_pixel(i,1,pixcol)
+                    self._sense.set_pixel(0,7-i,pixcol)
+                    #self._sense.set_pixel(1,7-i,pixcol)
 
         except (SyntaxError) as e:
             self.get_logger().error('Failed to get blob coordinates: %s' % str(e))
