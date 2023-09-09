@@ -5,11 +5,24 @@ from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDur
 from sensor_msgs.msg import LaserScan
 from sensor_msgs.msg import Joy
 from std_msgs.msg import String
-from .Motor import PwmMotor 
+from sense_hat import SenseHat
 import numpy as np
 import tensorflow as tf
 
+#from .Motor import PwmMotor 
+from Adafruit_PCA9685 import PCA9685
+
 class testDriveNode(Node):
+
+    reverse_pulse = 204
+    neutral_pulse = 307
+    forward_pulse = 409
+
+    servo_min = 260  # Min pulse length out of 4096
+    servo_max = 375  # Max pulse length out of 4096
+    servo_neutral = int((servo_max+servo_min)/2)
+    servo_ctl = int((servo_max-servo_min)/2)
+    
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
         qos_profile = QoSProfile(
@@ -21,9 +34,22 @@ class testDriveNode(Node):
         self._X = 0.0 
         self._Y = 0.0
         self._color = np.zeros(3240)
-        self._motor = PwmMotor()
-        self._motor.setMotorModel(0,0,0,0)
+        
+        #self._motor = PwmMotor()
+        #self._motor.setMotorModel(0,0,0,0)
+        
+        # Initialize PCA9685
+        self._pwm = PCA9685()
+        self._pwm.set_pwm_freq(50)  # Set frequency to 50Hz
 
+        self.get_logger().info('calibrating ESC')
+        self._pwm.set_pwm(1, 0, self.neutral_pulse)
+        #time.sleep(10)
+
+        self._sense = SenseHat()
+        self._sense.clear()
+        self._sense.show_message("OK", text_colour=[255, 0, 0])
+        
         self._counter = 0
         self._start_time = time.time()
         self._end_time = self._start_time
@@ -66,18 +92,46 @@ class testDriveNode(Node):
                     x = np.arange(len(scan))
                     finite_vals = np.isfinite(scan)
                     scan_interpolated = np.interp(x,x[finite_vals],scan[finite_vals])
+
+                    # add color data
                     combined = np.hstack((scan_interpolated, self._color))
+                    
+                    # add magentometer data
+                    mag = self._sense.get_compass_raw()
+                    combined.append({mag['x']})
+                    combined.append({mag['y']})
+                    combined.append({mag['z']})
+        
+                    # add accelerometer data
+                    accel = self._sense.get_accelerometer_raw()
+                    combined.append({accel['x']})
+                    combined.append({accel['y']})
+                    combined.append({accel['z']})
+
+                    # add gyroscope data
+                    gyro = self._sense.get_gyroscope_raw()
+                    combined.append({gyro['x']})
+                    combined.append({gyro['y']})
+                    combined.append({gyro['z']})
+                    
                     combined = np.reshape(combined, (1, -1))
                     predictions = self._model.predict(combined)
                     self._X = predictions[0,0]
                     self._Y = predictions[0,1]
                     self.get_logger().info('Predicted axes: "%s"' % predictions)
-                    self._motor.setMotorModel(
-                        int(700*self._Y*(1+1.7*self._X)),
-                        int(700*self._Y*(1+1.7*self._X)),
-                        int(700*self._Y*(1-1.7*self._X)),
-                        int(700*self._Y*(1-1.7*self._X)))
-
+                    
+                    #self._motor.setMotorModel(
+                    #    int(700*self._Y*(1+1.7*self._X)),
+                    #    int(700*self._Y*(1+1.7*self._X)),
+                    #    int(700*self._Y*(1-1.7*self._X)),
+                    #    int(700*self._Y*(1-1.7*self._X)))
+        
+                    self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+self._X*self.servo_ctl))
+                    self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+self._Y*40))
+                    
+                    #self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
+                    #self._pwm.set_pwm(1, 0, int(self.neutral_pulse+self._Y*40))
+        
                 except ValueError as e:
                     self.get_logger().error('Model rendered nan: %s' % str(e))
 
@@ -96,11 +150,18 @@ class testDriveNode(Node):
         #self.get_logger().info('Axes: "%s"' % msg.axes)
         self._X = msg.axes[2]
         self._Y = msg.axes[1]
-        self._motor.setMotorModel(
-            int(1000*self._Y*(1+self._X)),
-            int(1000*self._Y*(1+self._X)),
-            int(1000*self._Y*(1-self._X)),
-            int(1000*self._Y*(1-self._X)))
+        
+        #self._motor.setMotorModel(
+        #    int(1000*self._Y*(1+self._X)),
+        #    int(1000*self._Y*(1+self._X)),
+        #    int(1000*self._Y*(1-self._X)),
+        #    int(1000*self._Y*(1-self._X)))
+
+        self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+self._X*self.servo_ctl))
+        self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+self._Y*40))
+                    
+        #self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
+        #self._pwm.set_pwm(1, 0, int(self.neutral_pulse+self._Y*40))
 
 
     def openmv_h7_callback(self, msg):
@@ -116,14 +177,28 @@ class testDriveNode(Node):
             color, y1, y2 = msg.data.split(',')
             if float(color) > 0.0:
                 #alphaH=(HPIX2-cxy[0])/HPIX2*HFOV/2*math.pi/180
-                alphaV1=(float(y1)-VPIX2)/VPIX2*VFOV/2*math.pi/180
-                alphaV2=(float(y2)-VPIX2)/VPIX2*VFOV/2*math.pi/180
-                idx1 = int(alphaV1/math.pi*1620)+1620
-                idx2 = int(alphaV2/math.pi*1620)+1620
+                alphaV1=(float(x1)-HPIX2)/HPIX2
+                alphaV2=(float(x2)-HPIX2)/HPIX2
+                idx1 = int(alphaV1*320)+1620
+                idx2 = int(alphaV2*320)+1620
                 self._color[idx1:idx2+1] = float(color)
                 self.get_logger().info('blob inserted: %s,%s,%s' % (color,idx1,idx2))
+
+                # sense hat
+                ish1 = int(alphaV1*4)+4
+                ish2 = int(alphaV2*4)+4
+                if color == 1.0:
+                    pixcol = blue
+                else:
+                    pixcol = red
+                self._sense.clear()
+                for i in range(ish1,ish2+1):
+                    self._sense.set_pixel(0,7-i,pixcol)
+                    #self._sense.set_pixel(1,7-i,pixcol)
+        
         except (SyntaxError) as e:
             self.get_logger().error('Failed to get blob coordinates: %s' % str(e))
+
 
 def main(args=None):
     rclpy.init(args=args)
