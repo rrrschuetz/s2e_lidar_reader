@@ -8,6 +8,7 @@ from std_msgs.msg import String
 from sense_hat import SenseHat
 import numpy as np
 import tensorflow as tf
+import pickle
 
 #from .Motor import PwmMotor 
 from Adafruit_PCA9685 import PCA9685
@@ -75,8 +76,11 @@ class testDriveNode(Node):
             qos_profile)
         
         self._processing = False
+    
+        # Load the trained model and the scaler
         self._model = tf.keras.models.load_model('/home/rrrschuetz/test/model')
-
+        with open('/home/rrrschuetz/test/scaler.pkl', 'rb') as f:
+            self._scaler = pickle.load(f)
 
     def lidar_callback(self, msg):
         
@@ -128,7 +132,53 @@ class testDriveNode(Node):
         
                     self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+self._X*self.servo_ctl))
                     self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+self._Y*40))
-                    
+
+                    scan = np.array(msg.ranges)
+                    scan[scan == np.inf] = np.nan
+                    x = np.arange(len(scan))
+                    finite_vals = np.isfinite(scan)
+                    scan_interpolated = np.interp(x, x[finite_vals], scan[finite_vals])
+
+                    # add color data
+                    combined = list(scan_interpolated)  # Convert to list for easier appending
+                    combined.extend(self._color)
+
+                    # add magnetometer data
+                    mag = self._sense.get_compass_raw()
+                    combined.extend([mag['x'], mag['y'], mag['z']])
+
+                    # add accelerometer data
+                    accel = self._sense.get_accelerometer_raw()
+                    combined.extend([accel['x'], accel['y'], accel['z']])
+
+                    # add gyroscope data
+                    gyro = self._sense.get_gyroscope_raw()
+                    combined.extend([gyro['x'], gyro['y'], gyro['z']])
+
+                    # Reshape and standardize
+                    combined = np.reshape(combined, (1, -1))
+                    combined_standardized = self._scaler.transform(combined)
+
+                    # reshape for 1D CNN input
+                    combined_standardized = np.reshape(combined_standardized, (combined_standardized.shape[0], combined_standardized.shape[1], 1))
+
+                    # Model prediction
+                    predictions = self._model.predict(combined_standardized)
+                    self._X = predictions[0, 0]
+                    self._Y = predictions[0, 1]
+
+                    self.get_logger().info('Predicted axes: "%s"' % predictions)
+
+                    # Uncomment below if you want to set the motor models
+                    # self._motor.setMotorModel(
+                    #     int(700*self._Y*(1+1.7*self._X)),
+                    #     int(700*self._Y*(1+1.7*self._X)),
+                    #     int(700*self._Y*(1-1.7*self._X)),
+                    #     int(700*self._Y*(1-1.7*self._X)))
+
+                    self.get_logger().info('Steering: "%s"' % str(self.servo_neutral + self._X * self.servo_ctl))
+                    self.get_logger().info('Power: "%s"' % str(self.neutral_pulse + self._Y * 40))
+
                     #self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
                     #self._pwm.set_pwm(1, 0, int(self.neutral_pulse+self._Y*40))
         
