@@ -10,7 +10,6 @@ import numpy as np
 import tensorflow as tf
 import pickle
 
-#from .Motor import PwmMotor 
 from Adafruit_PCA9685 import PCA9685
 
 class testDriveNode(Node):
@@ -34,10 +33,7 @@ class testDriveNode(Node):
    
         self._X = 0.0 
         self._Y = 0.0
-        self._color = np.zeros(3240)
-        
-        #self._motor = PwmMotor()
-        #self._motor.setMotorModel(0,0,0,0)
+        self._color = np.zeros(HPIX)
         
         # Initialize PCA9685
         self._pwm = PCA9685()
@@ -104,15 +100,13 @@ class testDriveNode(Node):
                     # add magnetometer data
                     mag = self._sense.get_compass_raw()
                     combined.extend([mag['x'], mag['y'], mag['z']])
-
                     # add accelerometer data
                     accel = self._sense.get_accelerometer_raw()
                     combined.extend([accel['x'], accel['y'], accel['z']])
-
                     # add gyroscope data
                     gyro = self._sense.get_gyroscope_raw()
                     combined.extend([gyro['x'], gyro['y'], gyro['z']])
-
+                    
                     # Reshape and standardize
                     combined = np.reshape(combined, (1, -1))
                     combined_standardized = self._scaler.transform(combined)
@@ -165,16 +159,13 @@ class testDriveNode(Node):
             if float(color) > 0.0:
                 self._color[x1:x2+1] = float(color)
                 self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
-
                 # sense hat
-                ish1 = int(x1/8)
-                ish2 = int(x2/8)
                 if color == 1.0:
                     pixcol = blue
                 else:
                     pixcol = red
                 self._sense.clear()
-                for i in range(ish1,ish2+1):
+                for i in range(int(x1/8),int(x2/8)+1):
                     self._sense.set_pixel(0,7-i,pixcol)
                     #self._sense.set_pixel(1,7-i,pixcol)
         
