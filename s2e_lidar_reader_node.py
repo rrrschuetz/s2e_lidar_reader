@@ -128,7 +128,9 @@ class s2eLidarReaderNode(Node):
         num_sections = 36  # i.e., each section covers 10 degrees
 
         # Split data into sections
-        section_data = np.array_split(self._scan_interpolated, num_sections)
+        arr = self._scan_interpolated[:810] + self._scan_interpolated[2430:]
+        arr = arr[-810:] + arr[:810]
+        section_data = np.array_split(arr, num_sections)
 
         # Calculate the mean distance in each section
         section_means = [np.mean(section) for section in section_data]
