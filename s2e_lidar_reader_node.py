@@ -121,7 +121,7 @@ class s2eLidarReaderNode(Node):
         with open('/home/rrrschuetz/test/file.txt', 'a') as f:
             f.write(scan_data + '\n')
 
-    def calculate_steering_angle():
+    def calculate_steering_angle(self):
         max_steering_angle = 30
         
         # Number of sections to split the LiDAR data into
@@ -156,8 +156,8 @@ class s2eLidarReaderNode(Node):
 
         self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+self._X*self.servo_ctl))
         self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+self._Y*40))
-        #self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
-        #self._pwm.set_pwm(1, 0, int(self.neutral_pulse+self._Y*40))
+        self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
+        self._pwm.set_pwm(1, 0, int(self.neutral_pulse+self._Y*40))
 
     def openmv_h7_callback(self, msg):
         blue = (0,0,255)
