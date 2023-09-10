@@ -86,7 +86,7 @@ class s2eLidarReaderNode(Node):
         )
 
     with open('/home/rrrschuetz/test/file.txt', 'a') as f:
-        f.write('X,Y,' + ','.join(['SCAN']*3240) + ','+','.join(['COLR']*self.HPIX)
+        f.write('X,Y,' + ','.join(['SCAN']*3240) + ','+','.join(['COLR']*HPIX)
             +',MAGX,MAGY,MAGZ,ACCX,ACCY,ACCZ,GYRX,GYRY,GYRZ\n')
 
     def lidar_callback(self, msg):
