@@ -29,7 +29,7 @@ class s2eLidarReaderNode(Node):
             durability=QoSDurabilityPolicy.VOLATILE)
 
         self._scan_interpolated = np.zeros(3240)
-        self._color = np.zeros(HPIX)
+        self._color = np.zeros(self.HPIX)
         self._X = 0.0 
         self._Y = 0.0
 
@@ -86,7 +86,7 @@ class s2eLidarReaderNode(Node):
         )
 
     with open('/home/rrrschuetz/test/file.txt', 'a') as f:
-        f.write('X,Y,' + ','.join(['SCAN']*3240) + ','+','.join(['COLR']*HPIX)
+        f.write('X,Y,' + ','.join(['SCAN']*3240) + ','+','.join(['COLR']*self.HPIX)
             +',MAGX,MAGY,MAGZ,ACCX,ACCY,ACCZ,GYRX,GYRY,GYRZ\n')
 
     def lidar_callback(self, msg):
@@ -163,7 +163,7 @@ class s2eLidarReaderNode(Node):
         blue = (0,0,255)
         red = (255,0,0)
 
-        self._color = np.zeros(HPIX)
+        self._color = np.zeros(self.HPIX)
         #self.get_logger().info('blob detected: %s' % msg.data)
         try:
             color, x1, x2 = msg.data.split(',')
