@@ -173,7 +173,7 @@ class s2eLidarReaderNode(Node):
                 # sense hat
                 pixcol = blue if color == 1.0 else red
                 self._sense.clear()
-                for i in range(imt(int(x1)/8),int(int(x2)/8)+1):
+                for i in range(int(int(x1)/8),int(int(x2)/8)+1):
                     self._sense.set_pixel(0,7-i,pixcol)
                     #self._sense.set_pixel(1,7-i,pixcol)
 
