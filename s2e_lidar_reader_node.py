@@ -119,6 +119,7 @@ class s2eLidarReaderNode(Node):
 
         # autopilot
         self._X = self.calculate_steering_angle()
+        self.get_logger().info('Steering: _X "%s"' % str(self._X))
         #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+self._X*self.servo_ctl))
         #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+self._Y*40))
         self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
