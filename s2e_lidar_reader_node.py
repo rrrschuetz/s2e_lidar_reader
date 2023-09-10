@@ -168,12 +168,12 @@ class s2eLidarReaderNode(Node):
         try:
             color, x1, x2 = msg.data.split(',')
             if float(color) > 0.0:
-                self._color[x1:x2+1] = float(color)
+                self._color[int(x1):int(x2)+1] = float(color)
                 self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
                 # sense hat
                 pixcol = blue if color == 1.0 else red
                 self._sense.clear()
-                for i in range(int(x1/8),int(x2/8)+1):
+                for i in range(int(x1)/8,int(x2)/8+1):
                     self._sense.set_pixel(0,7-i,pixcol)
                     #self._sense.set_pixel(1,7-i,pixcol)
 
