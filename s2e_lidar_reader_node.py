@@ -143,7 +143,7 @@ class s2eLidarReaderNode(Node):
         steering_angle = (max_section_index - num_sections / 2) * (180.0 / num_sections)
 
         X = min(max_steering_angle,abs(steering_angle))/max_steering_angle
-        X = X if steering_angle >= 0 else -X
+        X = X if steering_angle < 0 else -X
         return X
 
     def joy_callback(self, msg):
