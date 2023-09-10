@@ -129,7 +129,7 @@ class s2eLidarReaderNode(Node):
 
         # Split data into sections
         arr = self._scan_interpolated[:810] + self._scan_interpolated[2430:]
-        arr = arr[-810:] + arr[:810]
+        #arr = arr[-810:] + arr[:810]
         section_data = np.array_split(arr, num_sections)
 
         # Calculate the mean distance in each section
@@ -139,8 +139,8 @@ class s2eLidarReaderNode(Node):
         max_section_index = np.argmax(section_means)
 
         # Calculate the steering angle
-        # Assuming 0 degrees is straight ahead, -180 is far left, and 180 is far right
-        steering_angle = (max_section_index - num_sections / 2) * (360.0 / num_sections)
+        # Assuming 0 degrees is straight ahead, -90 is far left, and 90 is far right
+        steering_angle = (max_section_index - num_sections / 2) * (180.0 / num_sections)
 
         X = min(max_steering_angle,abs(steering_angle))/max_steering_angle
         X = X if steering_angle >= 0 else -X
