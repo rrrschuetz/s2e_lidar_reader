@@ -152,7 +152,7 @@ class s2eLidarReaderNode(Node):
         # Assuming 0 degrees is straight ahead, -90 is far left, and 90 is far right
         steering_angle = (max_section_index - num_sections / 2) * (180.0 / num_sections)
 
-        X = min(max_steering_angle,abs(steering_angle))/max_steering_angle
+        X = min(max_steering_angle,abs(steering_angle))/max_steering_angle * 0.8
         X = X if steering_angle < 0 else -X
         return X
 
