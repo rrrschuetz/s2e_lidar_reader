@@ -28,7 +28,8 @@ class s2eLidarReaderNode(Node):
             reliability=QoSReliabilityPolicy.BEST_EFFORT,
             durability=QoSDurabilityPolicy.VOLATILE)
 
-        self._color = np.zeros(3240)
+        self._scan_interpolated = np.zeros(3240)
+        self._color = np.zeros(HPIX)
         self._X = 0.0 
         self._Y = 0.0
 
@@ -96,11 +97,11 @@ class s2eLidarReaderNode(Node):
         scan[scan == np.inf] = np.nan
         x = np.arange(len(scan))
         finite_vals = np.isfinite(scan)
-        scan_interpolated = np.interp(x,x[finite_vals],scan[finite_vals])
+        self._scan_interpolated = np.interp(x,x[finite_vals],scan[finite_vals])
 
         # Convert the laser scan data to a string
         scan_data = str(self._X)+','+str(self._Y)+','
-        scan_data += ','.join(str(e) for e in scan_interpolated)+','
+        scan_data += ','.join(str(e) for e in self._scan_interpolated)+','
         #scan_data += ','.join(str(e) for e in scan)
 
         # add color data
@@ -120,16 +121,41 @@ class s2eLidarReaderNode(Node):
         with open('/home/rrrschuetz/test/file.txt', 'a') as f:
             f.write(scan_data + '\n')
 
+    def calculate_steering_angle():
+        max_steering_angle = 40
+        
+        # Number of sections to split the LiDAR data into
+        num_sections = 36  # i.e., each section covers 10 degrees
+
+        # Split data into sections
+        section_data = np.array_split(self._scan_interpolated, num_sections)
+
+        # Calculate the mean distance in each section
+        section_means = [np.mean(section) for section in section_data]
+
+        # Find the section with the maximum mean distance
+        max_section_index = np.argmax(section_means)
+
+        # Calculate the steering angle
+        # Assuming 0 degrees is straight ahead, -180 is far left, and 180 is far right
+        steering_angle = (max_section_index - num_sections / 2) * (360.0 / num_sections)
+
+        X = min(max_steering_angle,abs(steering_angle))/max_steering_angle
+        X = X if steering_angle >= 0 else -X
+        return X
+
     def joy_callback(self, msg):
         #self.get_logger().info('Buttons: "%s"' % msg.buttons)
         #self.get_logger().info('Axes: "%s"' % msg.axes)
-        self._X = msg.axes[2]
+
+        self._X = self.calculate_steering_angle()
+        #self._X = msg.axes[2]
         self._Y = msg.axes[1]
 
-        #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+self._X*self.servo_ctl))
-        #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+self._Y*40))
-        self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
-        self._pwm.set_pwm(1, 0, int(self.neutral_pulse+self._Y*40))
+        self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+self._X*self.servo_ctl))
+        self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+self._Y*40))
+        #self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
+        #self._pwm.set_pwm(1, 0, int(self.neutral_pulse+self._Y*40))
 
     def openmv_h7_callback(self, msg):
         blue = (0,0,255)
@@ -143,10 +169,7 @@ class s2eLidarReaderNode(Node):
                 self._color[x1:x2+1] = float(color)
                 self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
                 # sense hat
-                if color == 1.0:
-                    pixcol = blue
-                else:
-                    pixcol = red
+                pixcol = blue if color == 1.0 else red
                 self._sense.clear()
                 for i in range(int(x1/8),int(x2/8)+1):
                     self._sense.set_pixel(0,7-i,pixcol)
