@@ -134,6 +134,8 @@ class s2eLidarReaderNode(Node):
             f.write(scan_data + '\n')
 
     def calculate_steering_angle(self):
+        max_steering_angle = 30
+
         # Number of sections to split the LiDAR data into
         num_sections = 36  # i.e., each section covers 5 degrees
 
