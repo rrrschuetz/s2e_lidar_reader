@@ -153,7 +153,7 @@ class s2eLidarReaderNode(Node):
         max_section_index = np.argmax(section_means)
         min_section_index = np.argmin(section_means)
         self.get_logger().info('max index: "%s"' % max_section_index)
-        self.get_logger().info('min index: "%s"' % ,min_section_index)
+        self.get_logger().info('min index: "%s"' % min_section_index)
         # Calculate the steering angle
         # Assuming 0 degrees is straight ahead, -90 is far left, and 90 is far right
         steering_angle = (max_section_index - num_sections / 2) * (180.0 / num_sections)
