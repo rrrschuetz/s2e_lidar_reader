@@ -13,6 +13,7 @@ class s2eLidarReaderNode(Node):
     HPIX = 320
     HFOV = 70.8
     MIN_DIST = 0.15
+    RATIO = 0.5
     reverse_pulse = 204
     neutral_pulse = 307
     forward_pulse = 409
@@ -157,7 +158,7 @@ class s2eLidarReaderNode(Node):
             # Calculate the steering angle
             # Assuming 0 degrees is straight ahead, -90 is far left, and 90 is far right
             steering_angle = (max_section_index - num_sections / 2) * (180.0 / num_sections)
-            X = min(max_steering_angle,abs(steering_angle))/max_steering_angle
+            X = min(max_steering_angle,abs(steering_angle))/max_steering_angle * self.RATIO
             X = X if steering_angle < 0 else -X
 
         else:
