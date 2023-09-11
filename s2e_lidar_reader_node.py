@@ -148,7 +148,7 @@ class s2eLidarReaderNode(Node):
 
         # Calculate the mean distance in each section
         section_means = [np.mean(section) for section in section_data]
-        #self.get_logger().info('sections: "%s"' % section_means)
+        self.get_logger().info('sections: "%s"' % section_means)
 
         if section_means[0] > self.MIN_DIST and section_means[num_sections-1] > self.MIN_DIST:
             # Find the section with the maximum mean distance
