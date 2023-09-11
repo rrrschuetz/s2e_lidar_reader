@@ -141,8 +141,8 @@ class s2eLidarReaderNode(Node):
 
         # Shift the array so that 0 degrees is at the center
         shifted_array = np.roll(self._scan_interpolated, -1620)
-        # Extract the range from -45 to +45 degrees
-        view_arr = shifted_array[810+405:2431-405]
+        # Extract the range from -90 to +90 degrees
+        view_arr = shifted_array[810:2431]
         # split into sections
         section_data = np.array_split(view_arr, num_sections)
 
@@ -156,7 +156,7 @@ class s2eLidarReaderNode(Node):
             self.get_logger().info('max_section_index: "%s"' % max_section_index)
             # Calculate the steering angle
             # Assuming 0 degrees is straight ahead, -90 is far left, and 90 is far right
-            steering_angle = (max_section_index - num_sections / 2) * (90.0 / num_sections)
+            steering_angle = (max_section_index - num_sections / 2) * (180.0 / num_sections)
             X = -max(-max_steering_angle,min(max_steering_angle,steering_angle))/max_steering_angle * self.RATIO
 
         else:
