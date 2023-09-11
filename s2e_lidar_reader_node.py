@@ -183,8 +183,8 @@ class s2eLidarReaderNode(Node):
                 pixcol = blue if fcol == 1.0 else red
                 if cx1 != self._cx1 or cx2 != self._cx2: self._sense.clear()
                 for i in range(int(cx1/40),int(cx2/40)+1):
-                    self._sense.set_pixel(0,max(7-i,0),pixcol)
-                    self._sense.set_pixel(1,max(7-i,0),pixcol)
+                    self._sense.set_pixel(0,min(i,7),pixcol)
+                    self._sense.set_pixel(1,min(i,7),pixcol)
                 self._cx1 = cx1
                 self._cx2 = cx2
 
