@@ -12,6 +12,7 @@ from Adafruit_PCA9685 import PCA9685
 class s2eLidarReaderNode(Node):
     HPIX = 320
     HFOV = 70.8
+    MIN_DIST = 0.15
     reverse_pulse = 204
     neutral_pulse = 307
     forward_pulse = 409
@@ -132,10 +133,11 @@ class s2eLidarReaderNode(Node):
             f.write(scan_data + '\n')
 
     def calculate_steering_angle(self):
+        # Max steering angle of car
         max_steering_angle = 30
         
         # Number of sections to split the LiDAR data into
-        num_sections = 36  # i.e., each section covers 10 degrees
+        num_sections = 36  # i.e., each section covers 5 degrees
 
         # Shift the array so that 0 degrees is at the center
         shifted_array = np.roll(self._scan_interpolated, -1620)
@@ -148,16 +150,19 @@ class s2eLidarReaderNode(Node):
         section_means = [np.mean(section) for section in section_data]
         #self.get_logger().info('sections: "%s"' % section_means)
 
-        # Find the section with the maximum mean distance
-        max_section_index = np.argmax(section_means)
-        self.get_logger().info('max_section_index: "%s"' % max_section_index)
+        if section_data[0] > self.MIN_DIST and section_data[num_sections-1] > self.MIN_DIST:
+            # Find the section with the maximum mean distance
+            max_section_index = np.argmax(section_means)
+            self.get_logger().info('max_section_index: "%s"' % max_section_index)
+            # Calculate the steering angle
+            # Assuming 0 degrees is straight ahead, -90 is far left, and 90 is far right
+            steering_angle = (max_section_index - num_sections / 2) * (180.0 / num_sections)
+            X = min(max_steering_angle,abs(steering_angle))/max_steering_angle
+            X = X if steering_angle < 0 else -X
 
-        # Calculate the steering angle
-        # Assuming 0 degrees is straight ahead, -90 is far left, and 90 is far right
-        steering_angle = (max_section_index - num_sections / 2) * (180.0 / num_sections)
+        else:
+            X = 0
 
-        X = min(max_steering_angle,abs(steering_angle))/max_steering_angle * 0.9
-        X = X if steering_angle < 0 else -X
         return X
 
     def joy_callback(self, msg):
