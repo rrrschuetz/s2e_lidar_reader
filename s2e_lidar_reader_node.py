@@ -12,8 +12,6 @@ from Adafruit_PCA9685 import PCA9685
 class s2eLidarReaderNode(Node):
     HPIX = 320
     HFOV = 70.8
-    MIN_DIST = 0.15
-    RATIO = 0.8
     reverse_pulse = 204
     neutral_pulse = 307
     forward_pulse = 409
@@ -94,7 +92,6 @@ class s2eLidarReaderNode(Node):
             +',MAGX,MAGY,MAGZ,ACCX,ACCY,ACCZ,GYRX,GYRY,GYRZ\n')
 
     def lidar_callback(self, msg):
-
         # Convert the laser scan data to a string
         scan = np.array(msg.ranges)
         #scan[scan == np.inf] = 0.0 
@@ -121,53 +118,21 @@ class s2eLidarReaderNode(Node):
         gyro = self._sense.get_gyroscope_raw()
         scan_data += ','+str({gyro['x']})+','+str({gyro['y']})+','+str({gyro['z']})
 
-        # autopilot
-        self._X = self.calculate_steering_angle()
-        self.get_logger().info('Steering: _X "%s"' % str(self._X))
-        #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+self._X*self.servo_ctl))
-        #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+self._Y*40))
-        self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
-        self._pwm.set_pwm(1, 0, int(self.neutral_pulse+self._Y*40))
-
         # Write the scan data to a file
         with open('/home/rrrschuetz/test/file.txt', 'a') as f:
             f.write(scan_data + '\n')
-
-    def calculate_steering_angle(self):
-        max_steering_angle = 30
-
-        # Number of sections to split the LiDAR data into
-        num_sections = 20
-
-        # Shift the array so that 0 degrees is at the center
-        shifted_array = np.roll(self._scan_interpolated, -1620)
-        # Extract the range from -90 to +90 degrees
-        view_arr = shifted_array[810:2431]
-        # split into sections
-        section_data = np.array_split(view_arr, num_sections)
-
-        # Calculate the mean distance in each section
-        section_means = [np.mean(section) for section in section_data]
-        self.get_logger().info('sections: "%s"' % section_means)
-
-        max_section_index = np.argmax(section_means)
-        min_section_index = np.argmin(section_means)
-        self.get_logger().info('max index: "%s"' % max_section_index)
-        self.get_logger().info('min index: "%s"' % min_section_index)
-        # Calculate the steering angle
-        # Assuming 0 degrees is straight ahead, -90 is far left, and 90 is far right
-        steering_angle = (max_section_index - num_sections / 2) * (180.0 / num_sections)
-        X = -max(-max_steering_angle,min(max_steering_angle,steering_angle))/max_steering_angle * self.RATIO
-        if section_means[5] < self.MIN_DIST or section_means[14] < self.MIN_DIST: X = -X
-
-        return X
 
     def joy_callback(self, msg):
         #self.get_logger().info('Buttons: "%s"' % msg.buttons)
         #self.get_logger().info('Axes: "%s"' % msg.axes)
 
-        #self._X = msg.axes[2]
+        self._X = msg.axes[2]
         self._Y = msg.axes[1]
+        
+        #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+self._X*self.servo_ctl))
+        #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+self._Y*40))
+        self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
+        self._pwm.set_pwm(1, 0, int(self.neutral_pulse+self._Y*40))
 
     def openmv_h7_callback(self, msg):
         blue = (0,0,255)
