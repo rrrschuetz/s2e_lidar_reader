@@ -33,6 +33,8 @@ class testDriveNode(Node):
    
         self._X = 0.0 
         self._Y = 0.0
+        self._cx1 = 0
+        self._cx2 = 0
         self._color = np.zeros(HPIX)
         
         # Initialize PCA9685
