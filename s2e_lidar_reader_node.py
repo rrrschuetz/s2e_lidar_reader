@@ -113,7 +113,8 @@ class s2eLidarReaderNode(Node):
         scan_data += ','+str(mag['x'])+','+str(mag['y'])+','+str(mag['z'])
         # add accelerometer data
         accel = self._sense.get_accelerometer_raw()
-        scan_data += ','+str(accel['x'])+','+str(accel['y'])+','+str(accel['z'])
+        #scan_data += ','+str(accel['x'])+','+str(accel['y'])+','+str(accel['z'])
+        scan_data += ',0.0,0.0,0.0'
         # add gyroscope data
         gyro = self._sense.get_gyroscope_raw()
         scan_data += ','+str(gyro['x'])+','+str(gyro['y'])+','+str(gyro['z'])

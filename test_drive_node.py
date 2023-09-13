@@ -104,7 +104,8 @@ class testDriveNode(Node):
                     combined.extend([mag['x'], mag['y'], mag['z']])
                     # add accelerometer data
                     accel = self._sense.get_accelerometer_raw()
-                    combined.extend([accel['x'], accel['y'], accel['z']])
+                    #combined.extend([accel['x'], accel['y'], accel['z']])
+                    combined.extend(0.0,0.0,0.0)
                     # add gyroscope data
                     gyro = self._sense.get_gyroscope_raw()
                     combined.extend([gyro['x'], gyro['y'], gyro['z']])
