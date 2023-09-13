@@ -122,11 +122,11 @@ class testDriveNode(Node):
                     self._Y = predictions[0, 1]
                     self.get_logger().info('Predicted axes: "%s"' % predictions)
 
-                    self.get_logger().info('Steering: "%s"' % str(self.servo_neutral + self._X * self.servo_ctl))
-                    self.get_logger().info('Power: "%s"' % str(self.neutral_pulse + self._Y * 40))
+                    #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral + self._X * self.servo_ctl))
+                    #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse + self._Y * 40))
 
-                    #self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
-                    #self._pwm.set_pwm(1, 0, int(self.neutral_pulse+self._Y*40))
+                    self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
+                    self._pwm.set_pwm(1, 0, int(self.neutral_pulse+self._Y*40))
         
                 except ValueError as e:
                     self.get_logger().error('Model rendered nan: %s' % str(e))
