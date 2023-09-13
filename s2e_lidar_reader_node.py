@@ -110,13 +110,13 @@ class s2eLidarReaderNode(Node):
         
         # add magentometer data
         mag = self._sense.get_compass_raw()
-        scan_data += ','+str({mag['x']})+','+str({mag['y']})+','+str({mag['z']})
+        scan_data += ','+str(mag['x'])+','+str(mag['y'])+','+str(mag['z'])
         # add accelerometer data
         accel = self._sense.get_accelerometer_raw()
-        scan_data += ','+str({accel['x']})+','+str({accel['y']})+','+str({accel['z']})
+        scan_data += ','+str(accel['x'])+','+str(accel['y'])+','+str(accel['z'])
         # add gyroscope data
         gyro = self._sense.get_gyroscope_raw()
-        scan_data += ','+str({gyro['x']})+','+str({gyro['y']})+','+str({gyro['z']})
+        scan_data += ','+str(gyro['x'])+','+str(gyro['y'])+','+str(gyro['z'])
 
         # Write the scan data to a file
         with open('/home/rrrschuetz/test/file.txt', 'a') as f:
