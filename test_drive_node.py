@@ -46,7 +46,7 @@ class testDriveNode(Node):
 
         self.get_logger().info('calibrating ESC')
         self._pwm.set_pwm(1, 0, self.neutral_pulse)
-        time.sleep(20)
+        time.sleep(10)
 
         self._sense = SenseHat()
         self._sense.clear()
