@@ -104,6 +104,7 @@ class testDriveNode(Node):
                         self._pwm.set_pwm(0, 0, int(self.servo_neutral))
                         self._pwm.set_pwm(1, 0, int(self.neutral_pulse))
                         self.get_logger().info('Emergency brake active: "%s"' % min_section_index)
+                        self._processing = False
                         return
         
                     scan[scan == np.inf] = np.nan
