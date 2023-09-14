@@ -15,6 +15,8 @@ from Adafruit_PCA9685 import PCA9685
 class testDriveNode(Node):
     HPIX = 320
     HFOV = 70.8
+    MIN_DIST = 0.10
+    MAX_SPEED = 1.5
     reverse_pulse = 204
     neutral_pulse = 307
     forward_pulse = 409
@@ -89,7 +91,20 @@ class testDriveNode(Node):
             
             if self._counter % 1 == 0:
                 try:
+                    # raw data
                     scan = np.array(msg.ranges)
+                    
+                    # emergency brake assistant
+                    num_sections = 36
+                    section_data = np.array_split(scan, num_sections)
+                    section_means = [np.mean(section) for section in section_data]
+                    min_section_index = np.argmin(section_means)
+                    if section_means[min_section_index] < self.MIN_DIST:
+                        self._pwm.set_pwm(0, 0, int(self.servo_neutral))
+                        self._pwm.set_pwm(1, 0, int(self.neutral_pulse))
+                        self.get_logger().info('Emergency brake active: "%s"' % min_section_index)
+                        return
+        
                     scan[scan == np.inf] = np.nan
                     x = np.arange(len(scan))
                     finite_vals = np.isfinite(scan)
@@ -120,7 +135,7 @@ class testDriveNode(Node):
                     # Model prediction
                     predictions = self._model.predict(combined_standardized)
                     self._X = predictions[0, 0]
-                    self._Y = predictions[0, 1]
+                    self._Y = min(predictions[0, 1],self.MAX_SPEED)
                     self.get_logger().info('Predicted axes: "%s"' % predictions)
 
                     #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral + self._X * self.servo_ctl))
