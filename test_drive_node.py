@@ -15,7 +15,7 @@ from Adafruit_PCA9685 import PCA9685
 class testDriveNode(Node):
     HPIX = 320
     HFOV = 70.8
-    MIN_DIST = 0.20
+    MIN_DIST = 0.15
     MIN_SPEED = -0.50
     MAX_SPEED = -0.80
     reverse_pulse = 204
