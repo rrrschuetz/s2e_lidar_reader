@@ -87,9 +87,17 @@ class s2eLidarReaderNode(Node):
             qos_profile
         )
 
+    num_scan = 3240
+    num_colr = HPIX  # Assuming HPIX is defined elsewhere in your code
+    
+    scan_labels = [f'SCAN.{i}' for i in range(1, num_scan+1)]
+    colr_labels = [f'COLR.{i}' for i in range(1, num_colr+1)]
+
+    labels = ['X', 'Y'] + scan_labels + colr_labels + ['MAGX', 'MAGY', 'MAGZ', 'ACCX', 'ACCY', 'ACCZ', 'GYRX', 'GYRY', 'GYRZ']
+    line = ','.join(labels) + '\n'
+    
     with open('/home/rrrschuetz/test/file.txt', 'a') as f:
-        f.write('X,Y,' + ','.join(['SCAN']*3240) + ','+','.join(['COLR']*HPIX)
-            +',MAGX,MAGY,MAGZ,ACCX,ACCY,ACCZ,GYRX,GYRY,GYRZ\n')
+        f.write(line)
 
     def lidar_callback(self, msg):
         # Convert the laser scan data to a string
