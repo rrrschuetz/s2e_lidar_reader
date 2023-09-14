@@ -16,7 +16,8 @@ class testDriveNode(Node):
     HPIX = 320
     HFOV = 70.8
     MIN_DIST = 0.20
-    MAX_SPEED = -0.5
+    MIN_SPEED = -0.35
+    MAX_SPEED = -0.70
     reverse_pulse = 204
     neutral_pulse = 307
     forward_pulse = 409
@@ -137,7 +138,7 @@ class testDriveNode(Node):
                     # Model prediction
                     predictions = self._model.predict(combined_standardized)
                     self._X = predictions[0, 0]
-                    self._Y = max(predictions[0, 1],self.MAX_SPEED)
+                    self._Y = min(max(predictions[0, 1],self.MAX_SPEED),self.MIN_SPEED)
                     self.get_logger().info('Predicted axes: "%s"' % predictions)
 
                     #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral + self._X * self.servo_ctl))
