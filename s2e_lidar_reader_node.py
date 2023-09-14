@@ -1,3 +1,4 @@
+import os
 import rclpy, math, time
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDurabilityPolicy
@@ -95,9 +96,11 @@ class s2eLidarReaderNode(Node):
 
     labels = ['X', 'Y'] + scan_labels + colr_labels + ['MAGX', 'MAGY', 'MAGZ', 'ACCX', 'ACCY', 'ACCZ', 'GYRX', 'GYRY', 'GYRZ']
     line = ','.join(labels) + '\n'
-    
-    with open('/home/rrrschuetz/test/file.txt', 'a') as f:
-        f.write(line)
+
+    filepath = '/home/rrrschuetz/test/file.txt'
+    labels = os.path.exists(filepath)
+    with open(filepath, 'a') as f:
+        if not labels: f.write(line)
 
     def lidar_callback(self, msg):
         # Convert the laser scan data to a string
