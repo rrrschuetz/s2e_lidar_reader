@@ -80,9 +80,16 @@ class testDriveNode(Node):
     
         # Load the trained model and the scaler
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
-        self._model = tf.keras.models.load_model('/home/rrrschuetz/test/model')
         with open('/home/rrrschuetz/test/scaler.pkl', 'rb') as f:
             self._scaler = pickle.load(f)
+            
+        #self._model = tf.keras.models.load_model('/home/rrrschuetz/test/model')
+        
+        self._interpreter = tf.lite.Interpreter(model_path="/home/rrrschuetz/test/model.tflite")
+        self._interpreter.allocate_tensors()
+        # Get input and output tensors information
+        self._input_details = self._interpreter.get_input_details()
+        self._output_details = self._interpreter.get_output_details()
 
     def lidar_callback(self, msg):
         if self._processing:
@@ -137,7 +144,15 @@ class testDriveNode(Node):
                 combined_standardized = np.reshape(combined_standardized, (combined_standardized.shape[0], combined_standardized.shape[1], 1))
 
                 # Model prediction
-                predictions = self._model.predict(combined_standardized)
+                #predictions = self._model.predict(combined_standardized)
+
+                # Set the value of the input tensor
+                self._interpreter.set_tensor(self._input_details[0]['index'], combined_standardized)
+                # Run inference
+                self._interpreter.invoke()
+                # Retrieve the output of the model
+                predictions = self._interpreter.get_tensor(self._output_details[0]['index'])
+                
                 self._X = predictions[0, 0]
                 self._Y = min(max(predictions[0, 1],self.MAX_SPEED),self.MIN_SPEED)
                 #self.get_logger().info('Predicted axes: "%s"' % predictions)
