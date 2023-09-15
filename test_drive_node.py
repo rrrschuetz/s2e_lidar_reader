@@ -80,6 +80,7 @@ class testDriveNode(Node):
     
         # Load the trained model and the scaler
         self._model = tf.keras.models.load_model('/home/rrrschuetz/test/model')
+        tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
         with open('/home/rrrschuetz/test/scaler.pkl', 'rb') as f:
             self._scaler = pickle.load(f)
 
