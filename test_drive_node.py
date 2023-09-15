@@ -29,7 +29,7 @@ class testDriveNode(Node):
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
         qos_profile = QoSProfile(
-                depth=1, 
+                depth=10, 
                 history=QoSHistoryPolicy.KEEP_LAST, 
                 reliability=QoSReliabilityPolicy.BEST_EFFORT,
                 durability=QoSDurabilityPolicy.VOLATILE)
@@ -85,7 +85,10 @@ class testDriveNode(Node):
 
     def lidar_callback(self, msg):
         
-        if not self._processing:
+        if self._processing:
+            self.get_logger().info('Scan skipped')
+            return
+        else:
             self._processing = True
             start_time = time.time()
             self._counter += 1
@@ -156,9 +159,7 @@ class testDriveNode(Node):
             self.get_logger().info('Step time: "%s" seconds' % (self._end_time-start_time))
             self._start_time = self._end_time
             self._processing = False
-        else:
-            self.get_logger().info('Scan skipped')
-
+       
     def joy_callback(self, msg):
         #self.get_logger().info('Buttons: "%s"' % msg.buttons)
         #self.get_logger().info('Axes: "%s"' % msg.axes)
