@@ -196,7 +196,7 @@ class testDriveNode(Node):
             fcol = float(color)
             if fcol > 0.0:
                 self._color[cx1:cx2+1] = fcol
-                self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
+                #self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
                 # sense hat
                 pixcol = blue if fcol == 1.0 else red
                 if cx1 != self._cx1 or cx2 != self._cx2: self._sense.clear()
