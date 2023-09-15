@@ -29,7 +29,7 @@ class testDriveNode(Node):
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
         qos_profile = QoSProfile(
-                depth=10, 
+                depth=1, 
                 history=QoSHistoryPolicy.KEEP_LAST, 
                 reliability=QoSReliabilityPolicy.BEST_EFFORT,
                 durability=QoSDurabilityPolicy.VOLATILE)
