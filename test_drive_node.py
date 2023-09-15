@@ -9,6 +9,8 @@ from sense_hat import SenseHat
 import numpy as np
 import tensorflow as tf
 import pickle
+import logging
+from logging.handlers import RotatingFileHandler
 
 from Adafruit_PCA9685 import PCA9685
 
@@ -56,6 +58,8 @@ class testDriveNode(Node):
         self._start_time = time.time()
         self._end_time = self._start_time
 
+        self._custom_logger = self.setup_custom_logger('/home/rrrschuetz/test/logfile.txt')
+
         self.subscription_lidar = self.create_subscription(
             LaserScan,
             '/scan',
@@ -91,13 +95,29 @@ class testDriveNode(Node):
         self._input_details = self._interpreter.get_input_details()
         self._output_details = self._interpreter.get_output_details()
 
+    def setup_custom_logger(filename):
+        logger = logging.getLogger('rclpy')
+        logger.setLevel(logging.DEBUG)
+    
+        # Create a file handler and set its level to debug
+        handler = RotatingFileHandler(filename, maxBytes=1024*1024*10, backupCount=5) # 10MB file
+        handler.setLevel(logging.DEBUG)
+    
+        # Create a logging format
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+    
+        # Add the handler to the logger
+        logger.addHandler(handler)
+        return logger
+    
     def lidar_callback(self, msg):
         if self._processing:
             self.get_logger().info('Scan skipped')
             return
         else:
             self._processing = True
-            start_time = time.time()
+            self._start_time = time.time()
             
             try:
                 # raw data
@@ -169,7 +189,7 @@ class testDriveNode(Node):
             self._end_time = time.time() 
             #self.get_logger().info('Scans processed "%s"' % self._counter)
             #self.get_logger().info('Cycle time: "%s" seconds' % (self._end_time-self._start_time))
-            #self.get_logger().info('Step time: "%s" seconds' % (self._end_time-start_time))
+            self._custom_logger().info('Cycle time: "%s" seconds' % (self._end_time-self._start_time))
             self._start_time = self._end_time
             self._processing = False
        
