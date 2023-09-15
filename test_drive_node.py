@@ -142,6 +142,7 @@ class testDriveNode(Node):
 
                 # reshape for 1D CNN input
                 combined_standardized = np.reshape(combined_standardized, (combined_standardized.shape[0], combined_standardized.shape[1], 1))
+                combined_standardized = combined_standardized.astype(np.float32)
 
                 # Model prediction
                 #predictions = self._model.predict(combined_standardized)
