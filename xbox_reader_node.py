@@ -70,7 +70,7 @@ class XboxControllerNode(Node):
         msg = Joy()
         msg.buttons = buttons
         self.publisher_.publish(msg)
-        self.get_logger().info(f'Button {button_name} was pressed.')
+        #self.get_logger().info(f'Button {button_name} was pressed.')
 
 def main(args=None):
     rclpy.init(args=args)
