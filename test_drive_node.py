@@ -193,7 +193,7 @@ class testDriveNode(Node):
 
             self._end_time = self.get_clock().now()
             call_age = (self._end_time - self._start_time).nanoseconds * 1e-9
-            self._custom_logger().info('Cycle age: {:.4f} seconds, Call age: {:.4f}, Message age: {:.4f} seconds', cycle_age,call_age,message_age)
+            self._custom_logger.info('Cycle age: {:.4f} seconds, Call age: {:.4f}, Message age: {:.4f} seconds', cycle_age,call_age,message_age)
             self._processing = False
        
     def joy_callback(self, msg):
