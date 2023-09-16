@@ -178,7 +178,8 @@ class testDriveNode(Node):
                 predictions = self._interpreter.get_tensor(self._output_details[0]['index'])
                 
                 self._X = predictions[0, 0]
-                self._Y = predictions[0, 1]
+                #self._Y = predictions[0, 1]
+                self._Y = -0.4
                 #self.get_logger().info('Predicted axes: "%s"' % predictions)
 
                 #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral + self._X * self.servo_ctl))
