@@ -118,7 +118,7 @@ class testDriveNode(Node):
         else:
             self._processing = True
             current_time = self.get_clock().now()
-            cycle_age = (self._end_time - current_time).nanoseconds * 1e-9
+            cycle_age = (current_time - self._end_time).nanoseconds * 1e-9
             message_time = Time.from_msg(msg.header.stamp)
             message_age = (current_time - message_time).nanoseconds * 1e-9
             self._start_time = current_time       
