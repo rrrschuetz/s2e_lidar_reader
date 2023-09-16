@@ -35,25 +35,25 @@ class testDriveNode(Node):
                 history=QoSHistoryPolicy.KEEP_LAST, 
                 reliability=QoSReliabilityPolicy.BEST_EFFORT,
                 durability=QoSDurabilityPolicy.VOLATILE)
-   
+
+        self._tf_control = False
         self._X = 0.0 
         self._Y = 0.0
         self._cx1 = 0
         self._cx2 = 0
         self._color = np.zeros(self.HPIX)
-        
-        # Initialize PCA9685
-        self._pwm = PCA9685()
-        self._pwm.set_pwm_freq(50)  # Set frequency to 50Hz
 
-        self.get_logger().info('calibrating ESC')
-        self._pwm.set_pwm(1, 0, self.neutral_pulse)
-        time.sleep(10)
-
+        # Initialize sense hat
         self._sense = SenseHat()
         self._sense.clear()
-        self._sense.show_message("OK", text_colour=[255, 0, 0])
         
+        # Initialize PCA9685
+        self.get_logger().info('calibrating ESC')
+        self._pwm = PCA9685()
+        self._pwm.set_pwm_freq(50)  # Set frequency to 50Hz
+        self._pwm.set_pwm(1, 0, self.neutral_pulse)
+        self._sense.show_message("ESC", text_colour=[0, 255, 0])
+
         self._counter = 0
         self._start_time = time.time()
         self._end_time = self._start_time
@@ -95,6 +95,9 @@ class testDriveNode(Node):
         self._input_details = self._interpreter.get_input_details()
         self._output_details = self._interpreter.get_output_details()
 
+        self._sense.show_message("OK", text_colour=[0, 255, 0])
+        self.get_logger().info('prediction model loaded')
+
     def setup_custom_logger(filename):
         logger = logging.getLogger('rclpy')
         logger.setLevel(logging.DEBUG)
@@ -112,6 +115,7 @@ class testDriveNode(Node):
         return logger
     
     def lidar_callback(self, msg):
+        if not self._tf_control: return
         if self._processing:
             self.get_logger().info('Scan skipped')
             return
@@ -194,13 +198,24 @@ class testDriveNode(Node):
             self._processing = False
        
     def joy_callback(self, msg):
-        #self.get_logger().info('Buttons: "%s"' % msg.buttons)
-        #self.get_logger().info('Axes: "%s"' % msg.axes)
+        self.get_logger().info('Buttons: "%s"' % msg.buttons)
+        self.get_logger().info('Axes: "%s"' % msg.axes)
+
+        # Check if 'A' button is pressed - switch on AI steering
+        if msg.buttons[0] == 1:  
+            self._tf_control = True        
+            self._sense.show_message("ON", text_colour=[0, 0, 255])
+            
+        # Check if 'B' button is pressed - switch off AI steering
+        if msg.buttons[1] == 1:  
+            self._tf_control = False
+            self._sense.show_message("OFF", text_colour=[0, 0, 255])
+
         self._X = msg.axes[2]
         self._Y = msg.axes[1]
         
-        self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+self._X*self.servo_ctl))
-        self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+self._Y*40))     
+        #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+self._X*self.servo_ctl))
+        #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+self._Y*40))     
         self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
         self._pwm.set_pwm(1, 0, int(self.neutral_pulse+self._Y*40))
 
