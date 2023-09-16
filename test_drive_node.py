@@ -94,7 +94,7 @@ class testDriveNode(Node):
         self._sense.show_message("OK", text_colour=[0, 255, 0])
         self.get_logger().info('prediction model loaded')
 
-    def setup_custom_logger(filename):
+    def setup_custom_logger(self, filename):
         logger = logging.getLogger('rclpy')
         logger.setLevel(logging.DEBUG)
     
