@@ -1,4 +1,5 @@
-import rclpy, math, time
+import rclpy, math
+from rclpy.time import Time
 from rclpy.node import Node
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDurabilityPolicy
@@ -11,7 +12,6 @@ import tensorflow as tf
 import pickle
 import logging
 from logging.handlers import RotatingFileHandler
-
 from Adafruit_PCA9685 import PCA9685
 
 class testDriveNode(Node):
@@ -56,8 +56,8 @@ class testDriveNode(Node):
         self._sense.show_message("ESC", text_colour=[0, 255, 0])
 
         self._counter = 0
-        self._start_time = time.time()
-        self._end_time = self._start_time
+        self._start_time = 0
+        self._end_time = self.get_clock().now()
 
         self._custom_logger = self.setup_custom_logger('/home/rrrschuetz/test/logfile.txt')
 
@@ -67,14 +67,12 @@ class testDriveNode(Node):
             self.lidar_callback,
             qos_profile
         )
-
         self.subscription_joy = self.create_subscription(
             Joy,
             'joy',
             self.joy_callback,
             qos_profile
         )
-        
         self.subscription_h7 = self.create_subscription(
             String,
             'openmv_topic',
@@ -87,7 +85,6 @@ class testDriveNode(Node):
             self._scaler = pickle.load(f)
             
         #self._model = tf.keras.models.load_model('/home/rrrschuetz/test/model')
-        
         self._interpreter = tf.lite.Interpreter(model_path="/home/rrrschuetz/test/model.tflite")
         self._interpreter.allocate_tensors()
         # Get input and output tensors information
@@ -120,8 +117,11 @@ class testDriveNode(Node):
             return
         else:
             self._processing = True
-            self._start_time = time.time()
-            
+            current_time = self.get_clock().now()
+            cycle_age = (self._end_time - current_time).nanoseconds * 1e-9
+            message_time = Time.from_msg(msg.header.stamp)
+            message_age = (current_time - message_time).nanoseconds * 1e-9
+            self._start_time = current_time       
             try:
                 # raw data
                 scan = np.array(msg.ranges)
@@ -191,11 +191,9 @@ class testDriveNode(Node):
             except ValueError as e:
                 self.get_logger().error('Model rendered nan: %s' % str(e))
 
-            self._end_time = time.time() 
-            #self.get_logger().info('Scans processed "%s"' % self._counter)
-            #self.get_logger().info('Cycle time: "%s" seconds' % (self._end_time-self._start_time))
-            self._custom_logger().info('Cycle time: "%s" seconds' % (self._end_time-self._start_time))
-            self._start_time = self._end_time
+            self._end_time = self.get_clock().now()
+            call_age = (self._end_time - self._start_time).nanoseconds * 1e-9
+            self._custom_logger().info('Cycle age: {:.4f} seconds, Call age: {:.4f}, Message age: {:.4f} seconds', cycle_age,call_age,message_age)
             self._processing = False
        
     def joy_callback(self, msg):
