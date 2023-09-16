@@ -18,8 +18,6 @@ class testDriveNode(Node):
     HPIX = 320
     HFOV = 70.8
     MIN_DIST = 0.15
-    MIN_SPEED = -0.50
-    MAX_SPEED = -0.80
     reverse_pulse = 204
     neutral_pulse = 307
     forward_pulse = 409
@@ -180,7 +178,7 @@ class testDriveNode(Node):
                 predictions = self._interpreter.get_tensor(self._output_details[0]['index'])
                 
                 self._X = predictions[0, 0]
-                self._Y = min(max(predictions[0, 1],self.MAX_SPEED),self.MIN_SPEED)
+                self._Y = predictions[0, 1]
                 #self.get_logger().info('Predicted axes: "%s"' % predictions)
 
                 #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral + self._X * self.servo_ctl))
