@@ -200,17 +200,17 @@ class testDriveNode(Node):
         self.get_logger().info('Buttons: "%s"' % msg.buttons)
         self.get_logger().info('Axes: "%s"' % msg.axes)
 
-        # Check if 'A' button is pressed - switch on AI steering
-        if msg.buttons[0] == 1:  
-            self._tf_control = True        
-            self._sense.show_message("ON", text_colour=[0, 0, 255])
-            
-        # Check if 'B' button is pressed - switch off AI steering
-        if msg.buttons[1] == 1:  
-            self._tf_control = False
-            self._sense.show_message("OFF", text_colour=[0, 0, 255])
+        if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
+            # Check if 'A' button is pressed - switch on AI steering
+            if msg.buttons[0] == 1:
+                self._tf_control = True
+                self._sense.show_message("ON", text_colour=[0, 0, 255])
+            # Check if 'B' button is pressed - switch off AI steering
+            if msg.buttons[1] == 1:
+                self._tf_control = False
+                self._sense.show_message("OFF", text_colour=[0, 0, 255])
 
-        if hasattr(msg, 'axes') and len(msg.axes) > 2:
+        elif hasattr(msg, 'axes') and len(msg.axes) > 2:
             self._X = msg.axes[2]
             self._Y = msg.axes[1]
 
