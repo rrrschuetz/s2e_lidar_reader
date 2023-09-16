@@ -183,7 +183,7 @@ class testDriveNode(Node):
 
                 #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral + self._X * self.servo_ctl))
                 #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse + self._Y * 40))
-                self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
+                self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl*0.8))
                 self._pwm.set_pwm(1, 0, int(self.neutral_pulse+self._Y*40))
         
             except ValueError as e:
@@ -191,7 +191,7 @@ class testDriveNode(Node):
 
             self._end_time = self.get_clock().now()
             call_age = (self._end_time - self._start_time).nanoseconds * 1e-9
-            self._custom_logger.info('Cycle age: %.4f seconds, Call age: %.4f, Message age: %.4f seconds', cycle_age, call_age, message_age)
+            #self._custom_logger.info('Cycle age: %.4f seconds, Call age: %.4f, Message age: %.4f seconds', cycle_age, call_age, message_age)
 
             self._processing = False
        
