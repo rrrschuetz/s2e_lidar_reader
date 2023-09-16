@@ -35,7 +35,8 @@ class testDriveNode(Node):
                 history=QoSHistoryPolicy.KEEP_LAST, 
                 reliability=QoSReliabilityPolicy.BEST_EFFORT,
                 durability=QoSDurabilityPolicy.VOLATILE)
-
+            
+        self._processing = False
         self._tf_control = False
         self._X = 0.0 
         self._Y = 0.0
@@ -79,9 +80,7 @@ class testDriveNode(Node):
             'openmv_topic',
             self.openmv_h7_callback,
             qos_profile)
-        
-        self._processing = False
-    
+      
         # Load the trained model and the scaler
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
         with open('/home/rrrschuetz/test/scaler.pkl', 'rb') as f:
@@ -134,10 +133,12 @@ class testDriveNode(Node):
                 min_section_index = np.argmin(section_means)
                 #self.get_logger().info('Min distance: "%s"' % section_means[min_section_index])
                 if section_means[min_section_index] < self.MIN_DIST:
+                    self._tf_control = False
+                    self._processing = False
                     self._pwm.set_pwm(0, 0, int(self.servo_neutral))
                     self._pwm.set_pwm(1, 0, int(self.neutral_pulse))
+                    self._sense.show_message("STOP", text_colour=[255, 0, 0])
                     self.get_logger().info('Emergency brake active: "%s"' % min_section_index)
-                    self._processing = False
                     return
         
                 scan[scan == np.inf] = np.nan
