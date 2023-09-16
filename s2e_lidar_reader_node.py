@@ -137,9 +137,9 @@ class s2eLidarReaderNode(Node):
     def joy_callback(self, msg):
         #self.get_logger().info('Buttons: "%s"' % msg.buttons)
         #self.get_logger().info('Axes: "%s"' % msg.axes)
-
-        self._X = msg.axes[2]
-        self._Y = msg.axes[1]
+        if hasattr(msg, 'axes') and len(msg.axes) > 2:
+            self._X = msg.axes[2]
+            self._Y = msg.axes[1]
         
         #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+self._X*self.servo_ctl))
         #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+self._Y*40))

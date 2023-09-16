@@ -210,9 +210,10 @@ class testDriveNode(Node):
             self._tf_control = False
             self._sense.show_message("OFF", text_colour=[0, 0, 255])
 
-        self._X = msg.axes[2]
-        self._Y = msg.axes[1]
-        
+        if hasattr(msg, 'axes') and len(msg.axes) > 2:
+            self._X = msg.axes[2]
+            self._Y = msg.axes[1]
+
         #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+self._X*self.servo_ctl))
         #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+self._Y*40))     
         self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
