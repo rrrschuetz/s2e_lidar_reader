@@ -209,12 +209,12 @@ class testDriveNode(Node):
                 self._tf_control = False
                 self._sense.show_message("OFF", text_colour=[0, 0, 255])
             # Check if 'X' button is pressed - trim right
-            elif msg.buttons[1] == 1:
+            elif msg.buttons[2] == 1:
                 self._Xtrim += 0.05
                 self._sense.show_message(">>", text_colour=[0, 255, 0])
                 self.get_logger().info('X Trim: "%s"' % self._Xtrim)    
             # Check if 'Y' button is pressed - trim left
-            elif msg.buttons[1] == 1:
+            elif msg.buttons[3] == 1:
                 self._Xtrim -= 0.05
                 self._sense.show_message("<<", text_colour=[0, 255, 0])
                 self.get_logger().info('X Trim: "%s"' % self._Xtrim)
