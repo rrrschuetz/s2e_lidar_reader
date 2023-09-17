@@ -38,6 +38,8 @@ class testDriveNode(Node):
         self._tf_control = False
         self._X = 0.0 
         self._Y = 0.0
+        self._Xtrim = 0.0
+        self._Ytrim = 0.0
         self._cx1 = 0
         self._cx2 = 0
         self._color = np.zeros(self.HPIX)
@@ -182,10 +184,10 @@ class testDriveNode(Node):
                 self._Y = -0.4
                 #self.get_logger().info('Predicted axes: "%s"' % predictions)
 
-                #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral + self._X * self.servo_ctl))
-                #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse + self._Y * 40))
-                self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
-                self._pwm.set_pwm(1, 0, int(self.neutral_pulse+self._Y*40))
+                #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral + (self._X + self._Xtrim) * self.servo_ctl))
+                #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse + (self._Y + self.Ytrim) * 40))
+                self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl))
+                self._pwm.set_pwm(1, 0, int(self.neutral_pulse+(self._Y+self._Ytrim)*40))
         
             except ValueError as e:
                 self.get_logger().error('Model rendered nan: %s' % str(e))
@@ -203,18 +205,28 @@ class testDriveNode(Node):
                 self._tf_control = True
                 self._sense.show_message("ON", text_colour=[0, 0, 255])
             # Check if 'B' button is pressed - switch off AI steering
-            if msg.buttons[1] == 1:
+            elif msg.buttons[1] == 1:
                 self._tf_control = False
                 self._sense.show_message("OFF", text_colour=[0, 0, 255])
+            # Check if 'X' button is pressed - trim right
+            elif msg.buttons[1] == 1:
+                self._Xtrim += 0.05
+                self._sense.show_message(">>", text_colour=[0, 255, 0])
+                self.get_logger().info('X Trim: "%s"' % self._Xtrim)    
+            # Check if 'Y' button is pressed - trim left
+            elif msg.buttons[1] == 1:
+                self._Xtrim -= 0.05
+                self._sense.show_message("<<", text_colour=[0, 255, 0])
+                self.get_logger().info('X Trim: "%s"' % self._Xtrim)
 
         elif hasattr(msg, 'axes') and len(msg.axes) > 2:
             self._X = msg.axes[2]
             self._Y = msg.axes[1]
 
-        #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+self._X*self.servo_ctl))
-        #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+self._Y*40))     
-        self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
-        self._pwm.set_pwm(1, 0, int(self.neutral_pulse+self._Y*40))
+        #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl))
+        #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+(self._Y+self._Ytrim)*40))     
+        self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl))
+        self._pwm.set_pwm(1, 0, int(self.neutral_pulse+(self._Y+self._Ytrim)*40))
 
     def openmv_h7_callback(self, msg):
         blue = (0,0,255)
@@ -258,7 +270,6 @@ def main(args=None):
         test_drive_node.destroy_node()
         rclpy.shutdown()
         
-
 if __name__ == '__main__':
     main()
 
