@@ -25,14 +25,13 @@ while True:
     img.laplacian(2, sharpen=True)
 
     bloblist = ""
-    blobs = img.find_blobs(thresholds,0,roi,pixels_threshold="==, merge=True)
+    blobs = img.find_blobs(thresholds,0,roi,pixels_threshold=200, merge=True)
     for blob in blobs:
         img.draw_rectangle(blob.rect())
         img.draw_cross(blob.cx(), blob.cy())
         (b_x,_,b_w,_) = blob.rect()
-        b_c = blob.color()
-        bloblist += ','+"{},{},{}".format(b_c, b_x, b_x+b_w)
+        bloblist += ','+"{},{},{}".format(blob.code(), b_x, b_x+b_w)
 
-    uart.write(data_str)
-    print(data_str)
+    uart.write(bloblist)
+    print(bloblist)
     #time.sleep(0.05)
