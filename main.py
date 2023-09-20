@@ -24,14 +24,15 @@ while True:
     img.gamma_corr(gamma = 1.0, contrast = 1.0, brightness = 0.2)
     img.laplacian(2, sharpen=True)
 
-    bloblist = ""
+    blob_entries = []
     blobs = img.find_blobs(thresholds,roi,pixels_threshold=200, merge=True)
     for blob in blobs:
         img.draw_rectangle(blob.rect())
         img.draw_cross(blob.cx(), blob.cy())
         (b_x,_,b_w,_) = blob.rect()
-        bloblist += ','+"{},{},{}".format(blob.code(), b_x, b_x+b_w)
+        blob_entries.append("{},{},{}".format(blob.code(), b_x, b_x+b_w))
 
+    bloblist = ','.join_blob_entries()
     uart.write(bloblist)
     print(bloblist)
     #time.sleep(0.05)
