@@ -25,7 +25,7 @@ while True:
     img.laplacian(2, sharpen=True)
 
     bloblist = ""
-    blobs = img.find_blobs(thresholds,0,roi,pixels_threshold=200, merge=True)
+    blobs = img.find_blobs(thresholds,roi,pixels_threshold=200, merge=True)
     for blob in blobs:
         img.draw_rectangle(blob.rect())
         img.draw_cross(blob.cx(), blob.cy())
