@@ -1,5 +1,3 @@
-# module main.py for s2e_slidar_reader
-
 import sensor, image, time, math, pyb, lcd
 
 uart = pyb.UART(3,115200)
@@ -11,44 +9,30 @@ sensor.set_auto_gain(False) # must be turned off for color tracking
 sensor.set_auto_whitebal(False) # must be turned off for color tracking
 sensor.skip_frames(time = 2000)
 
+yellow = (76, 86, 10, -15, 67, 35)
+red = (58, 36, 58, 33, 54, -1)
+green = (37, 52, -39, -27, 37, 17)
+blue = (31, 92, -19, 6, -64, -17)
+white = (82, 100, -22, 2, 43, 5)
+black = (18, 30, -30, -5, 38, -10)
+
+thresholds=[yellow, red, green, blue, white, black]
 roi = [0,0,320,200]
-thresholds_amber=[(79, 58, 29, 4, 20, 77),(82, 18, 33, 16, 27, 76)]
-thresholds_red=[(23, 63, 7, 56, 2, 49)]
-thresholds_white = [(100, 73, -15, 4, -15, 4)]
-thresholds_blue = [(31, 92, -19, 6, -64, -17)]
 
 while True:
     img = sensor.snapshot()
     img.gamma_corr(gamma = 1.0, contrast = 1.0, brightness = 0.2)
     img.laplacian(2, sharpen=True)
 
-    a_pix = 0
-    r_pix = 0
-
-    blobs = img.find_blobs(thresholds_blue,0,roi,pixels_threshold=30, merge=True)
-    if blobs:
-        blobs.sort(key=lambda b: -b.pixels())
-        img.draw_rectangle(blobs[0].rect())
-        img.draw_cross(blobs[0].cx(), blobs[0].cy())
-        (a_x,_,a_w,_) = blobs[0].rect()
-        a_pix=blobs[0].pixels()
-
-    blobs = img.find_blobs(thresholds_amber,0,roi,pixels_threshold=30, merge=True)
-    if blobs:
-        blobs.sort(key=lambda b: -b.pixels())
-        img.draw_rectangle(blobs[0].rect())
-        img.draw_cross(blobs[0].cx(), blobs[0].cy())
-        (r_x,_,r_w,_) = blobs[0].rect()
-        r_pix=blobs[0].pixels()
-
-    if a_pix != 0 and a_pix >= r_pix:
-        data_str = "{},{},{}".format(1.0, a_x, a_x+a_w)
-    elif r_pix != 0 and r_pix >= a_pix:
-        data_str = "{},{},{}".format(2.0, r_x, r_x+r_w)
-    else:
-        data_str = "{},{},{}".format(0.0, 0, 0)
+    bloblist = ""
+    blobs = img.find_blobs(thresholds,0,roi,pixels_threshold="==, merge=True)
+    for blob in blobs:
+        img.draw_rectangle(blob.rect())
+        img.draw_cross(blob.cx(), blob.cy())
+        (b_x,_,b_w,_) = blob.rect()
+        b_c = blob.color()
+        bloblist += ','+"{},{},{}".format(b_c, b_x, b_x+b_w)
 
     uart.write(data_str)
     print(data_str)
-
-    time.sleep(0.05)
+    #time.sleep(0.05)
