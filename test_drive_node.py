@@ -229,32 +229,18 @@ class testDriveNode(Node):
         self._pwm.set_pwm(1, 0, int(self.neutral_pulse+(self._Y+self._Ytrim)*40))
 
     def openmv_h7_callback(self, msg):
-        blue = (0,0,255)
-        red = (255,0,0)
-
         self._color = np.zeros(self.HPIX)
-        #self.get_logger().info('blob detected: %s' % msg.data)
-        try:
-            color, x1, x2 = msg.data.split(',')
-            cx1 = int(x1)
-            cx2 = int(x2)
-            fcol = float(color)
+        data = msg.data.split(',')
+        blobs = [data[i],data[i+1],data[i+2]) for i in range (0,len(data),3)]
+        for blob in blobs:
+            color, x1, x2 = blob
+            #cx1 = int(x1)
+            #cx2 = int(x2)
+            fcol = float(color+1)
             if fcol > 0.0:
-                #self._color[cx1:cx2+1] = fcol
-                #self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
-                # sense hat
-                pixcol = blue if fcol == 1.0 else red
-                if cx1 != self._cx1 or cx2 != self._cx2: self._sense.clear()
-                for i in range(int(cx1/40),int(cx2/40)+1):
-                    self._sense.set_pixel(0,min(i,7),pixcol)
-                    self._sense.set_pixel(1,min(i,7),pixcol)
-                self._cx1 = cx1
-                self._cx2 = cx2
-
-        except (SyntaxError) as e:
-            self.get_logger().error('Failed to get blob coordinates: %s' % str(e))
-
-
+                self._color[x1:x2+1] = fcol
+                self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
+   
 def main(args=None):
     rclpy.init(args=args)
     test_drive_node = testDriveNode()
