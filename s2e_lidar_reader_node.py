@@ -157,9 +157,6 @@ class s2eLidarReaderNode(Node):
                 self._color[x1:x2+1] = fcol
                 self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
 
-        except (SyntaxError) as e:
-            self.get_logger().error('Failed to get blob coordinates: %s' % str(e))
-
 def main(args=None):
     rclpy.init(args=args)
     lidar_reader_node = s2eLidarReaderNode()
