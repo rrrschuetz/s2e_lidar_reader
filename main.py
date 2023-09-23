@@ -16,7 +16,7 @@ blue = (31, 92, -19, 6, -64, -17)
 white = (82, 100, -22, 2, 43, 5)
 black = (18, 30, -30, -5, 38, -10)
 
-thresholds=[yellow, red, green, blue, white, black]
+thresholds=[yellow, red, green, blue]
 roi = [0,0,320,200]
 
 while True:
@@ -25,14 +25,14 @@ while True:
     img.laplacian(2, sharpen=True)
 
     blob_entries = []
-    blobs = img.find_blobs(thresholds,roi,pixels_threshold=200, merge=True)
+    blobs = img.find_blobs(thresholds,0,roi,pixels_threshold=200, merge=True)
     for blob in blobs:
         img.draw_rectangle(blob.rect())
         img.draw_cross(blob.cx(), blob.cy())
         (b_x,_,b_w,_) = blob.rect()
         blob_entries.append("{},{},{}".format(blob.code(), b_x, b_x+b_w))
 
-    bloblist = ','.join_blob_entries()
+    bloblist = ','.join(blob_entries)
     uart.write(bloblist)
     print(bloblist)
     #time.sleep(0.05)
