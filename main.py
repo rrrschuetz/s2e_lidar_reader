@@ -5,13 +5,16 @@ uart = pyb.UART(3,115200)
 sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
-sensor.set_auto_gain(False) # must be turned off for color tracking
-sensor.set_auto_whitebal(False) # must be turned off for color tracking
+sensor.set_auto_gain(True) # must be turned off for color tracking
+sensor.set_auto_whitebal(True) # must be turned off for color tracking
 sensor.skip_frames(time = 2000)
 
-yellow = (76, 86, 10, -15, 67, 35)
-red = (58, 36, 58, 33, 54, -1)
-green = (37, 52, -39, -27, 37, 17)
+#yellow = (76, 86, 10, -15, 67, 35)
+yellow = (95,100,-24,2,12,46)
+#red = (58, 36, 58, 33, 54, -1)
+red = (44,100,35,77,-9,31)
+#green = (37, 52, -39, -27, 37, 17)
+green = (52,100,-63,-26,-128,59)
 blue = (31, 92, -19, 6, -64, -17)
 white = (82, 100, -22, 2, 43, 5)
 black = (18, 30, -30, -5, 38, -10)
@@ -20,6 +23,7 @@ black = (18, 30, -30, -5, 38, -10)
 thresholds=[yellow, red, green, blue]
 roi = [0,0,320,200]
 
+counter = 0
 while True:
     img = sensor.snapshot()
     img.gamma_corr(gamma = 1.0, contrast = 1.0, brightness = 0.2)
@@ -35,6 +39,10 @@ while True:
 
     bloblist = ','.join(blob_entries)
     if bloblist:
+        img.save("/image."+str(counter).zfill(3)+".jpg")
+        counter += 1
+        if counter > 999: counter = 0
         uart.write(bloblist)
         print(bloblist)
-    #time.sleep(0.05)
+    
+    time.sleep(0.05)
