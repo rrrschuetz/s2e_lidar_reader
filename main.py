@@ -16,6 +16,7 @@ blue = (31, 92, -19, 6, -64, -17)
 white = (82, 100, -22, 2, 43, 5)
 black = (18, 30, -30, -5, 38, -10)
 
+
 thresholds=[yellow, red, green, blue]
 roi = [0,0,320,200]
 
