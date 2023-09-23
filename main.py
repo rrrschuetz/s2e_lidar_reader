@@ -34,6 +34,7 @@ while True:
         blob_entries.append("{},{},{}".format(blob.code(), b_x, b_x+b_w))
 
     bloblist = ','.join(blob_entries)
-    uart.write(bloblist)
-    print(bloblist)
+    if bloblist:
+        uart.write(bloblist)
+        print(bloblist)
     #time.sleep(0.05)
