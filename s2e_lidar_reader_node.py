@@ -145,7 +145,7 @@ class s2eLidarReaderNode(Node):
         self._pwm.set_pwm(1, 0, int(self.neutral_pulse+self._Y*40))
 
     def openmv_h7_callback(self, msg):
-        self.get_logger().info('cam msg received: "%s"' % msg)
+        #self.get_logger().info('cam msg received: "%s"' % msg)
         self._color = np.zeros(self.HPIX)
         data = msg.data.split(',')
         if not msg.data:
@@ -162,7 +162,7 @@ class s2eLidarReaderNode(Node):
             cx2 = int(x2)
             fcol = float(color)+1.0
             if fcol > 0.0:
-                self._color[x1:x2+1] = fcol
+                self._color[cx1:cx2+1] = fcol
                 self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
 
 def main(args=None):

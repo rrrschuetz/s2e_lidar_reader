@@ -229,18 +229,26 @@ class testDriveNode(Node):
         self._pwm.set_pwm(1, 0, int(self.neutral_pulse+(self._Y+self._Ytrim)*40))
 
     def openmv_h7_callback(self, msg):
+        #self.get_logger().info('cam msg received: "%s"' % msg)
         self._color = np.zeros(self.HPIX)
         data = msg.data.split(',')
-        blobs = [data[i],data[i+1],data[i+2]) for i in range (0,len(data),3)]
+        if not msg.data:
+            self.get_logger().warning("Received empty message!")
+            return
+        if len(data) % 3 != 0:
+            self.get_logger().error("Data length is not divisible by 3!")
+            return
+
+        blobs = ((data[i],data[i+1],data[i+2]) for i in range (0,len(data),3))
         for blob in blobs:
             color, x1, x2 = blob
-            #cx1 = int(x1)
-            #cx2 = int(x2)
-            fcol = float(color+1)
+            cx1 = int(x1)
+            cx2 = int(x2)
+            fcol = float(color)+1.0
             if fcol > 0.0:
-                self._color[x1:x2+1] = fcol
+                self._color[cx1:cx2+1] = fcol
                 self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
-   
+
 def main(args=None):
     rclpy.init(args=args)
     test_drive_node = testDriveNode()
