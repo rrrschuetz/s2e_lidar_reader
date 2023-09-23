@@ -160,7 +160,7 @@ class s2eLidarReaderNode(Node):
             color, x1, x2 = blob
             cx1 = int(x1)
             cx2 = int(x2)
-            fcol = float(color+1)
+            fcol = float(color)+1.0
             if fcol > 0.0:
                 self._color[x1:x2+1] = fcol
                 self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
