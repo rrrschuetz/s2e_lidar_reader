@@ -39,10 +39,11 @@ while True:
 
     bloblist = ','.join(blob_entries)
     if bloblist:
-        img.save("/image."+str(counter).zfill(3)+".jpg")
+        filename = "image."+str(counter)+".jpg"
+        #img.save(filename)
         counter += 1
         if counter > 999: counter = 0
         uart.write(bloblist)
         print(bloblist)
-    
+
     time.sleep(0.05)
