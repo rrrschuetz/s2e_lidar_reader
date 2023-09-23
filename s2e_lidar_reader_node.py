@@ -149,7 +149,7 @@ class s2eLidarReaderNode(Node):
         self._color = np.zeros(self.HPIX)
         data = msg.data.split(',')
         if not msg.data:
-            #self.get_logger().warning("Received empty message!")
+            self.get_logger().warning("Received empty message!")
             return
         if len(data) % 3 != 0:
             self.get_logger().error("Data length is not divisible by 3!")
