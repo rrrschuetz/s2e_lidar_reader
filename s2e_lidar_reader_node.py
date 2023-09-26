@@ -146,6 +146,10 @@ class s2eLidarReaderNode(Node):
 
     def openmv_h7_callback(self, msg):
         #self.get_logger().info('cam msg received: "%s"' % msg)
+        if msg.data == "TARGET":
+            self.get_logger().info("Target line crossing")
+            return
+            
         self._color = np.zeros(self.HPIX)
         data = msg.data.split(',')
         if not msg.data:
