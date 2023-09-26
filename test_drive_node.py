@@ -236,6 +236,7 @@ class testDriveNode(Node):
     def openmv_h7_callback(self, msg):
         #self.get_logger().info('cam msg received: "%s"' % msg)
         if msg.data == "TARGET":
+            return
             self._loop_end = self.get_clock().now()
             loop_age = (self._loop_end - self._loop_start).nanoseconds * 1e-9
             self._loop_start = self._loop_end
