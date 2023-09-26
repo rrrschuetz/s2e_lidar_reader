@@ -21,7 +21,7 @@ black = (18, 30, -30, -5, 38, -10)
 silver = (100, 255, 0, 64, 0, 64)
 
 thresholds=[yellow, red, green, blue]
-roi = [0,0,320,200]
+roi = [0,100,320,100]
 
 counter = 0
 while True:
@@ -50,7 +50,7 @@ while True:
 
     gray_img = img.to_grayscale()
     gray_img.binary([silver])
-    lines = gray_img.find_lines(threshold=2000)
+    lines = gray_img.find_lines(threshold=4000)
     for l in lines:
         if abs(l.theta()) < 10:
             img.draw_line(l.line(),color=255)
