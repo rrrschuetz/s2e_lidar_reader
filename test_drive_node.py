@@ -38,6 +38,7 @@ class testDriveNode(Node):
         self._tf_control = False
         self._X = 0.0 
         self._Y = 0.0
+        self._Yover = 0.0     # Y overdrive
         self._Xtrim = 0.0
         self._Ytrim = 0.0
         self._cx1 = 0
@@ -187,7 +188,7 @@ class testDriveNode(Node):
                 #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral + (self._X + self._Xtrim) * self.servo_ctl))
                 #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse + (self._Y + self.Ytrim) * 40))
                 self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl))
-                self._pwm.set_pwm(1, 0, int(self.neutral_pulse+(self._Y+self._Ytrim)*40))
+                self._pwm.set_pwm(1, 0, int(self.neutral_pulse+(self._Y+self._Ytrim+self._Yover*2)*40))
         
             except ValueError as e:
                 self.get_logger().error('Model rendered nan: %s' % str(e))
@@ -222,6 +223,7 @@ class testDriveNode(Node):
         elif hasattr(msg, 'axes') and len(msg.axes) > 2:
             self._X = msg.axes[2]
             self._Y = msg.axes[1]
+            self._Yover = msg.axes[3]
 
         #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl))
         #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+(self._Y+self._Ytrim)*40))     
