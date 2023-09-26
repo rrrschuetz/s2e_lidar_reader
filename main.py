@@ -18,13 +18,14 @@ green = (52,100,-63,-26,-128,59)
 blue = (31, 92, -19, 6, -64, -17)
 white = (82, 100, -22, 2, 43, 5)
 black = (18, 30, -30, -5, 38, -10)
-
+silver = (100, 255, 0, 64, 0, 64)
 
 thresholds=[yellow, red, green, blue]
 roi = [0,0,320,200]
 
 counter = 0
 while True:
+    time.sleep(0.05)
     img = sensor.snapshot()
     img.gamma_corr(gamma = 1.0, contrast = 1.0, brightness = 0.2)
     img.laplacian(2, sharpen=True)
@@ -45,5 +46,15 @@ while True:
         if counter > 999: counter = 0
         uart.write(bloblist)
         print(bloblist)
+        continue
 
-    time.sleep(0.05)
+    gray_img = img.to_grayscale()
+    gray_img.binary([silver])
+    lines = gray_img.find_lines(threshold=1000)
+    for l in lines:
+        if abs(l.theta()) < 10:
+            img.draw_line(l.line()),color=255)
+            uart.write("TARGET")
+            print("TARGET")
+            continue
+    
