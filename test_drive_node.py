@@ -59,6 +59,8 @@ class testDriveNode(Node):
         self._counter = 0
         self._start_time = 0
         self._end_time = self.get_clock().now()
+        self._loop_start = 0
+        self._loop_end = 0
 
         self._custom_logger = self.setup_custom_logger('/home/rrrschuetz/test/logfile.txt')
 
@@ -232,6 +234,13 @@ class testDriveNode(Node):
 
     def openmv_h7_callback(self, msg):
         #self.get_logger().info('cam msg received: "%s"' % msg)
+        if msg.data == "TARGET":
+            self._loop_end = self.get_clock().now()
+            loop_age = (self._loop_end - self._loop_start).nanoseconds * 1e-9
+            self._loop_start = self._loop_end
+            self.get_logger().info('Target line crossing, loop time %s' % loop_age)
+            return
+            
         self._color = np.zeros(self.HPIX)
         data = msg.data.split(',')
         if not msg.data:
