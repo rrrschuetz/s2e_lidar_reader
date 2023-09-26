@@ -223,7 +223,7 @@ class testDriveNode(Node):
                 self._sense.show_message("<<", text_colour=[0, 255, 0])
                 self.get_logger().info('X Trim: "%s"' % self._Xtrim)
 
-        elif hasattr(msg, 'axes') and len(msg.axes) > 2:
+        elif hasattr(msg, 'axes') and len(msg.axes) > 5:
             self._X = msg.axes[2]
             self._Y = msg.axes[1]
             self._Yover = msg.axes[5]
