@@ -19,9 +19,13 @@ class XboxControllerNode(Node):
             ecodes.ABS_X: 0,  # left stick horizontal
             ecodes.ABS_Y: 1,  # left stick vertical
             ecodes.ABS_Z: 2,  # left trigger
-            ecodes.ABS_RZ: 3  # right trigger
+            ecodes.ABS_RX: 3, # right stick horizontal
+            ecodes.ABS_RY: 4, # right stick vertical
+            ecodes.ABS_RZ: 5, # right trigger
+            ecodes.ABS_HATOX: 6,
+            ecodes.ABS_HATOY: 7
         }
-        
+
         self.buttons = {
             ecodes.BTN_A: 'A',
             ecodes.BTN_B: 'B',
