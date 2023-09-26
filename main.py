@@ -50,11 +50,11 @@ while True:
 
     gray_img = img.to_grayscale()
     gray_img.binary([silver])
-    lines = gray_img.find_lines(threshold=1000)
+    lines = gray_img.find_lines(threshold=2000)
     for l in lines:
         if abs(l.theta()) < 10:
-            img.draw_line(l.line()),color=255)
+            img.draw_line(l.line(),color=255)
             uart.write("TARGET")
             print("TARGET")
             continue
-    
+
