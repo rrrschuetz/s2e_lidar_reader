@@ -57,10 +57,11 @@ class testDriveNode(Node):
         self._sense.show_message("ESC", text_colour=[0, 255, 0])
 
         self._counter = 0
-        self._start_time = 0
+        self._start_time = self.get_clock().now()
         self._end_time = self.get_clock().now()
-        self._loop_start = 0
-        self._loop_end = 0
+
+        self._loop_start = self.get_clock().now()
+        self._loop_end = self.get_clock().now()
 
         self._custom_logger = self.setup_custom_logger('/home/rrrschuetz/test/logfile.txt')
 
@@ -225,7 +226,7 @@ class testDriveNode(Node):
         elif hasattr(msg, 'axes') and len(msg.axes) > 2:
             self._X = msg.axes[2]
             self._Y = msg.axes[1]
-            self._Yover = msg.axes[3]
+            self._Yover = msg.axes[5]
 
         #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl))
         #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+(self._Y+self._Ytrim)*40))     
