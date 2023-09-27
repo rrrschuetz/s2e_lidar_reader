@@ -1,11 +1,6 @@
 import sensor, image, time, math, pyb, lcd, os
 
-# Initialize the SD card
-if not os.listdir('/sd'):
-    raise Exception("No SD card detected!")
 save_dir = "/sd/saved_images/"
-if not os.path.exists(save_dir):
-    os.mkdir(save_dir)
 
 uart = pyb.UART(3,115200)
 sensor.reset()
@@ -27,7 +22,7 @@ black = (18, 30, -30, -5, 38, -10)
 silver = (100, 255, 0, 64, 0, 64)
 
 thresholds=[yellow, red, green, blue]
-roi = [0,100,320,100]
+roi = [0,0,320,100]
 
 def save_image_to_sd(img, counter):
     try:
@@ -39,7 +34,7 @@ def save_image_to_sd(img, counter):
 
 def clear_directory(directory):
     for filename in os.listdir(directory):
-        file_path = os.path.join(directory, filename)
+        file_path = directory + filename
         if os.path.isfile(file_path) or os.path.islink(file_path):
             os.remove(file_path)
         elif os.path.isdir(file_path):
