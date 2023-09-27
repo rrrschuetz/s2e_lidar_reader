@@ -40,7 +40,7 @@ def clear_directory(directory):
         elif os.path.isdir(file_path):
             os.rmdir(file_path)  # This only removes empty directories
 
-clear_directory(save_dir)
+#clear_directory(save_dir)
 
 counter = 0
 while True:
@@ -66,7 +66,8 @@ while True:
         print(bloblist)
         continue
 
-    gray_img = img.to_grayscale()
+    gray_img = img
+    gray_img.to_grayscale()
     gray_img.binary([silver])
     lines = gray_img.find_lines(threshold=4000)
     for l in lines:
