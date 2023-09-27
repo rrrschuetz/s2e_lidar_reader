@@ -42,7 +42,7 @@ class XboxControllerNode(Node):
 
     def run(self):
         self.get_logger().info('Start reading events from the Xbox controller.')
-        axes = [0.0]*4
+        axes = [0.0]*6
         buttons = [0]*11 
 
         for event in self.device.read_loop():
