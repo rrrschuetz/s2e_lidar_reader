@@ -1,7 +1,13 @@
-import sensor, image, time, math, pyb, lcd
+import sensor, image, time, math, pyb, lcd, os
+
+# Initialize the SD card
+if not os.listdir('/sd'):
+    raise Exception("No SD card detected!")
+save_dir = "/sd/saved_images/"
+if not os.path.exists(save_dir):
+    os.mkdir(save_dir)
 
 uart = pyb.UART(3,115200)
-
 sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
@@ -23,6 +29,24 @@ silver = (100, 255, 0, 64, 0, 64)
 thresholds=[yellow, red, green, blue]
 roi = [0,100,320,100]
 
+def save_image_to_sd(img, counter):
+    try:
+        filename = save_dir + "image_{}.jpg".format(counter)
+        img.save(filename)
+        print("Image saved to", filename)
+    except Exception as e:
+        print("Failed to save image:", e)
+
+def clear_directory(directory):
+    for filename in os.listdir(directory):
+        file_path = os.path.join(directory, filename)
+        if os.path.isfile(file_path) or os.path.islink(file_path):
+            os.remove(file_path)
+        elif os.path.isdir(file_path):
+            os.rmdir(file_path)  # This only removes empty directories
+
+clear_directory(save_dir)
+
 counter = 0
 while True:
     time.sleep(0.05)
@@ -40,8 +64,7 @@ while True:
 
     bloblist = ','.join(blob_entries)
     if bloblist:
-        filename = "image."+str(counter)+".jpg"
-        #img.save(filename)
+        save_image_to_sd(img, counter)
         counter += 1
         if counter > 999: counter = 0
         uart.write(bloblist)
@@ -54,6 +77,9 @@ while True:
     for l in lines:
         if abs(l.theta()) < 10:
             img.draw_line(l.line(),color=255)
+            save_image_to_sd(img, counter)
+            counter += 1
+            if counter > 999: counter = 0
             uart.write("TARGET")
             print("TARGET")
             continue
