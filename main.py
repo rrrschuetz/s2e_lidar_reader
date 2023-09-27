@@ -33,7 +33,7 @@ def save_image_to_sd(img, counter):
     try:
         filename = save_dir + "image_{}.jpg".format(counter)
         img.save(filename)
-        print("Image saved to", filename)
+        #print("Image saved to", filename)
     except Exception as e:
         print("Failed to save image:", e)
 
