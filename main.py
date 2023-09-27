@@ -66,13 +66,14 @@ while True:
         print(bloblist)
         continue
 
-    gray_img = img
+    gray_img = img.copy()
     gray_img.to_grayscale()
     gray_img.binary([silver])
     lines = gray_img.find_lines(threshold=4000)
     for l in lines:
         if abs(l.theta()) < 10:
-            img.draw_line(l.line(),color=255)
+            #img.draw_line(l.line(),color=255)
+            img.draw_line(l.line(), color=(0, 0, 255))
             save_image_to_sd(img, counter)
             counter += 1
             if counter > 999: counter = 0
