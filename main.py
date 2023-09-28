@@ -1,6 +1,12 @@
 import sensor, image, time, math, pyb, lcd, os
 
-save_dir = "/sd/saved_images/"
+# Initialize the SD card
+#if not os.listdir('/sd'):
+#    raise Exception("No SD card detected!")
+
+save_dir = "/sd/saved_images"
+#if not os.path.exists(save_dir):
+#    os.mkdir(save_dir)
 
 uart = pyb.UART(3,115200)
 sensor.reset()
@@ -24,6 +30,9 @@ silver = (100, 255, 0, 64, 0, 64)
 thresholds=[yellow, red, green, blue]
 roi = [0,0,320,100]
 
+min_degree = 60
+max_degree = 120
+
 def save_image_to_sd(img, counter):
     try:
         filename = save_dir + "image_{}.jpg".format(counter)
@@ -32,27 +41,18 @@ def save_image_to_sd(img, counter):
     except Exception as e:
         print("Failed to save image:", e)
 
-def clear_directory(directory):
-    for filename in os.listdir(directory):
-        file_path = directory + filename
-        if os.path.isfile(file_path) or os.path.islink(file_path):
-            os.remove(file_path)
-        elif os.path.isdir(file_path):
-            os.rmdir(file_path)  # This only removes empty directories
-
-#clear_directory(save_dir)
-
 counter = 0
 while True:
     time.sleep(0.05)
     img = sensor.snapshot()
+    img.lens_corr(strength=2.6, zoom=1.0)
     img.gamma_corr(gamma = 1.0, contrast = 1.0, brightness = 0.2)
     img.laplacian(2, sharpen=True)
 
     blob_entries = []
     blobs = img.find_blobs(thresholds,0,roi,pixels_threshold=200, merge=True)
     for blob in blobs:
-        img.draw_rectangle(blob.rect())
+        img.draw_rectangle(blob.rect(),color=(0,0,255),thickness=5)
         img.draw_cross(blob.cx(), blob.cy())
         (b_x,_,b_w,_) = blob.rect()
         blob_entries.append("{},{},{}".format(blob.code(), b_x, b_x+b_w))
@@ -66,18 +66,17 @@ while True:
         print(bloblist)
         continue
 
-    gray_img = img.copy()
-    gray_img.to_grayscale()
-    gray_img.binary([silver])
-    lines = gray_img.find_lines(threshold=4000)
-    for l in lines:
-        if abs(l.theta()) < 10:
-            #img.draw_line(l.line(),color=255)
-            img.draw_line(l.line(), color=(0, 0, 255))
-            save_image_to_sd(img, counter)
-            counter += 1
-            if counter > 999: counter = 0
-            uart.write("TARGET")
-            print("TARGET")
-            continue
+    num_lines = 0
+    for l in img.find_lines(roi,threshold=2500, theta_margin=25, rho_margin=25):
+        if (min_degree <= l.theta()) and (l.theta() <= max_degree):
+            num_lines += 1
+            img.draw_line(l.line(), color=(0, 0, 255),thickness=5)
+
+    if num_lines > 0:
+        save_image_to_sd(img, counter)
+        counter += 1
+        if counter > 999: counter = 0
+        uart.write("TARGET")
+        print("TARGET")
+        continue
 
