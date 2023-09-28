@@ -1,12 +1,6 @@
 import sensor, image, time, math, pyb, lcd, os
 
-# Initialize the SD card
-#if not os.listdir('/sd'):
-#    raise Exception("No SD card detected!")
-
-save_dir = "/sd/saved_images"
-#if not os.path.exists(save_dir):
-#    os.mkdir(save_dir)
+save_dir = "/sd/saved_images/"
 
 uart = pyb.UART(3,115200)
 sensor.reset()
@@ -27,8 +21,8 @@ white = (82, 100, -22, 2, 43, 5)
 black = (18, 30, -30, -5, 38, -10)
 silver = (100, 255, 0, 64, 0, 64)
 
-thresholds=[yellow, red, green, blue]
-roi = [0,0,320,100]
+thresholds=[green, blue]
+roi = [0,0,320,200]
 
 min_degree = 60
 max_degree = 120
@@ -61,7 +55,7 @@ while True:
     if bloblist:
         save_image_to_sd(img, counter)
         counter += 1
-        if counter > 999: counter = 0
+        if counter > 99999: counter = 0
         uart.write(bloblist)
         print(bloblist)
         continue
@@ -75,7 +69,7 @@ while True:
     if num_lines > 0:
         save_image_to_sd(img, counter)
         counter += 1
-        if counter > 999: counter = 0
+        if counter > 99999: counter = 0
         uart.write("TARGET")
         print("TARGET")
         continue
