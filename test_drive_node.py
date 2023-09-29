@@ -185,7 +185,7 @@ class testDriveNode(Node):
                 
                 self._X = predictions[0, 0]
                 self._Y = predictions[0, 1]
-                #self._Y = -0.4
+                #self._Y = -0.8
                 #self.get_logger().info('Predicted axes: "%s"' % predictions)
 
                 #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral + (self._X + self._Xtrim) * self.servo_ctl))
