@@ -15,7 +15,8 @@ yellow = (95,100,-24,2,12,46)
 #red = (58, 36, 58, 33, 54, -1)
 red = (44,100,35,77,-9,31)
 #green = (37, 52, -39, -27, 37, 17)
-green = (52,100,-63,-26,-128,59)
+#green = (52,100,-63,-26,-128,59)
+green = (100, 26, -128, -29, 9, 80)
 blue = (31, 92, -19, 6, -64, -17)
 white = (82, 100, -22, 2, 43, 5)
 black = (18, 30, -30, -5, 38, -10)
@@ -24,8 +25,8 @@ silver = (100, 255, 0, 64, 0, 64)
 thresholds=[green, blue]
 roi = [0,0,320,200]
 
-min_degree = 60
-max_degree = 120
+min_degree = 70
+max_degree = 110
 
 def save_image_to_sd(img, counter):
     try:
