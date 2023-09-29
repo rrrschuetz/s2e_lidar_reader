@@ -228,8 +228,8 @@ class testDriveNode(Node):
             self._Y = msg.axes[1]
             self._Yover = msg.axes[5]
 
-        #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl))
-        #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+(self._Y+self._Ytrim)*40))     
+        self.get_logger().info('Steering: "%s"' % (self._X,self._Xtrim))
+        self.get_logger().info('Power: "%s"' % (self._Y,self._Ytrim,self._Yover))
         self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl))
         self._pwm.set_pwm(1, 0, int(self.neutral_pulse+(self._Y+self._Ytrim)*40))
 
