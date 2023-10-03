@@ -38,7 +38,7 @@ def save_image_to_sd(img, counter):
     except Exception as e:
         print("Failed to save image:", e)
 
-counter = 0
+#counter = 0
 while True:
     time.sleep(0.05)
     img = sensor.snapshot()
@@ -57,11 +57,15 @@ while True:
     bloblist = ','.join(blob_entries)
     if bloblist:
         #save_image_to_sd(img, counter)
-        counter += 1
-        if counter > 99999: counter = 0
+        #counter += 1
+        #if counter > 99999: counter = 0
         #uart.write(bloblist)
-        usb.write(bloblist)
         #print(bloblist)
+        jpg = img.compress(quality=85)  # Compress image into JPEG format
+        header = "STR,{},{},JPG,{}".format(len(bloblist), len(jpg))
+        usb.write(header)
+        usb.write(bloblist)
+        usb.write(jpg)
         continue
 
     num_lines = 0
@@ -72,10 +76,15 @@ while True:
 
     if num_lines > 0:
         #save_image_to_sd(img, counter)
-        counter += 1
-        if counter > 99999: counter = 0
+        #counter += 1
+        #if counter > 99999: counter = 0
         #uart.write("TARGET")
-        usb.write("TARGET")
         #print("TARGET")
+        text = "TARGET"
+        jpg = img.compress(quality=85)  # Compress image into JPEG format
+        header = "STR,{},{},JPG,{}".format(len(text), len(jpg))
+        usb.write(header)
+        usb.write(text)
+        usb.write(jpg)
         continue
 
