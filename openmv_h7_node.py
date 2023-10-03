@@ -17,7 +17,7 @@ class openmvH7Node(Node):
                 msg.data = self.serial_port.read(self.serial_port.in_waiting).decode()
                 #msg.data = self.serial_port.readline().decode('utf-8').strip()  # Read a line and strip it
                 self.publisher_.publish(msg)
-                #self.get_logger().info('blob published %s' % msg.data )
+                self.get_logger().info('blob published %s' % msg.data )
         except serial.SerialException as e:
             self.get_logger().error(f"Serial Exception: {e}")
         except OSError as e:
