@@ -1,8 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-import serial
-import time
+import serial, time
 
 class openmvH7Node(Node):
     def __init__(self):
@@ -15,7 +14,8 @@ class openmvH7Node(Node):
         try:
             msg = String()
             if self.serial_port.in_waiting:
-                msg.data = self.serial_port.readline().decode('utf-8').strip()  # Read a line and strip it
+                msg.data = self.serial_port.read(ser.in_waiting).decode()
+                #msg.data = self.serial_port.readline().decode('utf-8').strip()  # Read a line and strip it
                 self.publisher_.publish(msg)
                 #self.get_logger().info('blob published %s' % msg.data )
         except serial.SerialException as e:
