@@ -14,7 +14,7 @@ class openmvH7Node(Node):
         try:
             msg = String()
             if self.serial_port.in_waiting:
-                msg.data = self.serial_port.read(ser.in_waiting).decode()
+                msg.data = self.serial_port.read(self.serial_port.in_waiting).decode()
                 #msg.data = self.serial_port.readline().decode('utf-8').strip()  # Read a line and strip it
                 self.publisher_.publish(msg)
                 #self.get_logger().info('blob published %s' % msg.data )
