@@ -18,12 +18,12 @@ class openmvH7Node(Node):
                 header = self.serial_port.readline().decode().strip()
                 _, str_len, _, jpg_len = map(int, header.split(','))
                 msg.data = self.serial_port.read(str_len).decode()
+                self.get_logger().info('blob published %s' % msg.data )
                 with open("/home/rrrschuetz/test/saved_images/image_{}.jpg".format(counter),'wb') as f:
                     f.write(self.serial_read.read(jpg_len))
                     self._counter += 1
                     if self._counter > 9999: self._counter = 0
                 self.publisher_.publish(msg)
-                self.get_logger().info('blob published %s' % msg.data )
         except serial.SerialException as e:
             self.get_logger().error(f"Serial Exception: {e}")
         except OSError as e:
