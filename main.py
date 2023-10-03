@@ -2,7 +2,9 @@ import sensor, image, time, math, pyb, lcd, os
 
 save_dir = "/sd/saved_images/"
 
-uart = pyb.UART(3,115200)
+#uart = pyb.UART(3,115200)
+usb = pyb.USB_VCP()
+
 sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
@@ -57,7 +59,8 @@ while True:
         save_image_to_sd(img, counter)
         counter += 1
         if counter > 99999: counter = 0
-        uart.write(bloblist)
+        #uart.write(bloblist)
+        usb.write(bloblist)
         print(bloblist)
         continue
 
@@ -71,7 +74,8 @@ while True:
         save_image_to_sd(img, counter)
         counter += 1
         if counter > 99999: counter = 0
-        uart.write("TARGET")
+        #uart.write("TARGET")
+        usb.write("TARGET")
         print("TARGET")
         continue
 
