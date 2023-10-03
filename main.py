@@ -56,12 +56,12 @@ while True:
 
     bloblist = ','.join(blob_entries)
     if bloblist:
-        save_image_to_sd(img, counter)
+        #save_image_to_sd(img, counter)
         counter += 1
         if counter > 99999: counter = 0
         #uart.write(bloblist)
         usb.write(bloblist)
-        print(bloblist)
+        #print(bloblist)
         continue
 
     num_lines = 0
@@ -71,11 +71,11 @@ while True:
             img.draw_line(l.line(), color=(0, 0, 255),thickness=5)
 
     if num_lines > 0:
-        save_image_to_sd(img, counter)
+        #save_image_to_sd(img, counter)
         counter += 1
         if counter > 99999: counter = 0
         #uart.write("TARGET")
         usb.write("TARGET")
-        print("TARGET")
+        #print("TARGET")
         continue
 
