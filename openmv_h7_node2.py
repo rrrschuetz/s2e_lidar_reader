@@ -21,7 +21,7 @@ class openmvH7Node(Node):
                 jpg_len = int(parts[3])
                 msg.data = self.serial_port.read(str_len).decode()
                 self.get_logger().info('blob published %s' % msg.data )
-                with open("/home/rrrschuetz/test/saved_images/image_2_{}.jpg".format(counter),'wb') as f:
+                with open("/home/rrrschuetz/test/saved_images/image_2_{}.jpg".format(self._counter),'wb') as f:
                     f.write(self.serial_read.read(jpg_len))
                     self._counter += 1
                     if self._counter > 9999: self._counter = 0
