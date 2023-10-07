@@ -51,8 +51,8 @@ while True:
     for blob in blobs:
         img.draw_rectangle(blob.rect(),color=(0,0,255),thickness=5)
         img.draw_cross(blob.cx(), blob.cy())
-        (b_x,_,b_w,_) = blob.rect()
-        blob_entries.append("{},{},{}".format(blob.code(), b_x, b_x+b_w))
+        (b_x,b_y,b_w,b_h) = blob.rect()
+        blob_entries.append("{},{},{}".format(blob.code(), b_y, b_y+b_h))
 
     bloblist = ','.join(blob_entries)
     if bloblist:
