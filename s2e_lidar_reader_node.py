@@ -80,14 +80,14 @@ class s2eLidarReaderNode(Node):
             10
         )
 
-        self.subscription_h7 = self.create_subscription(
+        self.subscription_h71 = self.create_subscription(
             String,
             'openmv_topic1',
             self.openmv_h7_callback1,
             qos_profile
         )
 
-        self.subscription_h7 = self.create_subscription(
+        self.subscription_h72 = self.create_subscription(
             String,
             'openmv_topic2',
             self.openmv_h7_callback2,
