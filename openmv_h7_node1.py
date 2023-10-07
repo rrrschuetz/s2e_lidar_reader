@@ -16,7 +16,7 @@ class openmvH7Node(Node):
             msg = String()
             if self.serial_port.in_waiting:
                 header = self.serial_port.readline().decode().strip()
-                str_len, jpg_len = map(int, header.split(','))
+                _, str_len, _, jpg_len = map(int, header.split(','))
                 msg.data = self.serial_port.read(str_len).decode()
                 self.get_logger().info('blob published %s' % msg.data )
                 with open("/home/rrrschuetz/test/saved_images/image_1_{}.jpg".format(counter),'wb') as f:

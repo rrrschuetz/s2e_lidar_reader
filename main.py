@@ -62,7 +62,7 @@ while True:
         #uart.write(bloblist)
         #print(bloblist)
         jpg = img.compress(quality=85)  # Compress image into JPEG format
-        header = "STR,{},JPG,{}".format(len(bloblist), len(jpg))
+        header = "STR,{},JPG,{}\nn".format(len(bloblist), len(jpg))
         usb.write(header)
         usb.write(bloblist)
         usb.write(jpg)
