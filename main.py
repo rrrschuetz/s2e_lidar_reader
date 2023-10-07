@@ -68,6 +68,8 @@ while True:
         usb.write(jpg)
         continue
 
+    continue
+
     num_lines = 0
     for l in img.find_lines(roi,threshold=2500, theta_margin=25, rho_margin=25):
         if (min_degree <= l.theta()) and (l.theta() <= max_degree):
