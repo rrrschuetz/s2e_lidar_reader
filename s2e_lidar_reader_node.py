@@ -30,7 +30,8 @@ class s2eLidarReaderNode(Node):
             durability=QoSDurabilityPolicy.VOLATILE)
 
         self._scan_interpolated = np.zeros(3240)
-        self._color = np.zeros(self.HPIX)
+        self._color1 = np.zeros(self.HPIX)
+        self._color2 = np.zeros(self.HPIX)
         self._X = 0.0 
         self._Y = 0.0
 
@@ -97,9 +98,10 @@ class s2eLidarReaderNode(Node):
     num_colr = HPIX  # Assuming HPIX is defined elsewhere in your code
     
     scan_labels = [f'SCAN.{i}' for i in range(1, num_scan+1)]
-    colr_labels = [f'COLR.{i}' for i in range(1, num_colr+1)]
+    col1_labels = [f'COL1.{i}' for i in range(1, num_colr+1)]
+    col2_labels = [f'COL2.{i}' for i in range(1, num_colr+1)]
 
-    labels = ['X', 'Y'] + scan_labels + colr_labels + ['MAGX', 'MAGY', 'MAGZ', 'ACCX', 'ACCY', 'ACCZ', 'GYRX', 'GYRY', 'GYRZ']
+    labels = ['X', 'Y'] + scan_labels + col1_labels + col2_labels + ['MAGX', 'MAGY', 'MAGZ', 'ACCX', 'ACCY', 'ACCZ', 'GYRX', 'GYRY', 'GYRZ']
     line = ','.join(labels) + '\n'
 
     filepath = '/home/rrrschuetz/test/file.txt'
@@ -122,8 +124,9 @@ class s2eLidarReaderNode(Node):
         #scan_data += ','.join(str(e) for e in scan)
 
         # add color data
-        scan_data += ','.join(str(e) for e in self._color)
-        
+        scan_data += ','.join(str(e) for e in self._color1)
+        scan_data += ','.join(str(e) for e in self._color2)
+
         # add magentometer data
         mag = self._sense.get_compass_raw()
         scan_data += ','+str(mag['x'])+','+str(mag['y'])+','+str(mag['z'])
@@ -157,7 +160,7 @@ class s2eLidarReaderNode(Node):
             self.get_logger().info("Target line crossing")
             return
             
-        self._color = np.zeros(self.HPIX)
+        self._color1 = np.zeros(self.HPIX)
         data = msg.data.split(',')
         if not msg.data:
             self.get_logger().warning("Received empty message!")
@@ -173,7 +176,7 @@ class s2eLidarReaderNode(Node):
             cx2 = int(x2)
             fcol = float(color)+1.0
             if fcol > 0.0:
-                self._color[cx1:cx2+1] = fcol
+                self._color1[cx1:cx2+1] = fcol
                 self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
 
     def openmv_h7_callback2(self, msg):
@@ -182,7 +185,7 @@ class s2eLidarReaderNode(Node):
             self.get_logger().info("Target line crossing")
             return
 
-        self._color = np.zeros(self.HPIX)
+        self._color2 = np.zeros(self.HPIX)
         data = msg.data.split(',')
         if not msg.data:
             self.get_logger().warning("Received empty message!")
@@ -198,7 +201,7 @@ class s2eLidarReaderNode(Node):
             cx2 = int(x2)
             fcol = float(color)+1.0
             if fcol > 0.0:
-                self._color[cx1:cx2+1] = fcol
+                self._color2[cx1:cx2+1] = fcol
                 self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
 
 def main(args=None):
