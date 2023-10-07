@@ -81,8 +81,15 @@ class s2eLidarReaderNode(Node):
 
         self.subscription_h7 = self.create_subscription(
             String,
-            'openmv_topic',
-            self.openmv_h7_callback,
+            'openmv_topic1',
+            self.openmv_h7_callback1,
+            qos_profile
+        )
+
+        self.subscription_h7 = self.create_subscription(
+            String,
+            'openmv_topic2',
+            self.openmv_h7_callback2,
             qos_profile
         )
 
@@ -144,12 +151,37 @@ class s2eLidarReaderNode(Node):
         self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
         self._pwm.set_pwm(1, 0, int(self.neutral_pulse+self._Y*40))
 
-    def openmv_h7_callback(self, msg):
+    def openmv_h7_callback1(self, msg):
         #self.get_logger().info('cam msg received: "%s"' % msg)
         if msg.data == "TARGET":
             self.get_logger().info("Target line crossing")
             return
             
+        self._color = np.zeros(self.HPIX)
+        data = msg.data.split(',')
+        if not msg.data:
+            self.get_logger().warning("Received empty message!")
+            return
+        if len(data) % 3 != 0:
+            self.get_logger().error("Data length is not divisible by 3!")
+            return
+
+        blobs = ((data[i],data[i+1],data[i+2]) for i in range (0,len(data),3))
+        for blob in blobs:
+            color, x1, x2 = blob
+            cx1 = int(x1)
+            cx2 = int(x2)
+            fcol = float(color)+1.0
+            if fcol > 0.0:
+                self._color[cx1:cx2+1] = fcol
+                self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
+
+    def openmv_h7_callback2(self, msg):
+        #self.get_logger().info('cam msg received: "%s"' % msg)
+        if msg.data == "TARGET":
+            self.get_logger().info("Target line crossing")
+            return
+
         self._color = np.zeros(self.HPIX)
         data = msg.data.split(',')
         if not msg.data:
