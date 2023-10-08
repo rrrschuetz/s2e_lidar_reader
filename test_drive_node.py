@@ -16,6 +16,7 @@ from Adafruit_PCA9685 import PCA9685
 
 class testDriveNode(Node):
     HPIX = 320
+    VPIX = 200
     HFOV = 70.8
     MIN_DIST = 0.15
     reverse_pulse = 204
@@ -43,8 +44,8 @@ class testDriveNode(Node):
         self._Ytrim = 0.0
         self._cx1 = 0
         self._cx2 = 0
-        self._color1 = np.zeros(self.HPIX)
-        self._color2 = np.zeros(self.HPIX)
+        self._color1 = np.zeros(self.VPIX)
+        self._color2 = np.zeros(self.VPIX)
 
         # Initialize sense hat
         self._sense = SenseHat()
@@ -250,7 +251,7 @@ class testDriveNode(Node):
             self.get_logger().info('Target line crossing, loop time %s' % loop_age)
             return
             
-        self._color1 = np.zeros(self.HPIX)
+        self._color1 = np.zeros(self.VPIX)
         data = msg.data.split(',')
         if not msg.data:
             self.get_logger().warning("Received empty message!")
@@ -279,7 +280,7 @@ class testDriveNode(Node):
             self.get_logger().info('Target line crossing, loop time %s' % loop_age)
             return
 
-        self._color2 = np.zeros(self.HPIX)
+        self._color2 = np.zeros(self.VPIX)
         data = msg.data.split(',')
         if not msg.data:
             self.get_logger().warning("Received empty message!")

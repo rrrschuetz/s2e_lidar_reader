@@ -12,6 +12,7 @@ from Adafruit_PCA9685 import PCA9685
 
 class s2eLidarReaderNode(Node):
     HPIX = 320
+    VPIX = 200
     HFOV = 70.8
     reverse_pulse = 204
     neutral_pulse = 307
@@ -30,8 +31,8 @@ class s2eLidarReaderNode(Node):
             durability=QoSDurabilityPolicy.VOLATILE)
 
         self._scan_interpolated = np.zeros(3240)
-        self._color1 = np.zeros(self.HPIX)
-        self._color2 = np.zeros(self.HPIX)
+        self._color1 = np.zeros(self.VPIX)
+        self._color2 = np.zeros(self.VPIX)
         self._X = 0.0 
         self._Y = 0.0
 
@@ -95,7 +96,7 @@ class s2eLidarReaderNode(Node):
         )
 
     num_scan = 3240
-    num_colr = HPIX  # Assuming HPIX is defined elsewhere in your code
+    num_colr = VPIX  # Assuming HPIX is defined elsewhere in your code
     
     scan_labels = [f'SCAN.{i}' for i in range(1, num_scan+1)]
     col1_labels = [f'COL1.{i}' for i in range(1, num_colr+1)]
@@ -160,7 +161,7 @@ class s2eLidarReaderNode(Node):
             self.get_logger().info("Target line crossing")
             return
             
-        self._color1 = np.zeros(self.HPIX)
+        self._color1 = np.zeros(self.VPIX)
         data = msg.data.split(',')
         if not msg.data:
             self.get_logger().warning("Received empty message!")
@@ -185,7 +186,7 @@ class s2eLidarReaderNode(Node):
             self.get_logger().info("Target line crossing")
             return
 
-        self._color2 = np.zeros(self.HPIX)
+        self._color2 = np.zeros(self.VPIX)
         data = msg.data.split(',')
         if not msg.data:
             self.get_logger().warning("Received empty message!")
