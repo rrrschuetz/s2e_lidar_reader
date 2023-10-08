@@ -125,7 +125,7 @@ class s2eLidarReaderNode(Node):
         #scan_data += ','.join(str(e) for e in scan)
 
         # add color data
-        scan_data += ','.join(str(e) for e in self._color1)
+        scan_data += ','.join(str(e) for e in self._color1)+','
         scan_data += ','.join(str(e) for e in self._color2)
 
         # add magentometer data
