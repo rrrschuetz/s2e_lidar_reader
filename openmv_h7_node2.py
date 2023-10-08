@@ -20,7 +20,7 @@ class openmvH7Node(Node):
                 str_len = int(parts[1])
                 jpg_len = int(parts[3])
                 msg.data = self.serial_port.read(str_len).decode()
-                self.get_logger().info('blob published %s' % msg.data )
+                #self.get_logger().info('blob published %s' % msg.data )
                 with open("/home/rrrschuetz/test/saved_images/image_2_{}.jpg".format(self._counter),'wb') as f:
                     f.write(self.serial_port.read(jpg_len))
                     self._counter += 1
