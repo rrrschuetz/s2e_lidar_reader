@@ -25,7 +25,8 @@ black = (18, 30, -30, -5, 38, -10)
 silver = (100, 255, 0, 64, 0, 64)
 
 thresholds=[green, blue]
-roi = [0,0,320,200]
+#roi = [0,0,320,200]
+roi = [80,0,160,200]
 
 min_degree = 70
 max_degree = 110
@@ -47,7 +48,7 @@ while True:
     img.laplacian(2, sharpen=True)
 
     blob_entries = []
-    blobs = img.find_blobs(thresholds,0,roi,pixels_threshold=30, merge=True)
+    blobs = img.find_blobs(thresholds,0,roi,pixels_threshold=50, merge=True)
     for blob in blobs:
         img.draw_rectangle(blob.rect(),color=(0,0,255),thickness=5)
         img.draw_cross(blob.cx(), blob.cy())
