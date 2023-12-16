@@ -20,7 +20,8 @@ class s2eLidarReaderNode(Node):
     servo_min = 240  # Min pulse length out of 4096
     servo_max = 375  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
-    servo_ctl = int((servo_max-servo_min)/2)
+    servo_ctl = int((servo_max-servo_min)/2 *1.5)
+    motor_ctl = 40
 
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
@@ -153,7 +154,7 @@ class s2eLidarReaderNode(Node):
         #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+self._X*self.servo_ctl))
         #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+self._Y*40))
         self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
-        self._pwm.set_pwm(1, 0, int(self.neutral_pulse+self._Y*40))
+        self._pwm.set_pwm(1, 0, int(self.neutral_pulse-self._Y*self.motor_ctl))
 
     def openmv_h7_callback1(self, msg):
         #self.get_logger().info('cam msg received: "%s"' % msg)
