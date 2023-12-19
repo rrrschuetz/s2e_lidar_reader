@@ -25,7 +25,8 @@ class testDriveNode(Node):
     servo_min = 240  # Min pulse length out of 4096
     servo_max = 375  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
-    servo_ctl = int((servo_max-servo_min)/2)
+    servo_ctl = int(-(servo_max-servo_min)/2 * 1.5)
+    motor_ctl = 12
     
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
@@ -197,9 +198,9 @@ class testDriveNode(Node):
                 #self.get_logger().info('Predicted axes: "%s"' % predictions)
 
                 #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral + (self._X + self._Xtrim) * self.servo_ctl))
-                #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse + (self._Y + self.Ytrim) * 40))
+                #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse + (self._Y + self.Ytrim) * self.motor_ctl))
                 self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl))
-                self._pwm.set_pwm(1, 0, int(self.neutral_pulse+(self._Y+self._Ytrim+self._Yover*2)*40))
+                self._pwm.set_pwm(1, 0, int(self.neutral_pulse+(self._Y+self._Ytrim+self._Yover*2)*self.motor_ctl))
         
             except ValueError as e:
                 self.get_logger().error('Model rendered nan: %s' % str(e))
@@ -239,7 +240,7 @@ class testDriveNode(Node):
         self.get_logger().info('Steering: %s,%s ' % (self._X,self._Xtrim))
         self.get_logger().info('Power: %s,%s,%s ' % (self._Y,self._Ytrim,self._Yover))
         self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl))
-        self._pwm.set_pwm(1, 0, int(self.neutral_pulse+(self._Y+self._Ytrim)*40))
+        self._pwm.set_pwm(1, 0, int(self.neutral_pulse+(self._Y+self._Ytrim)**self.motor_ctl))
 
     def openmv_h7_callback1(self, msg):
         #self.get_logger().info('cam msg received: "%s"' % msg)
