@@ -21,7 +21,7 @@ class s2eLidarReaderNode(Node):
     servo_max = 375  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 *1.5)
-    motor_ctl = 40
+    motor_ctl = 12
 
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
@@ -32,8 +32,8 @@ class s2eLidarReaderNode(Node):
             durability=QoSDurabilityPolicy.VOLATILE)
 
         self._scan_interpolated = np.zeros(3240)
-        self._color1 = np.zeros(self.VPIX)
-        self._color2 = np.zeros(self.VPIX)
+        self._color1 = np.zeros(self.HPIX)
+        self._color2 = np.zeros(self.HPIX)
         self._X = 0.0 
         self._Y = 0.0
 
@@ -97,7 +97,7 @@ class s2eLidarReaderNode(Node):
         )
 
     num_scan = 3240
-    num_colr = VPIX  # Assuming HPIX is defined elsewhere in your code
+    num_colr = HPIX  # Assuming HPIX is defined elsewhere in your code
     
     scan_labels = [f'SCAN.{i}' for i in range(1, num_scan+1)]
     col1_labels = [f'COL1.{i}' for i in range(1, num_colr+1)]
@@ -162,7 +162,7 @@ class s2eLidarReaderNode(Node):
             self.get_logger().info("Target line crossing")
             return
             
-        self._color1 = np.zeros(self.VPIX)
+        self._color1 = np.zeros(self.HPIX)
         data = msg.data.split(',')
         if not msg.data:
             self.get_logger().warning("Received empty message!")
@@ -187,7 +187,7 @@ class s2eLidarReaderNode(Node):
             self.get_logger().info("Target line crossing")
             return
 
-        self._color2 = np.zeros(self.VPIX)
+        self._color2 = np.zeros(self.HPIX)
         data = msg.data.split(',')
         if not msg.data:
             self.get_logger().warning("Received empty message!")
