@@ -17,36 +17,37 @@ class openmvH7Node(Node):
             self.get_logger().info('OpenMV H7 1 script sent' )
         time.sleep(10)
 
-def timer_callback(self):
-    try:
-        msg = String()
-        if self.serial_port.in_waiting:
-            header = self.serial_port.readline().decode().strip()
+    def timer_callback(self):
+        try:
+            msg = String()
+            if self.serial_port.in_waiting:
+                header = self.serial_port.readline().decode().strip()
 
-            # Log the received header
-            self.get_logger().info(f'header {header}')
+                # Log the received header
+                self.get_logger().info(f'header {header}')
 
-            parts = header.split(',')
-            if len(parts) >= 4:
-                str_len = int(parts[1])
-                jpg_len = int(parts[3])
-                msg.data = self.serial_port.read(str_len).decode()
+                parts = header.split(',')
+                if len(parts) >= 4:
+                    str_len = int(parts[1])
+                    jpg_len = int(parts[3])
+                    msg.data = self.serial_port.read(str_len).decode()
 
-                # Additional code for processing the data
-                with open("/home/rrrschuetz/test/saved_images/image_1_{}.jpg".format(self._counter),'wb') as f:
-                    f.write(self.serial_port.read(jpg_len))
-                    self._counter += 1
-                    if self._counter > 9999: self._counter = 0
-                self.publisher_.publish(msg)
+                    # Additional code for processing the data
+                    with open("/home/rrrschuetz/test/saved_images/image_1_{}.jpg".format(self._counter),'wb') as f:
+                        f.write(self.serial_port.read(jpg_len))
+                        self._counter += 1
+                        if self._counter > 9999: self._counter = 0
+                    self.publisher_.publish(msg)
 
-            else:
-                self.get_logger().warning(f"Invalid header format: {header}")
-    except serial.SerialException as e:
-        self.get_logger().error(f"Serial Exception: {e}")
-    except OSError as e:
-        self.get_logger().error(f"OS Error: {e}")
-    except Exception as e:
-        self.get_logger().error(f"Unexpected Error: {e}")
+                else:
+                    self.get_logger().warning(f"Invalid header format: {header}")
+
+        except serial.SerialException as e:
+            self.get_logger().error(f"Serial Exception: {e}")
+        except OSError as e:
+            self.get_logger().error(f"OS Error: {e}")
+        except Exception as e:
+            self.get_logger().error(f"Unexpected Error: {e}")
 
 def main(args=None):
     rclpy.init(args=args)
