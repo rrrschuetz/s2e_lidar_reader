@@ -14,6 +14,10 @@ def receive_script(filename):
 # Name of the new script file
 new_script_filename = "/h7_cam_exec.py"
 
+red_led.on()
+green_led.off()
+blue_led.off()
+
 while not usb.isconnected(): pass
 
 while True:
