@@ -22,6 +22,7 @@ class openmvH7Node(Node):
             msg = String()
             if self.serial_port.in_waiting:
                 header = self.serial_port.readline().decode().strip()
+                self.get_logger().info('header %s' % header)
                 parts = header.split(',')
                 str_len = int(parts[1])
                 jpg_len = int(parts[3])
