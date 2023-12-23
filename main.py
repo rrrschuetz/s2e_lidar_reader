@@ -2,6 +2,9 @@ import pyb
 import os
 
 usb = pyb.USB_VCP()
+red_led = pyb.LED(1)
+green_led = pyb.LED(2)
+blue_led = pyb.LED(3)
 
 def receive_script(filename):
     if usb.isconnected():
@@ -21,6 +24,10 @@ new_script_filename = "h7_cam_exec.py"
 
 # Receive and save the new script
 receive_script(new_script_filename)
+
+red_led.off()
+green_led.off()
+blue_led.on()
 
 # Execute the new script
 exec(open(new_script_filename).read(), globals())
