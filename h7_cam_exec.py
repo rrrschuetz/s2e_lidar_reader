@@ -8,8 +8,8 @@ red_led = pyb.LED(1)
 green_led = pyb.LED(2)
 blue_led = pyb.LED(3)
 
-red_led.off()
-green_led.on()
+red_led.on()
+green_led.off()
 blue_led.off()
 
 sensor.reset()
@@ -48,7 +48,7 @@ def save_image_to_sd(img, counter):
 
 #counter = 0
 while True:
-    time.sleep(0.05)
+    #time.sleep(0.05)
     img = sensor.snapshot()
     img.lens_corr(strength=2.6, zoom=1.0)
     img.gamma_corr(gamma = 1.0, contrast = 1.0, brightness = 0.2)

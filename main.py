@@ -35,11 +35,6 @@ new_script_filename = "/h7_cam_exec.py"
 # Receive and save the new script
 receive_script(new_script_filename)
 
-red_led.on()
-green_led.off()
-blue_led.off()
-time.sleep(10)
-
 # Execute the new script
 exec(open(new_script_filename).read(), globals())
 
