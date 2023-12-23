@@ -11,6 +11,11 @@ class openmvH7Node(Node):
         self.timer = self.create_timer(0.1, self.timer_callback)  # Adjust the timer callback rate as needed
         self.get_logger().info('OpenMV H7 2 connected' )
         self._counter = 0
+        with open("/home/rrrschuetz/ros2_ws/src/s2e_lidar_reader/s2e_lidar_reader/h7_cam_exec.py", 'rb') as file:
+            script_data = file.read()
+            ser.write(script_data)
+            self.get_logger().info('OpenMV H7 2 script sent' )
+
     def timer_callback(self):
         try:
             msg = String()
