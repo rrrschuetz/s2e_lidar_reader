@@ -51,6 +51,9 @@ class openmvH7Node(Node):
             self.get_logger().error(f"OS Error: {e}")
         except Exception as e:
             self.get_logger().error(f"Unexpected Error: {e}")
+            self.serial_port.reset_input_buffer()
+            self.serial_port.reset_output_buffer()
+
 
 def main(args=None):
     rclpy.init(args=args)
