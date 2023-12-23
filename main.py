@@ -38,6 +38,12 @@ receive_script(new_script_filename)
 red_led.on()
 green_led.off()
 blue_led.off()
+time.sleep(10)
 
 # Execute the new script
 exec(open(new_script_filename).read(), globals())
+
+red_led.off()
+green_led.off()
+blue_led.on()
+time.sleep(10)
