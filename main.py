@@ -17,7 +17,6 @@ def receive_script(filename):
     red_led.on()
     green_led.off()
     blue_led.off()
-    time.sleep(10)
 
     print("Waiting for data...")
     while not usb.any():
