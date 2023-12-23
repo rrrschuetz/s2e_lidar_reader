@@ -7,9 +7,10 @@ green_led = pyb.LED(2)
 blue_led = pyb.LED(3)
 
 def receive_script(filename):
-    if usb.any(): with open(filename, 'wb') as file:
-        data = usb.recv(4096)  # Receive 64 bytes at a time
-        file.write(data)
+    if usb.any():
+        with open(filename, 'wb') as file:
+            data = usb.recv(4096)  # Receive 64 bytes at a time
+            file.write(data)
 
 # Name of the new script file
 new_script_filename = "/h7_cam_exec.py"
@@ -17,6 +18,8 @@ new_script_filename = "/h7_cam_exec.py"
 red_led.on()
 green_led.off()
 blue_led.off()
+
+time.sleep(10)
 
 while not usb.isconnected():
     pass
