@@ -8,9 +8,7 @@ class openmvH7Node(Node):
         super().__init__('serial_node')
         self.publisher_ = self.create_publisher(String, 'openmv_topic1', 10)
         self.serial_port = serial.Serial('/dev/ttyACM0', 115200, timeout=5)   #115200
-        self.timer = self.create_timer(0.1, self.timer_callback)  # Adjust the timer callback rate as needed
         self.get_logger().info('OpenMV H7 1 connected' )
-        self._counter = 0
         with open("/home/rrrschuetz/ros2_ws4/src/s2e_lidar_reader/s2e_lidar_reader/h7_cam_exec.py", 'rb') as file:
             script_data = file.read()
             self.serial_port.write(script_data)
@@ -18,6 +16,9 @@ class openmvH7Node(Node):
         time.sleep(10)
         serial_port.reset_input_buffer()
         serial_port.reset_output_buffer()
+
+        self.timer = self.create_timer(0.1, self.timer_callback)  # Adjust the timer callback rate as needed
+        self._counter = 0
 
     def timer_callback(self):
         try:
