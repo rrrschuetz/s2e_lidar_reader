@@ -4,6 +4,13 @@ save_dir = "/sd/saved_images/"
 
 #uart = pyb.UART(3,115200)
 usb = pyb.USB_VCP()
+red_led = pyb.LED(1)
+green_led = pyb.LED(2)
+blue_led = pyb.LED(3)
+
+red_led.off()
+green_led.on()
+blue_led.off()
 
 sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
