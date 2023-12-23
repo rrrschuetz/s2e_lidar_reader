@@ -14,9 +14,9 @@ def receive_script(filename):
     while not usb.isconnected():
         pass
 
-    red_led.on()
+    red_led.off()
     green_led.off()
-    blue_led.off()
+    blue_led.on()
 
     print("Waiting for data...")
     while not usb.any():
@@ -35,8 +35,8 @@ new_script_filename = "/h7_cam_exec.py"
 # Receive and save the new script
 receive_script(new_script_filename)
 
-red_led.off()
-green_led.off()
+red_led.on()
+green_led.on()
 blue_led.on()
 
 # Execute the new script
