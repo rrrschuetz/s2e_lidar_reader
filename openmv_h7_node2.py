@@ -7,7 +7,7 @@ class openmvH7Node(Node):
     def __init__(self):
         super().__init__('serial_node')
         self.publisher_ = self.create_publisher(String, 'openmv_topic2', 10)
-        self.serial_port = serial.Serial('/dev/ttyACM1', 115200, timeout=1)
+        self.serial_port = serial.Serial('/dev/ttyACM1', 921600, timeout=1)  # 115200
         self.timer = self.create_timer(0.1, self.timer_callback)  # Adjust the timer callback rate as needed
         self.get_logger().info('OpenMV H7 2 connected' )
         self._counter = 0
