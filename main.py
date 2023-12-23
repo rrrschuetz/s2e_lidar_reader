@@ -27,13 +27,12 @@ def receive_script(filename):
             data = usb.recv(4096)  # Receive 64 bytes at a time
             file.write(data)
 
-    print("Script received and saved as", filename)
-
 # Name of the new script file
 new_script_filename = "/h7_cam_exec.py"
 
 # Receive and save the new script
 receive_script(new_script_filename)
+time.sleep(10)
 
 # Execute the new script
 exec(open(new_script_filename).read(), globals())
