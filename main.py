@@ -11,33 +11,22 @@ green_led.on()
 blue_led.off()
 
 def receive_script(filename):
-    while not usb.isconnected():
-        pass
+    while not usb.isconnected(): pass
 
     red_led.off()
     green_led.off()
     blue_led.on()
 
-    print("Waiting for data...")
-    while not usb.any():
-        pass  # Wait for data
-
-    with open(filename, 'wb') as file:
-        while usb.any():
+    if usb.any(): with open(filename, 'wb') as file:
             data = usb.recv(4096)  # Receive 64 bytes at a time
             file.write(data)
 
 # Name of the new script file
 new_script_filename = "/h7_cam_exec.py"
 
-# Receive and save the new script
-receive_script(new_script_filename)
-time.sleep(10)
-
-# Execute the new script
-exec(open(new_script_filename).read(), globals())
-
-red_led.off()
-green_led.off()
-blue_led.on()
-time.sleep(10)
+while True:
+    # Receive and save the new script
+    receive_script(new_script_filename)
+    #time.sleep(10)
+    # Execute new or old script
+    exec(open(new_script_filename).read(), globals())

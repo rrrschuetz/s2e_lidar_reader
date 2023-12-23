@@ -1,8 +1,5 @@
 import sensor, image, time, math, pyb, lcd, os
 
-save_dir = "/sd/saved_images/"
-
-#uart = pyb.UART(3,115200)
 usb = pyb.USB_VCP()
 red_led = pyb.LED(1)
 green_led = pyb.LED(2)
@@ -35,19 +32,8 @@ thresholds=[green, blue]
 #roi = [0,0,320,200]
 roi = [80,0,160,200]
 
-min_degree = 70
-max_degree = 110
+for i in range(100):
 
-def save_image_to_sd(img, counter):
-    try:
-        filename = save_dir + "image_{}.jpg".format(counter)
-        img.save(filename)
-        #print("Image saved to", filename)
-    except Exception as e:
-        print("Failed to save image:", e)
-
-#counter = 0
-while True:
     #time.sleep(0.05)
     img = sensor.snapshot()
     img.lens_corr(strength=2.6, zoom=1.0)
@@ -64,37 +50,8 @@ while True:
 
     bloblist = ','.join(blob_entries)
     if bloblist:
-        #save_image_to_sd(img, counter)
-        #counter += 1
-        #if counter > 99999: counter = 0
-        #uart.write(bloblist)
-        #print(bloblist)
         jpg = img.compress(quality=85)  # Compress image into JPEG format
         header = "STR,{},JPG,{}\n".format(len(bloblist), len(jpg))
         usb.write(header)
         usb.write(bloblist)
         usb.write(jpg)
-        continue
-
-    continue
-
-    num_lines = 0
-    for l in img.find_lines(roi,threshold=2500, theta_margin=25, rho_margin=25):
-        if (min_degree <= l.theta()) and (l.theta() <= max_degree):
-            num_lines += 1
-            img.draw_line(l.line(), color=(0, 0, 255),thickness=5)
-
-    if num_lines > 0:
-        #save_image_to_sd(img, counter)
-        #counter += 1
-        #if counter > 99999: counter = 0
-        #uart.write("TARGET")
-        #print("TARGET")
-        text = "TARGET"
-        jpg = img.compress(quality=85)  # Compress image into JPEG format
-        header = "STR,{},JPG,{}\n".format(len(text), len(jpg))
-        usb.write(header)
-        usb.write(text)
-        usb.write(jpg)
-        continue
-
