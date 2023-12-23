@@ -32,7 +32,7 @@ thresholds=[green, blue]
 #roi = [0,0,320,200]
 roi = [80,0,160,200]
 
-for i in range(100):
+while True:
 
     #time.sleep(0.05)
     img = sensor.snapshot()
