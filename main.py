@@ -18,7 +18,8 @@ red_led.on()
 green_led.off()
 blue_led.off()
 
-while not usb.isconnected(): pass
+while not usb.isconnected():
+    pass
 
 while True:
 
