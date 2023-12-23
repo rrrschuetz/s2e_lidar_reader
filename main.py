@@ -1,4 +1,4 @@
-import pyb
+import pyb, time
 import os
 
 usb = pyb.USB_VCP()
@@ -6,22 +6,29 @@ red_led = pyb.LED(1)
 green_led = pyb.LED(2)
 blue_led = pyb.LED(3)
 
-red_led.on()
-green_led.off()
+red_led.off()
+green_led.on()
 blue_led.off()
 
 def receive_script(filename):
-    if usb.isconnected():
-        print("Waiting for data...")
-        while not usb.any():
-            pass  # Wait for data
+    while not usb.isconnected():
+        pass
 
-        with open(filename, 'wb') as file:
-            while usb.any():
-                data = usb.recv(64)  # Receive 64 bytes at a time
-                file.write(data)
+    red_led.on()
+    green_led.off()
+    blue_led.off()
+    time.sleep(10)
 
-        print("Script received and saved as", filename)
+    print("Waiting for data...")
+    while not usb.any():
+        pass  # Wait for data
+
+    with open(filename, 'wb') as file:
+        while usb.any():
+            data = usb.recv(64)  # Receive 64 bytes at a time
+            file.write(data)
+
+    print("Script received and saved as", filename)
 
 # Name of the new script file
 new_script_filename = "/h7_cam_exec.py"
