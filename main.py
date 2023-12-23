@@ -24,7 +24,7 @@ def receive_script(filename):
 
     with open(filename, 'wb') as file:
         while usb.any():
-            data = usb.recv(64)  # Receive 64 bytes at a time
+            data = usb.recv(4096)  # Receive 64 bytes at a time
             file.write(data)
 
     print("Script received and saved as", filename)
