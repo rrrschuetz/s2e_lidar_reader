@@ -25,6 +25,6 @@ while True:
 
     # Receive and save the new script
     receive_script(new_script_filename)
-    #time.sleep(10)
+    time.sleep(10)
     # Execute new or old script
     exec(open(new_script_filename).read(), globals())
