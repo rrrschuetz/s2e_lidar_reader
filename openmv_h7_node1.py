@@ -15,6 +15,7 @@ class openmvH7Node(Node):
             script_data = file.read()
             self.serial_port.write(script_data)
             self.get_logger().info('OpenMV H7 1 script sent' )
+        time.sleep(10)
 
     def timer_callback(self):
         try:
