@@ -24,13 +24,13 @@ time.sleep(10)
 while not usb.isconnected():
     pass
 
-red_led.off()
-green_led.on()
-blue_led.off()
+#red_led.off()
+#green_led.on()
+#blue_led.off()
 
 while True:
     # Receive and save the new script
-    # receive_script(new_script_filename)
-    time.sleep(10)
+    #receive_script(new_script_filename)
+    #time.sleep(10)
     # Execute new or old script
-    # exec(open(new_script_filename).read(), globals())
+    exec(open(new_script_filename).read(), globals())
