@@ -40,7 +40,7 @@ class testDriveNode(Node):
         self._tf_control = False
         self._X = 0.0 
         self._Y = 0.0
-        self._Ymin = 2.0
+        self._Ymin = 1.0
         self._Yover = 0.0     # Y overdrive
         self._Xtrim = 0.0
         self._Ytrim = 0.0
