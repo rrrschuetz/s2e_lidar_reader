@@ -26,7 +26,7 @@ class testDriveNode(Node):
     servo_max = 375  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 * 1.5)
-    motor_ctl = 16
+    motor_ctl = 12
     
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
@@ -40,6 +40,7 @@ class testDriveNode(Node):
         self._tf_control = False
         self._X = 0.0 
         self._Y = 0.0
+        self._Ymin = 2.0
         self._Yover = 0.0     # Y overdrive
         self._Xtrim = 0.0
         self._Ytrim = 0.0
@@ -200,7 +201,7 @@ class testDriveNode(Node):
                 #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral + (self._X + self._Xtrim) * self.servo_ctl))
                 #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse - (self._Y + self.Ytrim) * self.motor_ctl))
                 self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl))
-                self._pwm.set_pwm(1, 0, int(self.neutral_pulse-(self._Y+self._Ytrim+self._Yover*2)*self.motor_ctl))
+                self._pwm.set_pwm(1, 0, int(self.neutral_pulse-max(self._Ymin,(self._Y+self._Ytrim+self._Yover*2)*self.motor_ctl)))
         
             except ValueError as e:
                 self.get_logger().error('Model rendered nan: %s' % str(e))
