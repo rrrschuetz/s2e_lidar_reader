@@ -26,7 +26,7 @@ class testDriveNode(Node):
     servo_max = 375  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 * 1.5)
-    motor_ctl = 6
+    motor_ctl = 3
     
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
@@ -40,7 +40,7 @@ class testDriveNode(Node):
         self._tf_control = False
         self._X = 0.0 
         self._Y = 0.0
-        self._Ymin = 1.0
+        self._Ymin = 2.0
         self._Yover = 0.0     # Y overdrive
         self._Xtrim = 0.0
         self._Ytrim = 0.0
