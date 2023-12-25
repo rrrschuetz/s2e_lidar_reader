@@ -39,7 +39,7 @@ def main(directory, poll_interval=1):
         latest2 = find_latest_file(directory,'image_2_')
         show_image(latest1,label1)
         show_image(latest2,label2)
-        root.after(poll_interval * 10, update)
+        root.after(poll_interval * 1, update)
 
     update()
     root.mainloop()
