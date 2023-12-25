@@ -198,13 +198,13 @@ class testDriveNode(Node):
                 #self._Y = -0.8
                 #self.get_logger().info('Predicted axes: "%s"' % predictions)
 
-                #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral + (self._X + self._Xtrim) * self.servo_ctl))
-                #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse - max(self._Ymin,(self._Y + self._Ytrim+self._Yover*2) * self.motor_ctl)))
+                XX = int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl)
+                YY = int(self.neutral_pulse+max(self._Ymin,-(self._Y+self._Ytrim+self._Yover*2))*self.motor_ctl)
                 #self.get_logger().info('Steering: %s,%s ' % (self._X,self._Xtrim))
-                self.get_logger().info('Power: %s,%s,%s,%s ' % (self._Y,self._Ytrim,self._Yover,accel['x']**2+accel['y']**2+accel['z']**2))
+                self.get_logger().info('Power: %s,%s,%s,%s,%s ' % (self._Y,self._Ytrim,YY,self._Yover,accel['x']**2+accel['y']**2+accel['z']**2))
 
-                self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl))
-                self._pwm.set_pwm(1, 0, int(self.neutral_pulse+max(self._Ymin,-(self._Y+self._Ytrim+self._Yover*2)*self.motor_ctl)))
+                self._pwm.set_pwm(0, 0, XX)
+                self._pwm.set_pwm(1, 0, YY)
         
             except ValueError as e:
                 self.get_logger().error('Model rendered nan: %s' % str(e))
