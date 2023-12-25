@@ -155,6 +155,9 @@ class s2eLidarReaderNode(Node):
         #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+self._Y*40))
         self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
         self._pwm.set_pwm(1, 0, int(self.neutral_pulse-self._Y*self.motor_ctl))
+        # show acceleration
+        accel = self._sense.get_accelerometer_raw()
+        self.get_logger().info(f"Accelerometer: x={accel['x']}, y={accel['y']}, z={accel['z']}")
 
     def openmv_h7_callback1(self, msg):
         #self.get_logger().info('cam msg received: "%s"' % msg)
