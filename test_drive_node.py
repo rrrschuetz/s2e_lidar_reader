@@ -19,7 +19,7 @@ class testDriveNode(Node):
     VPIX = 200
     HFOV = 70.8
     MIN_DIST = 0.15
-    accel_offset_y = -0.086437
+    accel_offset_y = -0.06
     reverse_pulse = 204
     neutral_pulse = 307
     forward_pulse = 409
