@@ -29,7 +29,7 @@ class testDriveNode(Node):
     servo_ctl = int(-(servo_max-servo_min)/2 * 1.5)
     motor_ctl = 4
     speed_min = 0.2
-    speed_max = 1.0
+    speed_max = 0.6
     
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
@@ -202,8 +202,10 @@ class testDriveNode(Node):
                 self._acceleration = -(accel['y']+self.accel_offset_y)
                 self._speed += self._dt * self._acceleration
                 self.get_logger().info('current speed m/s: "%s"' % self._speed)
-                if self._speed > self.speed_max: self._motor_ctl -= 1
-                if self._speed < self.speed_max: self._motor_ctl += 1
+                if self._speed < 0: self._speed *= -1
+                if self._speed > self.speed_max: self._motor_ctl -= 1.0
+                if self._speed < self.speed_max: self._motor_ctl += 0.1
+                if self.motor_ctl < 0: self.motor_ctl = 0
 
                 XX = int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl)
                 YY = int(self.neutral_pulse+max(self._Ymin,-(self._Y+self._Ytrim+self._Yover*2))*self._motor_ctl)
