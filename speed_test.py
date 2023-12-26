@@ -5,6 +5,8 @@ import locale
 
 velocity = [0.0]
 acceleration = [0.0]
+offset_x = 0.0
+offset_y = -0.01
 min_x = 0.0
 min_y = 0.0
 max_x = 0.0
@@ -37,8 +39,8 @@ with open('/home/rrrschuetz/test/speed_data.csv', 'w', newline='') as file:
 
         count += 1
         accel = sense.get_accelerometer_raw()
-        x = accel['x']
-        y = accel['y']
+        x = accel['x']+offset_x
+        y = accel['y']+offset_y
         min_x = min(min_x, x)
         max_x = max(max_x, x)
         min_y = min(min_y, y)
