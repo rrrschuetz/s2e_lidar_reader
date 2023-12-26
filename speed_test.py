@@ -46,10 +46,9 @@ with open('/home/rrrschuetz/test/speed_data.csv', 'w', newline='') as file:
         acceleration = [y]
         velocity = [v + a * dt for v, a in zip(velocity, acceleration)]
         speed = sum(v**2 for v in velocity)**0.5
-        delta=current_time-start_time
         print(f'Count: {count}, Timestamp: {delta_time:.6f}, Speed: {speed:.6f}, Y: {y:.6f}, Min Y: {min_y:.6f}, Max Y: {max_y:.6f}, Y: {y:.6f}')
 
         # Write data to CSV
         #writer.writerow([count, f'{delta_time:.6f}', f'{speed:.6f}', f'{y:.6f}', f'{min_y:.6f}', f'{max_y:.6f}'])
-        writer.writerow([count, format_decimal(current_time), format_decimal(speed), format_decimal(min_x), format_decimal(max_x), format_decimal(min_y), format_decimal(max_y)])
+        writer.writerow([count, format_decimal(delta_time), format_decimal(speed), format_decimal(min_y), format_decimal(max_y), format_decimal(max_y)])
 
