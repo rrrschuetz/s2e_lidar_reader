@@ -1,14 +1,14 @@
 from sense_hat import SenseHat
 import csv
-import math, numpy as np
+import time
 
-velocity = [0]
-acceleration = [0]
-dt = 0.1
-min_x = 0
-min_y = 0
-max_x = 0
-max_y = 0
+velocity = [0.0]
+acceleration = [0.0]
+min_x = 0.0
+min_y = 0.0
+max_x = 0.0
+max_y = 0.0
+count = 0
 
 # Initialize sense hat
 sense = SenseHat()
@@ -19,20 +19,27 @@ sense.show_message("OK", text_colour=[255, 0, 0])
 with open('/home/rrrschuetz/test/speed_data.csv', 'w', newline='') as file:
     writer = csv.writer(file)
     # Write CSV header
-    writer.writerow(['Speed (m/s)', 'Min X', 'Max X', 'Min Y', 'Max Y'])
+    writer.writerow(['Count', 'Timestamp', 'Speed (m/s)', 'Min X', 'Max X', 'Y'])
+
+    last_time = time.time()  # Initialize the last_time variable
 
     while True:
+        current_time = time.time()
+        dt = current_time - last_time  # Calculate dt
+        last_time = current_time  # Update last_time for the next iteration
+
+        count += 1
         accel = sense.get_accelerometer_raw()
-        x=accel['x']
-        y=accel['y']
-        min_x = min(min_x,x)
-        max_x = max(max_x,x)
-        min_y = min(min_y,y)
-        max_y = max(max_y,y)
+        x = accel['x']
+        y = accel['y']
+        min_x = min(min_x, x)
+        max_x = max(max_x, x)
+        min_y = min(min_y, y)
+        max_y = max(max_y, y)
+        acceleration = [y]
         velocity = [v + a * dt for v, a in zip(velocity, acceleration)]
         speed = sum(v**2 for v in velocity)**0.5
-        print(f'current speed m/s: {speed:.6f}, min_y: {min_y:.6f}, max_y: {max_y:.6f}, y: {y:.6f}')
+        print(f'Count: {count}, Timestamp: {current_time:.6f}, Speed: {speed:.6f}, Min Y: {min_y:.6f}, Max Y: {max_y:.6f}, Y: {y:.6f}')
 
         # Write data to CSV
-        writer.writerow([f'{speed:.6f}', f'{min_y:.6f}', f'{max_y:.6f}', f'{y:.6f}'])
-
+        writer.writerow([count, f'{current_time:.6f}', f'{speed:.6f}', f'{min_x:.6f}', f'{max_x:.6f}', f'{min_y:.6f}', f'{max_y:.6f}'])
