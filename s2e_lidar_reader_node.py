@@ -22,7 +22,7 @@ class s2eLidarReaderNode(Node):
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 *1.5)
     motor_ctl = 12
-    accel_offset_y = -0.06
+
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
         qos_profile = QoSProfile(
@@ -37,6 +37,7 @@ class s2eLidarReaderNode(Node):
         self._X = 0.0 
         self._Y = 0.0
         self._speed = 0.0
+        self._accel_offset_y = 0.0
         self._acceleration = 0.0
         self._dt = 0.1
         self._start_time = self.get_clock().now()
@@ -55,15 +56,18 @@ class s2eLidarReaderNode(Node):
         # Read pressure
         pressure = self._sense.get_pressure()
         self.get_logger().info(f"Pressure: {pressure}mbar")
-        # Read accelerometer data
-        accel = self._sense.get_accelerometer_raw()
-        self.get_logger().info(f"Accelerometer: x={accel['x']}, y={accel['y']}, z={accel['z']}")
         # Read gyroscope data
         gyro = self._sense.get_gyroscope_raw()
         self.get_logger().info(f"Gyroscope: x={gyro['x']}, y={gyro['y']}, z={gyro['z']}")
         # Read magnetometer data
         mag = self._sense.get_compass_raw()
         self.get_logger().info(f"Magnetometer: x={mag['x']}, y={mag['y']}, z={mag['z']}")
+
+        for i in range(100):
+            accel = self._sense.get_accelerometer_raw()
+            self._accel_offset_y += accel['y']
+        self._accel_offset /= -100
+        self.get_logger().info(f'Accelerometer calibration "%s"',self._accel_offset_y)
 
         # Initialize PCA9685
         self._pwm = PCA9685()
@@ -152,7 +156,7 @@ class s2eLidarReaderNode(Node):
         self._start_time = self.get_clock().now()
         self._dt = (self._start_time - self._end_time).nanoseconds * 1e-9
         self._end_time = self._start_time
-        self._acceleration = -(accel['y']+self.accel_offset_y)
+        self._acceleration = -(accel['y']+self._accel_offset_y)
         self._speed += self._dt * self._acceleration
         self.get_logger().info('current speed m/s: "%s" and y acceleration "%s"' % (self._speed,self._acceleration))
 
