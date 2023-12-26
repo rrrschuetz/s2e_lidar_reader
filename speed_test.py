@@ -6,7 +6,7 @@ import locale
 velocity = [0.0]
 acceleration = [0.0]
 offset_x = 0.0
-offset_y = -0.01
+offset_y = -0.11
 min_x = 0.0
 min_y = 0.0
 max_x = 0.0
