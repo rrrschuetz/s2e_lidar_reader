@@ -22,7 +22,7 @@ class s2eLidarReaderNode(Node):
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 *1.5)
     motor_ctl = 12
-    accel_offset_y = -0.086437
+    accel_offset_y = -0.06
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
         qos_profile = QoSProfile(
@@ -154,7 +154,7 @@ class s2eLidarReaderNode(Node):
         self._end_time = self._start_time
         self._acceleration = -(accel['y']+self.accel_offset_y)
         self._speed += self._dt * self._acceleration
-        self.get_logger().info('current speed m/s: "%s"' % self._speed)
+        self.get_logger().info('current speed m/s: "%s" and y acceleration "%s"' % (self._speed,self._acceleration))
 
     def joy_callback(self, msg):
         #self.get_logger().info('Buttons: "%s"' % msg.buttons)
