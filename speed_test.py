@@ -29,8 +29,8 @@ with open('/home/rrrschuetz/test/speed_data.csv', 'w', newline='') as file:
         max_y = max(max_y,accel['y'])
         velocity = [v + a * dt for v, a in zip(velocity, acceleration)]
         speed = sum(v**2 for v in velocity)**0.5
-        print(f'current speed m/s: {speed:.4f}, min_x: {min_x:.4f}, max_x: {max_x:.4f}, min_y: {min_y:.4f}, max_y: {max_y:.4f}')
+        print(f'current speed m/s: {speed:.6f}, min_x: {min_x:.6f}, max_x: {max_x:.6f}, min_y: {min_y:.6f}, max_y: {max_y:.6f}')
 
         # Write data to CSV
-        writer.writerow([f'{speed:.4f}', f'{min_x:.4f}', f'{max_x:.4f}', f'{min_y:.4f}', f'{max_y:.4f}'])
+        writer.writerow([f'{speed:.6f}', f'{min_x:.6f}', f'{max_x:.6f}', f'{min_y:.6f}', f'{max_y:.6f}'])
 
