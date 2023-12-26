@@ -198,9 +198,9 @@ class testDriveNode(Node):
                 self._Y = predictions[0, 1]
                 #self.get_logger().info('Predicted axes: "%s"' % predictions)
 
-                self._acceleration = accel['y']+self._accel_offset_y
+                self._acceleration = accel['y']+self.accel_offset_y
                 self._speed += self._dt * self._acceleration
-                self.get_logger().info('current speed m/s: "%s"' % speed)
+                self.get_logger().info('current speed m/s: "%s"' % self._speed)
                 if self._speed > self.speed_max: motor_ctl -= 1
                 if self._speed < self.speed_max: motor_ctl += 1
 
