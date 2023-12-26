@@ -28,6 +28,7 @@ with open('/home/rrrschuetz/test/speed_data.csv', 'w', newline='') as file:
         current_time = time.time()
         dt = current_time - last_time  # Calculate dt
         last_time = current_time  # Update last_time for the next iteration
+        delta_time = current_time-start_time
 
         count += 1
         accel = sense.get_accelerometer_raw()
@@ -40,7 +41,8 @@ with open('/home/rrrschuetz/test/speed_data.csv', 'w', newline='') as file:
         acceleration = [y]
         velocity = [v + a * dt for v, a in zip(velocity, acceleration)]
         speed = sum(v**2 for v in velocity)**0.5
-        print(f'Count: {count}, Timestamp: {current_time-start_time:.6f}, Speed: {speed:.6f}, Min Y: {min_y:.6f}, Max Y: {max_y:.6f}, Y: {y:.6f}')
+        delta=current_time-start_time
+        print(f'Count: {count}, Timestamp: {delta_time:.6f}, Speed: {speed:.6f}, Y: {y:.6f}', Min Y: {min_y:.6f}, Max Y: {max_y:.6f}, Y: {y:.6f}')
 
         # Write data to CSV
-        writer.writerow([count, f'{current_time-start_time:.6f}', f'{speed:.6f}', f'{min_x:.6f}', f'{max_x:.6f}', f'{min_y:.6f}', f'{max_y:.6f}'])
+        writer.writerow([count, f'{delta_time:.6f}', f'{speed:.6f}', f'{y:.6f}', f'{min_y:.6f}', f'{max_y:.6f}'])
