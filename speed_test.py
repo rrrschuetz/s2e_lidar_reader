@@ -3,10 +3,11 @@ import csv
 import time
 import locale
 
-velocity = [0.0]
 acceleration = [0.0]
+velocity = [0.0]
+velocity_y = 0.0
 offset_x = 0.0
-offset_y = -0.11
+offset_y = -0.09
 min_x = 0.0
 min_y = 0.0
 max_x = 0.0
@@ -26,7 +27,7 @@ sense.show_message("OK", text_colour=[255, 0, 0])
 with open('/home/rrrschuetz/test/speed_data.csv', 'w', newline='') as file:
     writer = csv.writer(file, delimiter=';')  # Use semicolon as the delimiter
     # Write CSV header
-    writer.writerow(['Count', 'Timestamp', 'Speed (m/s)', 'Min X', 'Max X', 'Y'])
+    writer.writerow(['Count', 'Timestamp', 'Speed', 'velocity_y', 'Min X', 'Max X', 'Y'])
 
     last_time = time.time()  # Initialize the last_time variable
     start_time = last_time
@@ -47,10 +48,11 @@ with open('/home/rrrschuetz/test/speed_data.csv', 'w', newline='') as file:
         max_y = max(max_y, y)
         acceleration = [y]
         velocity = [v + a * dt for v, a in zip(velocity, acceleration)]
+        velocity_y += y * dt
         speed = sum(v**2 for v in velocity)**0.5
-        print(f'Count: {count}, Timestamp: {delta_time:.6f}, Speed: {speed:.6f}, Y: {y:.6f}, Min Y: {min_y:.6f}, Max Y: {max_y:.6f}, Y: {y:.6f}')
+        print(f'Count: {count}, Timestamp: {delta_time:.6f}, Speed: {speed:.6f}, Velocity_Y: {speed:.6f}, Y: {y:.6f}, Min Y: {min_y:.6f}, Max Y: {max_y:.6f}, Y: {y:.6f}')
 
         # Write data to CSV
-        #writer.writerow([count, f'{delta_time:.6f}', f'{speed:.6f}', f'{y:.6f}', f'{min_y:.6f}', f'{max_y:.6f}'])
-        writer.writerow([count, format_decimal(delta_time), format_decimal(speed), format_decimal(min_y), format_decimal(max_y), format_decimal(max_y)])
+        #writer.writerow([count, f'{delta_time:.6f}', f'{speed:.6f}', f'{velocity_y:.6f}', f'{y:.6f}', f'{min_y:.6f}', f'{max_y:.6f}'])
+        writer.writerow([count, format_decimal(delta_time), format_decimal(speed), format_decimal(velocity_y), format_decimal(min_y), format_decimal(max_y), format_decimal(y)])
 
