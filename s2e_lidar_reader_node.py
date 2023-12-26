@@ -66,8 +66,8 @@ class s2eLidarReaderNode(Node):
         for i in range(100):
             accel = self._sense.get_accelerometer_raw()
             self._accel_offset_y += accel['y']
-        self._accel_offset_y /= -100
-        self.get_logger().info(f'Accelerometer calibration "%s"',self._accel_offset_y)
+        self._accel_offset_y /= -101
+        self.get_logger().info(f'Accelerometer calibration %s' % str(self._accel_offset_y))
 
         # Initialize PCA9685
         self._pwm = PCA9685()
