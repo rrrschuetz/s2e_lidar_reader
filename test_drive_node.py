@@ -26,7 +26,7 @@ class testDriveNode(Node):
     servo_max = 375  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 * 1.5)
-    motor_ctl = 2
+    motor_ctl = 4
     
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
@@ -44,6 +44,9 @@ class testDriveNode(Node):
         self._Yover = 0.0     # Y overdrive
         self._Xtrim = 0.0
         self._Ytrim = 0.0
+        self._dt = 0.1
+        self._velocity = [0.0,0.0,0.0]
+        self._acceleration = [0.0,0.0,0.0]
         self._cx1 = 0
         self._cx2 = 0
         self._color1 = np.zeros(self.HPIX)
@@ -198,11 +201,15 @@ class testDriveNode(Node):
                 #self._Y = -0.8
                 #self.get_logger().info('Predicted axes: "%s"' % predictions)
 
-                limit = np.sqrt(accel['x']**2+accel['y']**2+accel['z']**2)
+                self._acceleration = [ accel['x'],accel['y'],accel['z']]
+                self.velocity = [v + a * self._dt for v, a in zip(self._velocity, self._acceleration)]
+                speed = sum(v**2 for v in self.velocity)**0.5
+                self.get_logger().info('current speed m/s: "%s"' % speed)
+
                 XX = int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl)
-                YY = int(self.neutral_pulse+max(self._Ymin,-(self._Y+self._Ytrim+self._Yover*2))/limit*self.motor_ctl)
+                YY = int(self.neutral_pulse+max(self._Ymin,-(self._Y+self._Ytrim+self._Yover*2))*self.motor_ctl)
                 #self.get_logger().info('Steering: %s,%s ' % (self._X,self._Xtrim))
-                self.get_logger().info('Power: %s,%s,%s,%s,%s ' % (self._Y,self._Ytrim,YY,self._Yover,limit))
+                #self.get_logger().info('Power: %s,%s,%s,%s,%s ' % (self._Y,self._Ytrim,YY,self._Yover,limit))
 
                 self._pwm.set_pwm(0, 0, XX)
                 self._pwm.set_pwm(1, 0, YY)
