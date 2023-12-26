@@ -22,6 +22,7 @@ with open('/home/rrrschuetz/test/speed_data.csv', 'w', newline='') as file:
     writer.writerow(['Count', 'Timestamp', 'Speed (m/s)', 'Min X', 'Max X', 'Y'])
 
     last_time = time.time()  # Initialize the last_time variable
+    start_time = last_time
 
     while True:
         current_time = time.time()
@@ -39,7 +40,7 @@ with open('/home/rrrschuetz/test/speed_data.csv', 'w', newline='') as file:
         acceleration = [y]
         velocity = [v + a * dt for v, a in zip(velocity, acceleration)]
         speed = sum(v**2 for v in velocity)**0.5
-        print(f'Count: {count}, Timestamp: {current_time:.6f}, Speed: {speed:.6f}, Min Y: {min_y:.6f}, Max Y: {max_y:.6f}, Y: {y:.6f}')
+        print(f'Count: {count}, Timestamp: {current_time-start_time:.6f}, Speed: {speed:.6f}, Min Y: {min_y:.6f}, Max Y: {max_y:.6f}, Y: {y:.6f}')
 
         # Write data to CSV
-        writer.writerow([count, f'{current_time:.6f}', f'{speed:.6f}', f'{min_x:.6f}', f'{max_x:.6f}', f'{min_y:.6f}', f'{max_y:.6f}'])
+        writer.writerow([count, f'{current_time-start_time:.6f}', f'{speed:.6f}', f'{min_x:.6f}', f'{max_x:.6f}', f'{min_y:.6f}', f'{max_y:.6f}'])
