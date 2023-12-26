@@ -198,7 +198,7 @@ class testDriveNode(Node):
                 #self._Y = -0.8
                 #self.get_logger().info('Predicted axes: "%s"' % predictions)
 
-                limit = np.sqrt(self._Yover,accel['x']**2+accel['y']**2+accel['z']**2)
+                limit = np.sqrt(accel['x']**2+accel['y']**2+accel['z']**2)
                 XX = int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl)
                 YY = int(self.neutral_pulse+max(self._Ymin,-(self._Y+self._Ytrim+self._Yover*2))/limit*self.motor_ctl)
                 #self.get_logger().info('Steering: %s,%s ' % (self._X,self._Xtrim))
