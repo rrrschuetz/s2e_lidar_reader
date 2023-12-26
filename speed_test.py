@@ -1,4 +1,5 @@
 from sense_hat import SenseHat
+import csv
 import math, numpy as np
 
 dt = 0.1
