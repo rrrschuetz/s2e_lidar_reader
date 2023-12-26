@@ -63,10 +63,10 @@ class s2eLidarReaderNode(Node):
         mag = self._sense.get_compass_raw()
         self.get_logger().info(f"Magnetometer: x={mag['x']}, y={mag['y']}, z={mag['z']}")
 
-        for i in range(100):
+        for i in range(5000):
             accel = self._sense.get_accelerometer_raw()
             self._accel_offset_y += accel['y']
-        self._accel_offset_y /= -101
+        self._accel_offset_y /= -5001
         self.get_logger().info(f'Accelerometer calibration %s' % str(self._accel_offset_y))
 
         # Initialize PCA9685
