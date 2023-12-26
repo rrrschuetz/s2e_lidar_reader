@@ -18,7 +18,8 @@ class testDriveNode(Node):
     HPIX = 320
     VPIX = 200
     HFOV = 70.8
-    MIN_DIST = 0.10
+    MIN_DIST = 0.15
+    accel_offset_y = -0.086437
     reverse_pulse = 204
     neutral_pulse = 307
     forward_pulse = 409
@@ -27,6 +28,8 @@ class testDriveNode(Node):
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 * 1.5)
     motor_ctl = 4
+    speed_min = 0.2
+    speed_max = 1.0
     
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
@@ -44,9 +47,8 @@ class testDriveNode(Node):
         self._Yover = 0.0     # Y overdrive
         self._Xtrim = 0.0
         self._Ytrim = 0.0
+        self._speed = 0.0
         self._dt = 0.1
-        self._velocity = [0.0,0.0,0.0]
-        self._acceleration = [0.0,0.0,0.0]
         self._cx1 = 0
         self._cx2 = 0
         self._color1 = np.zeros(self.HPIX)
@@ -66,9 +68,6 @@ class testDriveNode(Node):
         self._counter = 0
         self._start_time = self.get_clock().now()
         self._end_time = self.get_clock().now()
-
-        self._loop_start = self.get_clock().now()
-        self._loop_end = self.get_clock().now()
 
         self._custom_logger = self.setup_custom_logger('/home/rrrschuetz/test/logfile.txt')
 
@@ -133,11 +132,10 @@ class testDriveNode(Node):
             return
         else:
             self._processing = True
-            current_time = self.get_clock().now()
-            cycle_age = (current_time - self._end_time).nanoseconds * 1e-9
-            message_time = Time.from_msg(msg.header.stamp)
-            message_age = (current_time - message_time).nanoseconds * 1e-9
-            self._start_time = current_time       
+
+            self._start_time = self.get_clock().now()
+            self._dt = (self._start_time - self._end_time).nanoseconds * 1e-9
+            self._end_time = self._start_time
             try:
                 # raw data
                 scan = np.array(msg.ranges)
@@ -198,13 +196,13 @@ class testDriveNode(Node):
                 
                 self._X = predictions[0, 0]
                 self._Y = predictions[0, 1]
-                #self._Y = -0.8
                 #self.get_logger().info('Predicted axes: "%s"' % predictions)
 
-                self._acceleration = [ accel['x'],accel['y'],accel['z']]
-                self.velocity = [v + a * self._dt for v, a in zip(self._velocity, self._acceleration)]
-                speed = sum(v**2 for v in self.velocity)**0.5
+                self._acceleration = accel['y']+self._accel_offset_y
+                self._speed += self._dt * self._acceleration
                 self.get_logger().info('current speed m/s: "%s"' % speed)
+                if self._speed > self.speed_max: motor_ctl -= 1
+                if self._speed < self.speed_max: motor_ctl += 1
 
                 XX = int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl)
                 YY = int(self.neutral_pulse+max(self._Ymin,-(self._Y+self._Ytrim+self._Yover*2))*self.motor_ctl)
@@ -216,10 +214,6 @@ class testDriveNode(Node):
         
             except ValueError as e:
                 self.get_logger().error('Model rendered nan: %s' % str(e))
-
-            self._end_time = self.get_clock().now()
-            call_age = (self._end_time - self._start_time).nanoseconds * 1e-9
-            #self._custom_logger.info('Cycle age: %.4f seconds, Call age: %.4f, Message age: %.4f seconds', cycle_age, call_age, message_age)
 
             self._processing = False
        
@@ -256,14 +250,6 @@ class testDriveNode(Node):
 
     def openmv_h7_callback1(self, msg):
         #self.get_logger().info('cam msg received: "%s"' % msg)
-        if msg.data == "TARGET":
-            return
-            self._loop_end = self.get_clock().now()
-            loop_age = (self._loop_end - self._loop_start).nanoseconds * 1e-9
-            self._loop_start = self._loop_end
-            self.get_logger().info('Target line crossing, loop time %s' % loop_age)
-            return
-            
         self._color1 = np.zeros(self.HPIX)
         data = msg.data.split(',')
         if not msg.data:
@@ -285,14 +271,6 @@ class testDriveNode(Node):
 
     def openmv_h7_callback2(self, msg):
         #self.get_logger().info('cam msg received: "%s"' % msg)
-        if msg.data == "TARGET":
-            return
-            self._loop_end = self.get_clock().now()
-            loop_age = (self._loop_end - self._loop_start).nanoseconds * 1e-9
-            self._loop_start = self._loop_end
-            self.get_logger().info('Target line crossing, loop time %s' % loop_age)
-            return
-
         self._color2 = np.zeros(self.HPIX)
         data = msg.data.split(',')
         if not msg.data:
