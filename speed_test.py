@@ -1,6 +1,7 @@
 from sense_hat import SenseHat
 import csv
 import time
+import locale
 
 velocity = [0.0]
 acceleration = [0.0]
@@ -9,6 +10,12 @@ min_y = 0.0
 max_x = 0.0
 max_y = 0.0
 count = 0
+
+# Set the locale to use comma as the decimal separator
+locale.setlocale(locale.LC_NUMERIC, 'de_DE.UTF-8')
+def format_decimal(value):
+    """Format a decimal number using a comma as the decimal separator."""
+    return locale.format_string('%.6f', value, grouping=False)
 
 # Initialize sense hat
 sense = SenseHat()
