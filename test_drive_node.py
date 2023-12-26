@@ -41,6 +41,7 @@ class testDriveNode(Node):
             
         self._processing = False
         self._tf_control = False
+        self._motor_ctl = 4
         self._X = 0.0 
         self._Y = 0.0
         self._Ymin = 2.0
@@ -201,11 +202,11 @@ class testDriveNode(Node):
                 self._acceleration = accel['y']+self.accel_offset_y
                 self._speed += self._dt * self._acceleration
                 self.get_logger().info('current speed m/s: "%s"' % self._speed)
-                if self._speed > self.speed_max: motor_ctl -= 1
-                if self._speed < self.speed_max: motor_ctl += 1
+                if self._speed > self.speed_max: self._motor_ctl -= 1
+                if self._speed < self.speed_max: self._motor_ctl += 1
 
                 XX = int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl)
-                YY = int(self.neutral_pulse+max(self._Ymin,-(self._Y+self._Ytrim+self._Yover*2))*self.motor_ctl)
+                YY = int(self.neutral_pulse+max(self._Ymin,-(self._Y+self._Ytrim+self._Yover*2))*self._motor_ctl)
                 #self.get_logger().info('Steering: %s,%s ' % (self._X,self._Xtrim))
                 #self.get_logger().info('Power: %s,%s,%s,%s,%s ' % (self._Y,self._Ytrim,YY,self._Yover,limit))
 
