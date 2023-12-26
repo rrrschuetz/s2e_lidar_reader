@@ -22,7 +22,7 @@ class s2eLidarReaderNode(Node):
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 *1.5)
     motor_ctl = 12
-
+    accel_offset_y = -0.086437
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
         qos_profile = QoSProfile(
@@ -36,6 +36,11 @@ class s2eLidarReaderNode(Node):
         self._color2 = np.zeros(self.HPIX)
         self._X = 0.0 
         self._Y = 0.0
+        self._speed = 0.0
+        self._acceleration = 0.0
+        self._dt = 0.1
+        self._start_time = self.get_clock().now()
+        self._end_time = self.get_clock().now()
 
         self._sense = SenseHat()
         self._sense.clear()
@@ -143,6 +148,13 @@ class s2eLidarReaderNode(Node):
         # Write the scan data to a file
         with open('/home/rrrschuetz/test/file.txt', 'a') as f:
             f.write(scan_data + '\n')
+
+        self._start_time = self.get_clock().now()
+        self._dt = (self._start_time - self._end_time).nanoseconds * 1e-9
+        self._end_time = self._start_time
+        self._acceleration = -(accel['y']+self.accel_offset_y)
+        self._speed += self._dt * self._acceleration
+        self.get_logger().info('current speed m/s: "%s"' % self._speed)
 
     def joy_callback(self, msg):
         #self.get_logger().info('Buttons: "%s"' % msg.buttons)
