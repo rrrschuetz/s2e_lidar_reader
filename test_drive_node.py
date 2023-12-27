@@ -190,7 +190,7 @@ class testDriveNode(Node):
                 #self.get_logger().info('Predicted axes: "%s"' % predictions)
 
                 self.get_logger().info('current speed m/s: %s' % self._speed)
-                if self._speed > self.speed_max: self._motor_ctl -= 1.0
+                if self._speed > self.speed_max: self._motor_ctl -= 0.5
                 if self._speed < self.speed_max: self._motor_ctl += 0.1
                 if self._motor_ctl < 0: self._motor_ctl = 0
 
