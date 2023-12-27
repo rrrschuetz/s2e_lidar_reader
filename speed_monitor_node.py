@@ -18,7 +18,7 @@ class SpeedMonitorNode(Node):
         # Initialize variables for speed calculation
         self._count = 0
         self._last_time = None
-        self._distance_per_rotation = 0.01  # Set the distance covered per rotation (e.g., circumference of a wheel)
+        self._distance_per_rotation = 0.01  # 24 marks, 1cm per 3 marks
 
         # Set up a GPIO event detect
         GPIO.add_event_detect(self.gpio_pin, GPIO.FALLING, callback=self.pin_callback)
@@ -45,7 +45,7 @@ class SpeedMonitorNode(Node):
         msg = String()
         msg.data = str(speed)
         self.publisher.publish(msg)
-        self.get_logger().info('speed published: "%s"' % msg.data)
+        #self.get_logger().info('speed published: "%s"' % msg.data)
 
 def main(args=None):
     rclpy.init(args=args)
