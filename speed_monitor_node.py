@@ -34,7 +34,7 @@ class SpeedMonitorNode(Node):
                 current_time = time.time()
                 self._speed = self.calculate_speed(current_time - self._last_time)
                 self._last_time = current_time
-        self.publish_speed(self.calculate_speed(self._speed)
+        self.publish_speed(self._speed)
 
     def calculate_speed(self, time_interval):
         # Speed = Distance / Time
