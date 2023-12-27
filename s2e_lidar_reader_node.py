@@ -114,8 +114,8 @@ class s2eLidarReaderNode(Node):
 
         self.subscription_speed = self.create_subscription(
             String,
-            'speed',
-            self.speed_callback,
+            'speed_monitor',
+            self.speed_monitor_callback,
             qos_profile
         )
 
@@ -170,12 +170,13 @@ class s2eLidarReaderNode(Node):
         self._start_time = self.get_clock().now()
         self._dt = (self._start_time - self._end_time).nanoseconds * 1e-9
         self._end_time = self._start_time
-        self._acceleration = 0
-        for i in range(5):
-            self._acceleration += -(accel['y']+self._accel_offset_y)
-        self._acceleration /= 5
-        self._speed += self._dt * self._acceleration
-        self.get_logger().info('current speed m/s: "%s" and y acceleration "%s"' % (self._speed,self._acceleration))
+
+        #self._acceleration = 0
+        #for i in range(5):
+        #    self._acceleration += -(accel['y']+self._accel_offset_y)
+        #self._acceleration /= 5
+        #self._speed += self._dt * self._acceleration
+        #self.get_logger().info('current speed m/s: "%s" and y acceleration "%s"' % (self._speed,self._acceleration))
 
     def joy_callback(self, msg):
         #self.get_logger().info('Buttons: "%s"' % msg.buttons)
@@ -238,8 +239,10 @@ class s2eLidarReaderNode(Node):
             if fcol > 0.0:
                 self._color2[cx1:cx2+1] = fcol
                 #self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
-    def speed_callback(self, msg):
-        self.get_logger().info('msg: "%s"' % msg)
+
+   def speed_monitor_callback(self, msg):
+        self.get_logger().info('Speed monitor: "%s" m/s' % msg)
+        self._speed = eval(msg.data)
 
 def main(args=None):
     rclpy.init(args=args)

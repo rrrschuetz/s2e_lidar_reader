@@ -45,7 +45,7 @@ class SpeedMonitorNode(Node):
 
     def publish_speed(self, speed):
         msg = String()
-        msg.data = speed
+        msg.data = str(speed)
         self.publisher.publish(msg)
 
 def main(args=None):

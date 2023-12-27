@@ -78,22 +78,34 @@ class testDriveNode(Node):
             self.lidar_callback,
             qos_profile
         )
+
         self.subscription_joy = self.create_subscription(
             Joy,
             'joy',
             self.joy_callback,
             qos_profile
         )
+
         self.subscription_h71 = self.create_subscription(
             String,
             'openmv_topic1',
             self.openmv_h7_callback1,
-            qos_profile)
+            qos_profile
+        )
+
         self.subscription_h72 = self.create_subscription(
             String,
             'openmv_topic2',
             self.openmv_h7_callback2,
-            qos_profile)
+            qos_profile
+        )
+
+        self.subscription_speed = self.create_subscription(
+            String,
+            'speed_monitor',
+            self.speed_monitor_callback,
+            qos_profile
+        )
 
         # Load the trained model and the scaler
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
@@ -199,8 +211,9 @@ class testDriveNode(Node):
                 self._Y = predictions[0, 1]
                 #self.get_logger().info('Predicted axes: "%s"' % predictions)
 
-                self._acceleration = -(accel['y']+self.accel_offset_y)
-                self._speed += self._dt * self._acceleration
+                #self._acceleration = -(accel['y']+self.accel_offset_y)
+                #self._speed += self._dt * self._acceleration
+
                 self.get_logger().info('current speed m/s: "%s"' % self._speed)
                 if self._speed < 0: self._speed *= -1
                 if self._speed > self.speed_max: self._motor_ctl -= 1.0
@@ -292,6 +305,9 @@ class testDriveNode(Node):
             if fcol > 0.0:
                 self._color2[cx1:cx2+1] = fcol
                 #self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
+   def speed_monitor_callback(self, msg):
+        self.get_logger().info('Speed monitor: "%s" m/s' % msg)
+        self._speed = eval(msg.data)
 
 def main(args=None):
     rclpy.init(args=args)
