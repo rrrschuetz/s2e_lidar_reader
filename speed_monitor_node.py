@@ -48,6 +48,7 @@ class SpeedMonitorNode(Node):
         msg = String()
         msg.data = str(speed)
         self.publisher.publish(msg)
+        self.get_logger().info('speed published: "%s"' % msg.data)
 
 def main(args=None):
     rclpy.init(args=args)
