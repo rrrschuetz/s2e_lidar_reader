@@ -18,7 +18,6 @@ class testDriveNode(Node):
     VPIX = 200
     HFOV = 70.8
     MIN_DIST = 0.15
-    accel_offset_y = -0.06
     reverse_pulse = 204
     neutral_pulse = 307
     forward_pulse = 409
@@ -190,14 +189,10 @@ class testDriveNode(Node):
                 self._Y = predictions[0, 1]
                 #self.get_logger().info('Predicted axes: "%s"' % predictions)
 
-                #self._acceleration = -(accel['y']+self.accel_offset_y)
-                #self._speed += self._dt * self._acceleration
-
-                self.get_logger().info('current speed m/s: "%s"' % self._speed)
-                if self._speed < 0: self._speed *= -1
+                self.get_logger().info('current speed m/s: %s' % self._speed)
                 if self._speed > self.speed_max: self._motor_ctl -= 1.0
                 if self._speed < self.speed_max: self._motor_ctl += 0.1
-                if self.motor_ctl < 0: self.motor_ctl = 0
+                if self._motor_ctl < 0: self._motor_ctl = 0
 
                 XX = int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl)
                 YY = int(self.neutral_pulse+max(self._Ymin,-(self._Y+self._Ytrim+self._Yover*2))*self._motor_ctl)
@@ -281,7 +276,6 @@ class testDriveNode(Node):
                 self._color2[cx1:cx2+1] = fcol
                 #self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
     def speed_monitor_callback(self, msg):
-        self.get_logger().info('Speed monitor: "%s" m/s' % msg)
         self._speed = eval(msg.data)
 
 def main(args=None):

@@ -97,7 +97,7 @@ class s2eLidarReaderNode(Node):
     col1_labels = [f'COL1.{i}' for i in range(1, num_colr+1)]
     col2_labels = [f'COL2.{i}' for i in range(1, num_colr+1)]
 
-    labels = ['X', 'Y'] + scan_labels + col1_labels + col2_labels + ['MAGX', 'MAGY', 'MAGZ', 'ACCX', 'ACCY', 'ACCZ', 'GYRX', 'GYRY', 'GYRZ']
+    labels = ['X', 'Y'] + scan_labels + col1_labels + col2_labels
     line = ','.join(labels) + '\n'
 
     filepath = '/home/rrrschuetz/test/file.txt'
@@ -195,7 +195,7 @@ class s2eLidarReaderNode(Node):
 
     def speed_monitor_callback(self, msg):
         self._speed = eval(msg.data)
-        self.get_logger().info('Speed monitor: %s m/s' % self._speed)
+        #self.get_logger().info('Speed monitor: %s m/s' % self._speed)
 
 def main(args=None):
     rclpy.init(args=args)
