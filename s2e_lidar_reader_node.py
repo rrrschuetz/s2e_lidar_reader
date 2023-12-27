@@ -112,6 +112,13 @@ class s2eLidarReaderNode(Node):
             qos_profile
         )
 
+        self.subscription_speed = self.create_subscription(
+            String,
+            'speed',
+            self.speed_callback,
+            qos_profile
+        )
+
     num_scan = 3240
     num_colr = HPIX  # Assuming HPIX is defined elsewhere in your code
     
@@ -231,6 +238,8 @@ class s2eLidarReaderNode(Node):
             if fcol > 0.0:
                 self._color2[cx1:cx2+1] = fcol
                 #self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
+    def speed_callback(self, msg):
+        self.get_logger().info('msg: "%s"' % msg)
 
 def main(args=None):
     rclpy.init(args=args)
