@@ -105,6 +105,13 @@ class s2eLidarReaderNode(Node):
             qos_profile
         )
 
+        self.subscription_speed = self.create_subscription(
+            String,
+            'openmv_topic2',
+            self.openmv_h7_callback2,
+            qos_profile
+        )
+
     num_scan = 3240
     num_colr = HPIX  # Assuming HPIX is defined elsewhere in your code
     
