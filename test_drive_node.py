@@ -129,6 +129,8 @@ class testDriveNode(Node):
         return logger
     
     def lidar_callback(self, msg):
+        self.get_logger().info('current speed m/s: %s' % self._speed)
+
         if not self._tf_control: return
         if self._processing:
             self.get_logger().info('Scan skipped')
@@ -190,7 +192,7 @@ class testDriveNode(Node):
                 self._Y = 0.5
                 #self.get_logger().info('Predicted axes: "%s"' % predictions)
 
-                self.get_logger().info('current speed m/s: %s' % self._speed)
+                #self.get_logger().info('current speed m/s: %s' % self._speed)
                 if self._speed > self.speed_max:
                     self._motor_ctl -= 1.0
                     self.get_logger().info('reducing speed')
