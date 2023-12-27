@@ -13,29 +13,26 @@ class SpeedMonitorNode(Node):
         GPIO.setup(self.gpio_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
         # Set up a ROS2 publisher
-        self.publisher = self.create_publisher(String, 'speed', 10)
+        self.publisher = self.create_publisher(String, 'speed_monitor', 10)
 
         # Initialize variables for speed calculation
         self._count = 0
         self._last_time = None
-        self._distance_per_rotation = 0.15  # Set the distance covered per rotation (e.g., circumference of a wheel)
+        self._distance_per_rotation = 0.01  # Set the distance covered per rotation (e.g., circumference of a wheel)
 
         # Set up a GPIO event detect
         GPIO.add_event_detect(self.gpio_pin, GPIO.FALLING, callback=self.pin_callback)
 
     def pin_callback(self, channel):
-        current_time = time.time()
-        time_interval = 0
-        if self._last_time is not None:
-            time_interval = current_time - self._last_time
-            speed = self.calculate_speed(time_interval)
-            self.publish_speed(speed)
-        self._last_time = current_time
-
-        # Increment count on every falling edge (HIGH to LOW transition)
-        self._count += 1
-        speed = self.calculate_speed(time_interval)
-        self.publish_speed(speed)
+        if self._last_time is None:
+            self._last_time = time.time()
+        else:
+            self._count += 1
+            if self._count > 3:
+                self._count = 0
+                current_time = time.time()
+                self.publish_speed(self.calculate_speed(current_time - self._last_time))
+                self._last_time = current_time
 
     def calculate_speed(self, time_interval):
         # Speed = Distance / Time
