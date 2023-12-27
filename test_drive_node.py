@@ -216,7 +216,7 @@ class testDriveNode(Node):
             self._processing = False
        
     def joy_callback(self, msg):
-        self.get_logger().info('current speed m/s: %s' % self._speed)
+        #self.get_logger().info('current speed m/s: %s' % self._speed)
 
         if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
             # Check if 'A' button is pressed - switch on AI steering
