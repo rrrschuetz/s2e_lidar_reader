@@ -19,7 +19,7 @@ class SpeedMonitorNode(Node):
         self._count = 0
         self._speed = 0
         self._last_time = None
-        self._distance_per_rotation = 0.01  # 24 marks, 1cm per 3 marks
+        self._distance_per_rotation = 0.0033  # 24 marks, 1cm per 3 marks
 
         # Set up a GPIO event detect
         GPIO.add_event_detect(self.gpio_pin, GPIO.FALLING, callback=self.pin_callback)
