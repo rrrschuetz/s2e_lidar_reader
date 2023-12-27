@@ -16,7 +16,6 @@ class openmvH7Node(Node):
         time.sleep(10)
         self.serial_port.reset_input_buffer()
         self.serial_port.reset_output_buffer()
-
         self.timer = self.create_timer(0.05, self.timer_callback)  # Adjust the timer callback rate as needed
         self._counter = 0
 
