@@ -38,7 +38,7 @@ class SpeedMonitorNode(Node):
 
     def calculate_speed(self, time_interval):
         # Speed = Distance / Time
-        if time_interval > 0:x
+        if time_interval > 0:
             return self.distance_per_rotation / time_interval
         else:
             return 0
