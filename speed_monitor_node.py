@@ -17,6 +17,7 @@ class SpeedMonitorNode(Node):
 
         # Initialize variables for speed calculation
         self._count = 0
+        self._speed = 0
         self._last_time = None
         self._distance_per_rotation = 0.01  # 24 marks, 1cm per 3 marks
 
@@ -28,11 +29,12 @@ class SpeedMonitorNode(Node):
             self._last_time = time.time()
         else:
             self._count += 1
-            if self._count > 3:
+            if self._count > 0:
                 self._count = 0
                 current_time = time.time()
-                self.publish_speed(self.calculate_speed(current_time - self._last_time))
+                self._speed = self.calculate_speed(current_time - self._last_time)
                 self._last_time = current_time
+        self.publish_speed(self.calculate_speed(self._speed)
 
     def calculate_speed(self, time_interval):
         # Speed = Distance / Time

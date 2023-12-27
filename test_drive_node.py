@@ -187,6 +187,7 @@ class testDriveNode(Node):
                 
                 self._X = predictions[0, 0]
                 self._Y = predictions[0, 1]
+                self._Y = 0.5
                 #self.get_logger().info('Predicted axes: "%s"' % predictions)
 
                 self.get_logger().info('current speed m/s: %s' % self._speed)
