@@ -9,7 +9,7 @@ class XboxControllerNode(Node):
         super().__init__('xbox_controller_node')
         self.publisher_ = self.create_publisher(Joy, 'joy', 10)
         try:
-            self.device = InputDevice('/dev/input/event0)
+            self.device = InputDevice('/dev/input/event0')
             self.get_logger().info('Device initialized: %s' % self.device)
         except Exception as e:
             self.get_logger().error('Failed to initialize device: %s' % str(e))
