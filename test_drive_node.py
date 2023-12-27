@@ -6,7 +6,6 @@ from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDur
 from sensor_msgs.msg import LaserScan
 from sensor_msgs.msg import Joy
 from std_msgs.msg import String
-from sense_hat import SenseHat
 import numpy as np
 import tensorflow as tf
 import pickle
@@ -27,7 +26,6 @@ class testDriveNode(Node):
     servo_max = 375  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 * 1.5)
-    motor_ctl = 4
     speed_min = 0.2
     speed_max = 0.6
     
@@ -55,16 +53,11 @@ class testDriveNode(Node):
         self._color1 = np.zeros(self.HPIX)
         self._color2 = np.zeros(self.HPIX)
 
-        # Initialize sense hat
-        self._sense = SenseHat()
-        self._sense.clear()
-        
         # Initialize PCA9685
         self.get_logger().info('calibrating ESC')
         self._pwm = PCA9685()
         self._pwm.set_pwm_freq(50)  # Set frequency to 50Hz
         self._pwm.set_pwm(1, 0, self.neutral_pulse)
-        self._sense.show_message("ESC", text_colour=[0, 255, 0])
 
         self._counter = 0
         self._start_time = self.get_clock().now()
@@ -118,8 +111,6 @@ class testDriveNode(Node):
         # Get input and output tensors information
         self._input_details = self._interpreter.get_input_details()
         self._output_details = self._interpreter.get_output_details()
-
-        self._sense.show_message("OK", text_colour=[0, 255, 0])
         self.get_logger().info('prediction model loaded')
 
     def setup_custom_logger(self, filename):
@@ -164,7 +155,6 @@ class testDriveNode(Node):
                     self._processing = False
                     self._pwm.set_pwm(0, 0, int(self.servo_neutral))
                     self._pwm.set_pwm(1, 0, int(self.neutral_pulse))
-                    self._sense.show_message("STOP", text_colour=[255, 0, 0])
                     self.get_logger().info('Emergency brake active: "%s"' % min_section_index)
                     return
         
@@ -178,17 +168,6 @@ class testDriveNode(Node):
                 combined.extend(self._color1)
                 combined.extend(self._color2)
 
-                # add magnetometer data
-                mag = self._sense.get_compass_raw()
-                combined.extend([mag['x'], mag['y'], mag['z']])
-                # add accelerometer data
-                accel = self._sense.get_accelerometer_raw()
-                #combined.extend([accel['x'], accel['y'], accel['z']])
-                combined.extend([0.0,0.0,0.0])
-                # add gyroscope data
-                gyro = self._sense.get_gyroscope_raw()
-                combined.extend([gyro['x'], gyro['y'], gyro['z']])
-                    
                 # Reshape and standardize
                 combined = np.reshape(combined, (1, -1))
                 combined_standardized = self._scaler.transform(combined)
@@ -238,20 +217,16 @@ class testDriveNode(Node):
             # Check if 'A' button is pressed - switch on AI steering
             if msg.buttons[0] == 1:
                 self._tf_control = True
-                self._sense.show_message("ON", text_colour=[0, 0, 255])
             # Check if 'B' button is pressed - switch off AI steering
             elif msg.buttons[1] == 1:
                 self._tf_control = False
-                self._sense.show_message("OFF", text_colour=[0, 0, 255])
             # Check if 'X' button is pressed - trim right
             elif msg.buttons[2] == 1:
                 self._Xtrim += 0.05
-                self._sense.show_message(">>", text_colour=[0, 255, 0])
-                self.get_logger().info('X Trim: "%s"' % self._Xtrim)    
+                self.get_logger().info('X Trim: "%s"' % self._Xtrim)
             # Check if 'Y' button is pressed - trim left
             elif msg.buttons[3] == 1:
                 self._Xtrim -= 0.05
-                self._sense.show_message("<<", text_colour=[0, 255, 0])
                 self.get_logger().info('X Trim: "%s"' % self._Xtrim)
 
         elif hasattr(msg, 'axes') and len(msg.axes) > 5:

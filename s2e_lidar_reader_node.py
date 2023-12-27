@@ -5,7 +5,6 @@ from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDur
 from sensor_msgs.msg import LaserScan
 from sensor_msgs.msg import Joy
 from std_msgs.msg import String
-from sense_hat import SenseHat
 import numpy as np
 
 from Adafruit_PCA9685 import PCA9685
@@ -37,37 +36,9 @@ class s2eLidarReaderNode(Node):
         self._X = 0.0 
         self._Y = 0.0
         self._speed = 0.0
-        self._accel_offset_y = 0.0
-        self._acceleration = 0.0
         self._dt = 0.1
         self._start_time = self.get_clock().now()
         self._end_time = self.get_clock().now()
-
-        self._sense = SenseHat()
-        self._sense.clear()
-        self._sense.show_message("OK", text_colour=[255, 0, 0])
-
-        # Read temperature
-        temp = self._sense.get_temperature()
-        self.get_logger().info(f"Temperature: {temp}C")
-        # Read humidity
-        humidity = self._sense.get_humidity()
-        self.get_logger().info(f"Humidity: {humidity}%")
-        # Read pressure
-        pressure = self._sense.get_pressure()
-        self.get_logger().info(f"Pressure: {pressure}mbar")
-        # Read gyroscope data
-        gyro = self._sense.get_gyroscope_raw()
-        self.get_logger().info(f"Gyroscope: x={gyro['x']}, y={gyro['y']}, z={gyro['z']}")
-        # Read magnetometer data
-        mag = self._sense.get_compass_raw()
-        self.get_logger().info(f"Magnetometer: x={mag['x']}, y={mag['y']}, z={mag['z']}")
-
-        for i in range(100):
-            accel = self._sense.get_accelerometer_raw()
-            self._accel_offset_y += accel['y']
-        self._accel_offset_y /= -100
-        self.get_logger().info(f'Accelerometer calibration %s' % str(self._accel_offset_y))
 
         # Initialize PCA9685
         self._pwm = PCA9685()
@@ -152,17 +123,6 @@ class s2eLidarReaderNode(Node):
         scan_data += ','.join(str(e) for e in self._color1)+','
         scan_data += ','.join(str(e) for e in self._color2)
 
-        # add magentometer data
-        mag = self._sense.get_compass_raw()
-        scan_data += ','+str(mag['x'])+','+str(mag['y'])+','+str(mag['z'])
-        # add accelerometer data
-        accel = self._sense.get_accelerometer_raw()
-        #scan_data += ','+str(accel['x'])+','+str(accel['y'])+','+str(accel['z'])
-        scan_data += ',0.0,0.0,0.0'
-        # add gyroscope data
-        gyro = self._sense.get_gyroscope_raw()
-        scan_data += ','+str(gyro['x'])+','+str(gyro['y'])+','+str(gyro['z'])
-
         # Write the scan data to a file
         with open('/home/rrrschuetz/test/file.txt', 'a') as f:
             f.write(scan_data + '\n')
@@ -170,13 +130,6 @@ class s2eLidarReaderNode(Node):
         self._start_time = self.get_clock().now()
         self._dt = (self._start_time - self._end_time).nanoseconds * 1e-9
         self._end_time = self._start_time
-
-        #self._acceleration = 0
-        #for i in range(5):
-        #    self._acceleration += -(accel['y']+self._accel_offset_y)
-        #self._acceleration /= 5
-        #self._speed += self._dt * self._acceleration
-        #self.get_logger().info('current speed m/s: "%s" and y acceleration "%s"' % (self._speed,self._acceleration))
 
     def joy_callback(self, msg):
         #self.get_logger().info('Buttons: "%s"' % msg.buttons)
@@ -239,6 +192,7 @@ class s2eLidarReaderNode(Node):
             if fcol > 0.0:
                 self._color2[cx1:cx2+1] = fcol
                 #self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
+
 
     def speed_monitor_callback(self, msg):
         self.get_logger().info('Speed monitor: "%s" m/s' % msg)
