@@ -38,7 +38,7 @@ class testDriveNode(Node):
             
         self._processing = False
         self._tf_control = False
-        self._motor_ctl = 4
+        self._motor_ctl = 3
         self._X = 0.0 
         self._Y = 0.0
         self._Ymin = 2.0
@@ -190,8 +190,13 @@ class testDriveNode(Node):
                 #self.get_logger().info('Predicted axes: "%s"' % predictions)
 
                 self.get_logger().info('current speed m/s: %s' % self._speed)
-                if self._speed > self.speed_max: self._motor_ctl -= 0.5
-                if self._speed < self.speed_max: self._motor_ctl += 0.1
+                if self._speed > self.speed_max:
+                    self._motor_ctl -= 1.0
+                    self.get_logger().info('reducing speed')
+                elif self._speed < self.speed_min:
+                    self._motor_ctl += 0.1
+                    self.get_logger().info('increasing speed')
+
                 if self._motor_ctl < 0: self._motor_ctl = 0
 
                 XX = int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl)
