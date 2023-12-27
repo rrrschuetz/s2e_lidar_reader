@@ -305,7 +305,7 @@ class testDriveNode(Node):
             if fcol > 0.0:
                 self._color2[cx1:cx2+1] = fcol
                 #self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
-   def speed_monitor_callback(self, msg):
+    def speed_monitor_callback(self, msg):
         self.get_logger().info('Speed monitor: "%s" m/s' % msg)
         self._speed = eval(msg.data)
 
