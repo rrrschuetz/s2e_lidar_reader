@@ -7,37 +7,40 @@ import time
 class SpeedMonitorNode(Node):
     def __init__(self):
         super().__init__('speed_monitor')
-        # Set up GPIO pin
-        self.gpio_pin = 17  # Example GPIO pin
+        self.gpio_pin = 17
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.gpio_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
-        # Set up a ROS2 publisher
         self.publisher = self.create_publisher(String, 'speed_monitor', 10)
-
-        # Initialize variables for speed calculation
         self._count = 0
         self._speed = 0
         self._last_time = None
-        self._distance_per_rotation = 0.0033  # 24 marks, 1cm per 3 marks
+        self._last_movement_time = time.time()
+        self._distance_per_rotation = 0.01
+        self._stop_timeout = 1  # seconds to consider as stopped
 
-        # Set up a GPIO event detect
         GPIO.add_event_detect(self.gpio_pin, GPIO.FALLING, callback=self.pin_callback)
+        self.timer = self.create_timer(0.5, self.timer_callback)  # Check every second
 
     def pin_callback(self, channel):
+        self._last_movement_time = time.time()
         if self._last_time is None:
-            self._last_time = time.time()
+            self._last_time = self._last_movement_time
         else:
             self._count += 1
-            if self._count > 0:
+            if self._count > 3:
                 self._count = 0
-                current_time = time.time()
+                current_time = self._last_movement_time
                 self._speed = self.calculate_speed(current_time - self._last_time)
                 self._last_time = current_time
-        self.publish_speed(self._speed)
+                self.publish_speed(self._speed)
+
+    def timer_callback(self):
+        if time.time() - self._last_movement_time > self._stop_timeout:
+            self._speed = 0
+            self.publish_speed(self._speed)
 
     def calculate_speed(self, time_interval):
-        # Speed = Distance / Time
         if time_interval > 0:
             return self._distance_per_rotation / time_interval
         else:
@@ -47,7 +50,6 @@ class SpeedMonitorNode(Node):
         msg = String()
         msg.data = str(speed)
         self.publisher.publish(msg)
-        #self.get_logger().info('speed published: "%s"' % msg.data)
 
 def main(args=None):
     rclpy.init(args=args)
