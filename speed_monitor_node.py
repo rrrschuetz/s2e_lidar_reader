@@ -25,7 +25,7 @@ class SpeedMonitorNode(Node):
 
     def pin_callback(self, channel):
         current_time = time.time()
-        if self.last_time is not None:
+        if self._last_time is not None:
             time_interval = current_time - self._last_time
             speed = self.calculate_speed(time_interval)
             self.publish_speed(speed)
