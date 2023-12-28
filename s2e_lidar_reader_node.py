@@ -37,6 +37,7 @@ class s2eLidarReaderNode(Node):
         self._X = 0.0 
         self._Y = 0.0
         self._speed = 0.0
+        self._line_cnt = 0
         self._dt = 0.1
         self._start_time = self.get_clock().now()
         self._end_time = self.get_clock().now()
@@ -205,7 +206,9 @@ class s2eLidarReaderNode(Node):
         self._speed = eval(msg.data)
         #self.get_logger().info('Speed monitor: %s m/s' % self._speed)
     def line_detector_callback(self, msg):
-        self.get_logger().info('Line detected: %s ' % msg.data)
+        if msg.data:
+            self._line_cnt += 1
+            self.get_logger().info('Lines crossed: %s ' % msg.data)
 
 def main(args=None):
     rclpy.init(args=args)
