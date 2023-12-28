@@ -45,9 +45,7 @@ while True:
 
     blob_entries = []
     blobs = img.find_blobs(thresholds,0,roi,pixels_threshold=640, merge=True)
-    blobs = img.find_blobs(thresholds, pixels_threshold=640, merge=True, roi=roi,
-        x_stride=2, y_stride=2, invert=False, area_threshold=0, pixel_threshold=0, merge_margin=0, margin=0,
-        threshold_cb=lambda x: x[0] == 0, x_hist_bins_max=0, y_hist_bins_max=0)
+    blobs = img.find_blobs(thresholds, pixels_threshold=640, merge=True, roi=roi,x_stride=2, y_stride=2, invert=False, area_threshold=0, pixel_threshold=0, merge_margin=0, margin=0, threshold_cb=lambda x: x[0] == 0, x_hist_bins_max=0, y_hist_bins_max=0)
     for blob in blobs:
         img.draw_rectangle(blob.rect(),color=(0,0,255),thickness=5)
         img.draw_cross(blob.cx(), blob.cy())
