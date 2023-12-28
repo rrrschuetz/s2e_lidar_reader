@@ -5,6 +5,7 @@ from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDur
 from sensor_msgs.msg import LaserScan
 from sensor_msgs.msg import Joy
 from std_msgs.msg import String
+from std_msgs.msg import Bool
 import numpy as np
 
 from Adafruit_PCA9685 import PCA9685
@@ -87,6 +88,13 @@ class s2eLidarReaderNode(Node):
             String,
             'speed_monitor',
             self.speed_monitor_callback,
+            qos_profile
+        )
+
+        self.subscription_speed = self.create_subscription(
+            Bool,
+            'line_detector',
+            self.line_detector_callback,
             qos_profile
         )
 
@@ -196,6 +204,8 @@ class s2eLidarReaderNode(Node):
     def speed_monitor_callback(self, msg):
         self._speed = eval(msg.data)
         #self.get_logger().info('Speed monitor: %s m/s' % self._speed)
+    def line_detector_callback(self, msg):
+        self.get_logger().info('Line detected: %s ' % msg.data)
 
 def main(args=None):
     rclpy.init(args=args)
