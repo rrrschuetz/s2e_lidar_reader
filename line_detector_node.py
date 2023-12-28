@@ -5,7 +5,7 @@ from std_msgs.msg import Bool
 
 class LineDetectorNode(Node):
     def __init__(self):
-        super().__init__('ir_sensor_node')
+        super().__init__('line_detector_node')
         self.publisher = self.create_publisher(Bool, 'line_detector', 10)
         self.sensor_pin = 22  # Change as per your GPIO connection
         GPIO.setmode(GPIO.BCM)
@@ -26,7 +26,7 @@ def main(args=None):
     line_detector_node = LineDetectorNode()
 
     try:
-        rclpy.spin(ir_sensor_node)
+        rclpy.spin(line_detector_node)
     except KeyboardInterrupt:
         pass
     finally:
