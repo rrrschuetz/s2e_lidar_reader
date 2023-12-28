@@ -11,15 +11,14 @@ class LineDetectorNode(Node):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.sensor_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-        # Timer to read the sensor value every second
-        self.timer = self.create_timer(0.1, self.timer_callback)
+        # Set up event detection for the sensor pin
+        GPIO.add_event_detect(self.sensor_pin, GPIO.BOTH, callback=self.gpio_callback)
 
-    def timer_callback(self):
-        if GPIO.input(self.sensor_pin) != 0:
-            msg = Bool()
-            msg.data = True
-            self.publisher.publish(msg)
-            #self.get_logger().info('Publishing: "%s"' % msg.data)
+    def gpio_callback(self, channel):
+        msg = Bool()
+        msg.data = (GPIO.input(self.sensor_pin) != 0)
+        self.publisher.publish(msg)
+        # self.get_logger().info('Publishing: "%s"' % msg.data)
 
 def main(args=None):
     rclpy.init(args=args)
