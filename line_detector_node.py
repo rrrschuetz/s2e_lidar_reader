@@ -9,14 +9,13 @@ class LineDetectorNode(Node):
         self.publisher = self.create_publisher(Bool, 'line_detector', 10)
         self.sensor_pin = 22  # Change as per your GPIO connection
         GPIO.setmode(GPIO.BCM)
-        #GPIO.setup(self.sensor_pin, GPIO.IN)
         GPIO.setup(self.sensor_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
         # Timer to read the sensor value every second
-        self.timer = self.create_timer(1.0, self.timer_callback)
+        self.timer = self.create_timer(0.1, self.timer_callback)
 
     def timer_callback(self):
-        obstacle_detected = not GPIO.input(self.sensor_pin)
+        obstacle_detected = (0 == GPIO.input(self.sensor_pin))
         msg = Bool()
         msg.data = obstacle_detected
         self.publisher.publish(msg)
