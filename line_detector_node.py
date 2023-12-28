@@ -15,11 +15,11 @@ class LineDetectorNode(Node):
         self.timer = self.create_timer(0.1, self.timer_callback)
 
     def timer_callback(self):
-        obstacle_detected = (0 == GPIO.input(self.sensor_pin))
-        msg = Bool()
-        msg.data = obstacle_detected
-        self.publisher.publish(msg)
-        self.get_logger().info('Publishing: "%s"' % msg.data)
+        if GPIO.input(self.sensor_pin)) == 0:
+            msg = Bool()
+            msg.data = True
+            self.publisher.publish(msg)
+            #self.get_logger().info('Publishing: "%s"' % msg.data)
 
 def main(args=None):
     rclpy.init(args=args)
