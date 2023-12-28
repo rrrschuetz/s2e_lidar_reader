@@ -6,7 +6,7 @@ from std_msgs.msg import Bool
 class LineDetectorNode(Node):
     def __init__(self):
         super().__init__('ir_sensor_node')
-        self.publisher = self.create_publisher(Bool, 'ir_sensor', 10)
+        self.publisher = self.create_publisher(Bool, 'line_detector', 10)
         self.sensor_pin = 22  # Change as per your GPIO connection
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.sensor_pin, GPIO.IN)
