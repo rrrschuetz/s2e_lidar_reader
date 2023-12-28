@@ -166,7 +166,7 @@ class s2eLidarReaderNode(Node):
             fcol = float(color)+1.0
             if fcol > 0.0:
                 self._color1[cx1:cx2+1] = fcol
-                #self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
+                self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
 
     def openmv_h7_callback2(self, msg):
         #self.get_logger().info('cam msg received: "%s"' % msg)
