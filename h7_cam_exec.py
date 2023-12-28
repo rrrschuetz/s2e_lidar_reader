@@ -27,8 +27,12 @@ sensor.skip_frames(time = 2000)
 #green = (67, 51, -66, -29, 18, 56)
 green = (69, 38, -66, -20, 16, 55)
 red = (40, 74, 23, 84, 13, 62)
+#thresholds=[green, red]
 
-thresholds=[green, red]
+green_threshold = (30, 100, -64, -8, -32, 32) # Example HSV threshold for green
+red_threshold = (0, 100, 20, 100, 40, 80) # Example HSV threshold for red
+thresholds = [green_threshold, red_threshold]
+
 roi = [0,0,320,100]
 
 while True:
@@ -41,6 +45,9 @@ while True:
 
     blob_entries = []
     blobs = img.find_blobs(thresholds,0,roi,pixels_threshold=640, merge=True)
+    blobs = img.find_blobs(thresholds, pixels_threshold=640, merge=True, roi=roi,
+        x_stride=2, y_stride=2, invert=False, area_threshold=0, pixel_threshold=0, merge_margin=0, margin=0,
+        threshold_cb=lambda x: x[0] == 0, x_hist_bins_max=0, y_hist_bins_max=0)
     for blob in blobs:
         img.draw_rectangle(blob.rect(),color=(0,0,255),thickness=5)
         img.draw_cross(blob.cx(), blob.cy())
