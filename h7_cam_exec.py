@@ -29,8 +29,7 @@ black = (18, 30, -30, -5, 38, -10)
 silver = (100, 255, 0, 64, 0, 64)
 
 thresholds=[green, blue]
-#roi = [0,0,320,200]
-roi = [80,0,160,200]
+roi = [0,0,320,100]
 
 while True:
 
