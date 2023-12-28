@@ -218,7 +218,7 @@ class testDriveNode(Node):
                 XX = int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl)
                 YY = int(self.neutral_pulse+self._Y*self.motor_ctl)
                 #self.get_logger().info('Steering: %s,%s ' % (self._X,self._Xtrim))
-                self.get_logger().info('Power: %s,%s,%s ' % (self._Y,YY,self._dt))
+                #self.get_logger().info('Power: %s,%s,%s ' % (self._Y,YY,self._dt))
 
                 self._pwm.set_pwm(0, 0, XX)
                 self._pwm.set_pwm(1, 0, YY)
