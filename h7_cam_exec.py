@@ -27,11 +27,7 @@ sensor.skip_frames(time = 2000)
 #green = (67, 51, -66, -29, 18, 56)
 green = (69, 38, -66, -20, 16, 55)
 red = (40, 74, 23, 84, 13, 62)
-#thresholds=[green, red]
-
-green_threshold = (30, 100, -64, -8, -32, 32) # Example HSV threshold for green
-red_threshold = (0, 100, 20, 100, 40, 80) # Example HSV threshold for red
-thresholds = [green_threshold, red_threshold]
+thresholds=[green, red]
 
 roi = [0,0,320,100]
 
