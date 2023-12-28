@@ -28,7 +28,7 @@ white = (82, 100, -22, 2, 43, 5)
 black = (18, 30, -30, -5, 38, -10)
 silver = (100, 255, 0, 64, 0, 64)
 
-thresholds=[green, blue]
+thresholds=[green, red]
 roi = [0,0,320,100]
 
 while True:
