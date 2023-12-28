@@ -15,7 +15,7 @@ class LineDetectorNode(Node):
         self.timer = self.create_timer(0.1, self.timer_callback)
 
     def timer_callback(self):
-        if GPIO.input(self.sensor_pin)) == 0:
+        if GPIO.input(self.sensor_pin) == 0:
             msg = Bool()
             msg.data = True
             self.publisher.publish(msg)
