@@ -13,6 +13,21 @@ import logging
 from logging.handlers import RotatingFileHandler
 from Adafruit_PCA9685 import PCA9685
 
+class PIDController:
+    def __init__(self, kp, ki, kd):
+        self.kp = kp
+        self.ki = ki
+        self.kd = kd
+        self._previous_error = 0
+        self._integral = 0
+    def update(self, setpoint, measured_value):
+        error = setpoint - measured_value
+        self._integral += error
+        derivative = error - self._previous_error
+        output = self.kp * error + self.ki * self._integral + self.kd * derivative
+        self._previous_error = error
+        return output
+
 class testDriveNode(Node):
     HPIX = 320
     VPIX = 200
@@ -26,7 +41,9 @@ class testDriveNode(Node):
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 * 1.5)
     speed_min = 0.1
-    speed_max = 0.5
+    speed_max = 1.0
+    speed_target = 0.5
+    motor_ctl = 12
     
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
@@ -38,19 +55,17 @@ class testDriveNode(Node):
             
         self._processing = False
         self._tf_control = False
-        self._motor_ctl = 3
         self._X = 0.0 
         self._Y = 0.0
-        self._Ymin = 2.0
-        self._Yover = 0.0     # Y overdrive
         self._Xtrim = 0.0
-        self._Ytrim = 0.0
         self._speed = 0.0
         self._dt = 0.1
         self._cx1 = 0
         self._cx2 = 0
         self._color1 = np.zeros(self.HPIX)
         self._color2 = np.zeros(self.HPIX)
+
+        self.pid_controller = PIDController(kp=0.1, ki=0.01, kd=0.05)  # Tune these parameters
 
         # Initialize PCA9685
         self.get_logger().info('calibrating ESC')
@@ -188,24 +203,22 @@ class testDriveNode(Node):
                 predictions = self._interpreter.get_tensor(self._output_details[0]['index'])
                 
                 self._X = predictions[0, 0]
-                self._Y = predictions[0, 1]
-                self._Y = 0.5
+                #self._Y = predictions[0, 1]
                 #self.get_logger().info('Predicted axes: "%s"' % predictions)
 
                 #self.get_logger().info('current speed m/s: %s' % self._speed)
-                if self._speed > self.speed_max:
-                    self._motor_ctl -= 1.0
-                    self.get_logger().info('reducing speed')
-                elif self._speed < self.speed_min:
-                    self._motor_ctl += 0.05
-                    self.get_logger().info('increasing speed')
 
-                if self._motor_ctl < 0: self._motor_ctl = 0
+                if self._speed > self.speed_max:
+                    self._Y = 0
+                    self.get_logger().info('emergency brake, max speed exceeded')
+                else:
+                    delta = self.pid_controller.update(self.speed_target, self._speed)
+                    self._Y = delta *0.01
 
                 XX = int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl)
-                YY = int(self.neutral_pulse+max(self._Ymin,-(self._Y+self._Ytrim+self._Yover*2))*self._motor_ctl)
+                YY = int(self.neutral_pulse-self._Y*self.motor_ctl)
                 #self.get_logger().info('Steering: %s,%s ' % (self._X,self._Xtrim))
-                #self.get_logger().info('Power: %s,%s,%s,%s,%s ' % (self._Y,self._Ytrim,YY,self._Yover,limit))
+                self.get_logger().info('Power: %s,%s ' % (self._Y,YY))
 
                 self._pwm.set_pwm(0, 0, XX)
                 self._pwm.set_pwm(1, 0, YY)
@@ -222,6 +235,7 @@ class testDriveNode(Node):
             # Check if 'A' button is pressed - switch on AI steering
             if msg.buttons[0] == 1:
                 self._tf_control = True
+                self._Y = 1.0
             # Check if 'B' button is pressed - switch off AI steering
             elif msg.buttons[1] == 1:
                 self._tf_control = False
@@ -237,12 +251,11 @@ class testDriveNode(Node):
         elif hasattr(msg, 'axes') and len(msg.axes) > 5:
             self._X = msg.axes[2]
             self._Y = msg.axes[1]
-            self._Yover = msg.axes[5]
 
         #self.get_logger().info('Steering: %s,%s ' % (self._X,self._Xtrim))
-        #self.get_logger().info('Power: %s,%s,%s ' % (self._Y,self._Ytrim,self._Yover))
+        #self.get_logger().info('Power: %s ' % self._Y)
         self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl))
-        self._pwm.set_pwm(1, 0, int(self.neutral_pulse-(self._Y+self._Ytrim)*self._motor_ctl))
+        self._pwm.set_pwm(1, 0, int(self.neutral_pulse-self._Y*self.motor_ctl))
 
     def openmv_h7_callback1(self, msg):
         #self.get_logger().info('cam msg received: "%s"' % msg)
