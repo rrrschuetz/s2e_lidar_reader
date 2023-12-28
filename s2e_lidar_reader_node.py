@@ -208,7 +208,7 @@ class s2eLidarReaderNode(Node):
     def line_detector_callback(self, msg):
         if msg.data:
             self._line_cnt += 1
-            self.get_logger().info('Lines crossed: %s ' % msg.data)
+            self.get_logger().info('Lines crossed: %s ' % self._line_cnt)
 
 def main(args=None):
     rclpy.init(args=args)
