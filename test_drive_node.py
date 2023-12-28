@@ -6,6 +6,7 @@ from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDur
 from sensor_msgs.msg import LaserScan
 from sensor_msgs.msg import Joy
 from std_msgs.msg import String
+from std_msgs.msg import Bool
 import numpy as np
 import tensorflow as tf
 import pickle
@@ -111,6 +112,13 @@ class testDriveNode(Node):
             String,
             'speed_monitor',
             self.speed_monitor_callback,
+            qos_profile
+        )
+
+        self.subscription_speed = self.create_subscription(
+            Bool,
+            'line_detector',
+            self.line_detector_callback,
             qos_profile
         )
 
@@ -300,6 +308,8 @@ class testDriveNode(Node):
                 #self.get_logger().info('blob inserted: %s,%s,%s' % (color,x1,x2))
     def speed_monitor_callback(self, msg):
         self._speed = eval(msg.data)
+    def line_detector_callback(self, msg):
+        self.get_logger().info('Line detected: %s ' % msg.data)
 
 def main(args=None):
     rclpy.init(args=args)
