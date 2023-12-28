@@ -16,17 +16,16 @@ sensor.set_auto_gain(True) # must be turned off for color tracking
 sensor.set_auto_whitebal(True) # must be turned off for color tracking
 sensor.skip_frames(time = 2000)
 
-#yellow = (76, 86, 10, -15, 67, 35)
-yellow = (95,100,-24,2,12,46)
-#red = (58, 36, 58, 33, 54, -1)
-red = (44,100,35,77,-9,31)
-#green = (37, 52, -39, -27, 37, 17)
-#green = (52,100,-63,-26,-128,59)
-green = (100, 26, -128, -29, 9, 80)
-blue = (31, 92, -19, 6, -64, -17)
-white = (82, 100, -22, 2, 43, 5)
-black = (18, 30, -30, -5, 38, -10)
-silver = (100, 255, 0, 64, 0, 64)
+#yellow = (95,100,-24,2,12,46)
+#red = (44,100,35,77,-9,31)
+#green = (100, 26, -128, -29, 9, 80)
+#blue = (31, 92, -19, 6, -64, -17)
+#white = (82, 100, -22, 2, 43, 5)
+#black = (18, 30, -30, -5, 38, -10)
+#silver = (100, 255, 0, 64, 0, 64)
+
+green = (67, 51, -66, -29, 18, 56)
+red = (40, 74, 23, 84, 13, 62)
 
 thresholds=[green, red]
 roi = [0,0,320,100]
