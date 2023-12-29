@@ -33,7 +33,7 @@ green =  (30, 100, -64, -8, -32, 32)  # generic green
 red =  (30, 100, 15, 127, 15, 127)    # generic red
 
 thresholds=[green, red]
-roi = [0,0,320,100]
+roi = [0,0,320,140]
 
 while True:
 
@@ -46,10 +46,11 @@ while True:
     blob_entries = []
     blobs = img.find_blobs(thresholds,0,roi,pixels_threshold=160, merge=False)
     for blob in blobs:
-        img.draw_rectangle(blob.rect(),color=(0,0,255),thickness=5)
-        img.draw_cross(blob.cx(), blob.cy())
-        (b_x,b_y,b_w,b_h) = blob.rect()
-        blob_entries.append("{},{},{}".format(blob.code(), b_y, b_y+b_h))
+        if blob.cy()/blob.cx() > 1:
+            img.draw_rectangle(blob.rect(),color=(0,0,255),thickness=5)
+            img.draw_cross(blob.cx(), blob.cy())
+            (b_x,b_y,b_w,b_h) = blob.rect()
+            blob_entries.append("{},{},{}".format(blob.code(), b_y, b_y+b_h))
 
     bloblist = ','.join(blob_entries)
     if bloblist:
