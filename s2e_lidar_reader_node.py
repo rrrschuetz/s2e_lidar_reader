@@ -14,6 +14,7 @@ class s2eLidarReaderNode(Node):
     HPIX = 320
     VPIX = 200
     HFOV = 70.8
+    num_scan = 1620 # consider only front 18ß degrees
     reverse_pulse = 204
     neutral_pulse = 307
     forward_pulse = 409
@@ -31,7 +32,7 @@ class s2eLidarReaderNode(Node):
             reliability=QoSReliabilityPolicy.BEST_EFFORT,
             durability=QoSDurabilityPolicy.VOLATILE)
 
-        self._scan_interpolated = np.zeros(3240)
+        self._scan_interpolated = np.zeros(self.num_scan)
         self._color1 = np.zeros(self.HPIX)
         self._color2 = np.zeros(self.HPIX)
         self._X = 0.0 
@@ -99,12 +100,11 @@ class s2eLidarReaderNode(Node):
             qos_profile
         )
 
-    num_scan = 3240
     num_colr = HPIX  # Assuming HPIX is defined elsewhere in your code
     
     scan_labels = [f'SCAN.{i}' for i in range(1, num_scan+1)]
-    col1_labels = [f'COL1.{i}' for i in range(1, num_colr+1)]
-    col2_labels = [f'COL2.{i}' for i in range(1, num_colr+1)]
+    col1_labels = [f'COL1.{i}' for i in range(1, HPIX+1)]
+    col2_labels = [f'COL2.{i}' for i in range(1, HPIX+1)]
 
     labels = ['X', 'Y'] + scan_labels + col1_labels + col2_labels
     line = ','.join(labels) + '\n'
@@ -116,7 +116,7 @@ class s2eLidarReaderNode(Node):
 
     def lidar_callback(self, msg):
         # Convert the laser scan data to a string
-        scan = np.array(msg.ranges)
+        scan = np.array(msg.ranges[(num_scan/2):]+msg.ranges[:(num_scan/2)])
         #scan[scan == np.inf] = 0.0 
         scan[scan == np.inf] = np.nan
         x = np.arange(len(scan))

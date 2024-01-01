@@ -34,6 +34,7 @@ class testDriveNode(Node):
     VPIX = 200
     HFOV = 70.8
     MIN_DIST = 0.15
+    num_scan = 1620
     reverse_pulse = 204
     neutral_pulse = 307
     forward_pulse = 409
@@ -166,8 +167,9 @@ class testDriveNode(Node):
             self._end_time = self._start_time
             try:
                 # raw data
-                scan = np.array(msg.ranges)
-                    
+                #scan = np.array(msg.ranges)
+                scan = np.array(msg.ranges[(num_scan/2):]+msg.ranges[:(num_scan/2)])
+
                 # emergency brake assistant
                 num_sections = 36
                 section_data = np.array_split(scan, num_sections)
