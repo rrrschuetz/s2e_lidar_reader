@@ -15,6 +15,7 @@ class s2eLidarReaderNode(Node):
     VPIX = 200
     HFOV = 70.8
     num_scan = 1620 # consider only front 18ß degrees
+    num_scan2 = 810
     reverse_pulse = 204
     neutral_pulse = 307
     forward_pulse = 409
@@ -116,7 +117,7 @@ class s2eLidarReaderNode(Node):
 
     def lidar_callback(self, msg):
         # Convert the laser scan data to a string
-        scan = np.array(msg.ranges[(self.num_scan/2):]+msg.ranges[:(self.num_scan/2)])
+        scan = np.array(msg.ranges[(self.num_scan2):]+msg.ranges[:(self.num_scan2)])
         #scan[scan == np.inf] = 0.0 
         scan[scan == np.inf] = np.nan
         x = np.arange(len(scan))
