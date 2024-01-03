@@ -16,7 +16,7 @@ class LineDetectorNode(Node):
 
     def gpio_callback(self, channel):
         msg = Bool()
-        msg.data = (GPIO.input(self.sensor_pin) != 0)
+        msg.data = (GPIO.input(self.sensor_pin) == 0)
         self.publisher.publish(msg)
         # self.get_logger().info('Publishing: "%s"' % msg.data)
 
