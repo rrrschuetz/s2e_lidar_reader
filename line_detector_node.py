@@ -7,7 +7,7 @@ class LineDetectorNode(Node):
     def __init__(self):
         super().__init__('line_detector_node')
         self.publisher = self.create_publisher(Bool, 'line_detector', 10)
-        self.sensor_pin = 27  # Change as per your GPIO connection
+        self.sensor_pin = 22  # Change as per your GPIO connection
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.sensor_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
