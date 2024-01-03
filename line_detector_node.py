@@ -12,7 +12,7 @@ class LineDetectorNode(Node):
         GPIO.setup(self.sensor_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
         # Set up event detection for the sensor pin
-        GPIO.add_event_detect(self.sensor_pin, GPIO.BOTH, callback=self.gpio_callback)
+        GPIO.add_event_detect(self.sensor_pin, GPIO.RISING, callback=self.gpio_callback)
 
     def gpio_callback(self, channel):
         msg = Bool()
