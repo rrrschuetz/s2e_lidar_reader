@@ -116,7 +116,7 @@ class s2eLidarReaderNode(Node):
 
     def lidar_callback(self, msg):
         # Convert the laser scan data to a string
-        scan = np.array(msg.ranges[(num_scan/2):]+msg.ranges[:(num_scan/2)])
+        scan = np.array(msg.ranges[(self.num_scan/2):]+msg.ranges[:(self.num_scan/2)])
         #scan[scan == np.inf] = 0.0 
         scan[scan == np.inf] = np.nan
         x = np.arange(len(scan))
