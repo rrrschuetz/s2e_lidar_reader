@@ -8,9 +8,9 @@ class ColorSensorNode(Node):
     def __init__(self):
         super().__init__('color_sensor_node')
         # GPIO pin setup
-        self.S0 = 23  # Example GPIO pin number
-        self.S1 = 24  # Example GPIO pin number
-        self.S2 = 25  # Example GPIO pin number
+        self.S0 = 16  # Example GPIO pin number
+        self.S1 = 21  # Example GPIO pin number
+        self.S2 = 26  # Example GPIO pin number
         self.S3 = 5  # Example GPIO pin number
         self.OUT = 23 # Example GPIO pin number
         GPIO.setmode(GPIO.BCM)
