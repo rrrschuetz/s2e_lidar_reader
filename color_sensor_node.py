@@ -8,21 +8,49 @@ class ColorSensorNode(Node):
     def __init__(self):
         super().__init__('color_sensor_node')
         # GPIO pin setup
-        # [Same as previous setup]
+        self.S0 = 17  # Example GPIO pin number
+        self.S1 = 18  # Example GPIO pin number
+        self.S2 = 27  # Example GPIO pin number
+        self.S3 = 22  # Example GPIO pin number
+        self.OUT = 23 # Example GPIO pin number
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(self.OUT, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(self.S0, GPIO.OUT)
+        GPIO.setup(self.S1, GPIO.OUT)
+        GPIO.output(self.S0, GPIO.HIGH)
+        GPIO.output(self.S1, GPIO.LOW)
 
         # Frequency range definitions
-        # [Same as previous setup]
+        self.frequency_ranges = {
+            'Red': (300, 400),        
+            'Green': (200, 300),
+            'Blue': (400, 500)
+        }
 
         # Initialize the publisher
         self.publisher_ = self.create_publisher(Bool, 'color_detected', 10)
-
         self.get_logger().info('Color Sensor Node initialized!')
 
     def read_color(self):
-        # [Same as previous read_color method]
+        color_readings = {'Red': 0, 'Green': 0, 'Blue': 0}
+        for color, pins in {'Red': (GPIO.LOW, GPIO.LOW), 'Blue': (GPIO.LOW, GPIO.HIGH), 'Green': (GPIO.HIGH, GPIO.HIGH)}.items():
+            GPIO.output(self.S2, pins[0])
+            GPIO.output(self.S3, pins[1])
+            frequency = self.measure_frequency()
+            color_readings[color] = frequency
+
+            # Check if the frequency is in the predefined range
+            if self.frequency_ranges[color][0] <= frequency <= self.frequency_ranges[color][1]:
+                self.color_frequency_callback(color, frequency)
+
+        return color_readings
 
     def measure_frequency(self):
-        # [Same as previous measure_frequency method]
+        GPIO.wait_for_edge(self.OUT, GPIO.FALLING)
+        start_time = time.time()
+        for _ in range(10):
+            GPI.wait_for_edge(self.OUT, GPIO.FALLING)
+        return 10 / (time.time() - start_time)
 
     def color_frequency_callback(self, color, frequency):
         self.get_logger().info(f"Detected {color} color in frequency range! Frequency: {frequency} Hz")
