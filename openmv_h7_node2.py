@@ -7,6 +7,7 @@ class openmvH7Node(Node):
     def __init__(self):
         super().__init__('serial_node')
         self.publisher_ = self.create_publisher(String, 'openmv_topic2', 10)
+        self.publisher_log_ = self.create_publisher(String, 'main_logger', 10)
         self.serial_port = serial.Serial('/dev/ttyACM1', 115200, timeout=5)  # 115200
         self.get_logger().info('OpenMV H7 2 connected' )
         with open("/home/rrrschuetz/ros2_ws4/src/s2e_lidar_reader/s2e_lidar_reader/h7_cam_exec.py", 'rb') as file:
@@ -18,6 +19,10 @@ class openmvH7Node(Node):
         self.serial_port.reset_output_buffer()
         self.timer = self.create_timer(0.05, self.timer_callback)  # Adjust the timer callback rate as needed
         self._counter = 0
+
+        msg = String()
+        msg.data = "CAM2 online"
+        self.publisher_log_.publish(msg)
 
     def timer_callback(self):
         try:
@@ -58,6 +63,8 @@ def main(args=None):
     rclpy.init(args=args)
     node = openmvH7Node()
     rclpy.spin(node)
+    node.destroy_node()
+    rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

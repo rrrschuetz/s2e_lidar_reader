@@ -8,11 +8,11 @@ class DisplayNode(Node):
     def __init__(self):
         super().__init__('oled_display_node')
 
-        # Subscription for lidar_data from s2elidar_node
+        # Subscription for data from main
         self.logger_subscription = self.create_subscription(
             String,
             'main_logger',
-            self.lidar_callback,
+            self.logger_callback,
             10)
         self.logger_subscription  # prevent unused variable warning
 
@@ -31,13 +31,22 @@ class DisplayNode(Node):
         # Load default font
         self.font = ImageFont.load_default()
 
-    def logger_callback(self, msg):
-        message = f'MAIN: {msg.data}'
-        self.update_display(message)
+        # Initialize a list to store lines of text
+        self.lines = []
+        self.max_lines = self.height // 12  # Assuming 8 pixels per line of text
 
-    def update_display(self, message):
+    def logger_callback(self, msg):
+        message = f'INFO: {msg.data}'
+        self.lines.append(message)
+        # Remove the oldest line if we exceed max_lines
+        if len(self.lines) > self.max_lines:
+            self.lines.pop(0)
+        self.update_display()
+
+    def update_display(self):
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
-        self.draw.text((0, 0), message, font=self.font, fill=255)
+        for i, line in enumerate(self.lines):
+            self.draw.text((0, i*12), line, font=self.font, fill=255)
         self.display.image(self.image)
         self.display.display()
 

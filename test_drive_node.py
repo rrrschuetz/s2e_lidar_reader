@@ -45,10 +45,10 @@ class testDriveNode(Node):
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 * 1.7)
     speed_min = 0.1
-    speed_max = 2.0
-    speed_target = 1.0
+    speed_max = 1.0
+    speed_target = 0.3
     Ymax = 0.2
-    motor_ctl = 48
+    motor_ctl = 36
     
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
@@ -231,7 +231,7 @@ class testDriveNode(Node):
                 XX = int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl)
                 YY = int(self.neutral_pulse+self._Y*self.motor_ctl)
                 #self.get_logger().info('Steering: %s,%s ' % (self._X,self._Xtrim))
-                #self.get_logger().info('Power: %s,%s,%s ' % (self._Y,YY,self._dt))
+                self.get_logger().info('Power: %s,%s,%s ' % (self._Y,YY,self._dt))
 
                 self._pwm.set_pwm(0, 0, XX)
                 self._pwm.set_pwm(1, 0, YY)

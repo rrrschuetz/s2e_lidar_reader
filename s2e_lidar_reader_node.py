@@ -55,7 +55,7 @@ class s2eLidarReaderNode(Node):
         self._pwm.set_pwm(1, 0, self.neutral_pulse)
 
         msg = String()
-        msg.data = "ESC"
+        msg.data = "Switch on ESC"
         self.publisher_.publish(msg)
 
         self.subscription_lidar = self.create_subscription(
