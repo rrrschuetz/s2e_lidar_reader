@@ -24,28 +24,32 @@ class ColorSensorNode(Node):
 
         # Frequency range definitions
         self.frequency_ranges = {
-            'Red': (  8500,   9800),
-            'Green': (12000, 13000),
-            'Blue': ( 16000, 18000)
+            'Red':   (12000, 15500),
+            'Green': (10500, 14000),
+            'Blue':  (15000, 19000)
         }
 
         # Initialize the publisher
-        self.publisher_ = self.create_publisher(Bool, 'color_detected', 10)
+        self.publisher_ = self.create_publisher(Bool, 'color_sensor', 10)
         self.get_logger().info('Color Sensor Node initialized!')
 
         self.timer = self.create_timer(0.5, self.timer_callback)  # Adjust the timer callback rate as needed
 
     def timer_callback(self):
         color_readings = {'Red': 0, 'Green': 0, 'Blue': 0}
+        msg = Bool()
+        msg.data = True
         for color, pins in {'Red': (GPIO.LOW, GPIO.LOW), 'Blue': (GPIO.LOW, GPIO.HIGH), 'Green': (GPIO.HIGH, GPIO.HIGH)}.items():
             GPIO.output(self.S2, pins[0])
             GPIO.output(self.S3, pins[1])
             frequency = self.measure_frequency()
             color_readings[color] = frequency
-            # self.get_logger().info(f"Detected {color} color - Frequency: {frequency} Hz")
+            #self.get_logger().info(f"Detected {color} color - Frequency: {frequency} Hz")
             # Check if the frequency is in the predefined range
-            if self.frequency_ranges[color][0] <= frequency <= self.frequency_ranges[color][1]:
-                self.color_frequency_callback(color, frequency)
+            msg.data = msg.data and ( self.frequency_ranges[color][0] <= frequency <= self.frequency_ranges[color][1])
+        if msg.data:
+            self.get_logger().info('Line detected!')
+            self.publisher_.publish(msg)
         return color_readings
 
     def measure_frequency(self):
@@ -54,13 +58,6 @@ class ColorSensorNode(Node):
         for _ in range(10):
             GPIO.wait_for_edge(self.OUT, GPIO.FALLING)
         return 10 / (time.time() - start_time)
-
-    def color_frequency_callback(self, color, frequency):
-        self.get_logger().info(f"Detected {color} color in frequency range! Frequency: {frequency} Hz")
-        # Publish a True Boolean message
-        msg = Bool()
-        msg.data = True
-        self.publisher_.publish(msg)
 
 def main(args=None):
     rclpy.init(args=args)
