@@ -47,7 +47,8 @@ class testDriveNode(Node):
     speed_min = 0.1
     speed_max = 2.0
     speed_target = 1.0
-    motor_ctl = 12
+    Ymax = 0.2
+    motor_ctl = 48
     
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
@@ -225,8 +226,7 @@ class testDriveNode(Node):
                     self._Y = 0
                     self.get_logger().info('emergency brake, max speed exceeded')
                 else:
-                    delta = self.pid_controller.update(self.speed_target, self._speed)
-                    self._Y = delta * 4.0
+                    self._Y = min(self.Ymax,self.pid_controller.update(self.speed_target, self._speed))
 
                 XX = int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl)
                 YY = int(self.neutral_pulse+self._Y*self.motor_ctl)
