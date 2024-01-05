@@ -52,6 +52,8 @@ class testDriveNode(Node):
     
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
+        self.publisher_ = self.create_publisher(String, 'main_logger', 10)
+
         qos_profile = QoSProfile(
                 depth=1, 
                 history=QoSHistoryPolicy.KEEP_LAST, 
@@ -77,6 +79,10 @@ class testDriveNode(Node):
         self._pwm = PCA9685()
         self._pwm.set_pwm_freq(50)  # Set frequency to 50Hz
         self._pwm.set_pwm(1, 0, self.neutral_pulse)
+
+        msg = String()
+        msg.data = "Switch on ESC"
+        self.publisher_.publish(msg)
 
         self._counter = 0
         self._start_time = self.get_clock().now()
@@ -138,6 +144,9 @@ class testDriveNode(Node):
         self._input_details = self._interpreter.get_input_details()
         self._output_details = self._interpreter.get_output_details()
         self.get_logger().info('prediction model loaded')
+
+        msg.data = "Ready!"
+        self.publisher_.publish(msg)
 
     def setup_custom_logger(self, filename):
         logger = logging.getLogger('rclpy')
