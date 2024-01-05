@@ -127,8 +127,8 @@ class testDriveNode(Node):
 
         self.subscription_speed = self.create_subscription(
             Bool,
-            'line_detector',
-            self.line_detector_callback,
+            'color_sensor',
+            self.color_sensor_callback,
             qos_profile
         )
 
@@ -322,8 +322,10 @@ class testDriveNode(Node):
                 # self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
     def speed_monitor_callback(self, msg):
         self._speed = eval(msg.data)
-    def line_detector_callback(self, msg):
-        self.get_logger().info('Line detected: %s ' % msg.data)
+    def color_sensor_callback(self, msg):
+        if msg.data:
+            self._line_cnt += 1
+            self.get_logger().info('Lines crossed: %s ' % self._line_cnt)
 
 def main(args=None):
     rclpy.init(args=args)

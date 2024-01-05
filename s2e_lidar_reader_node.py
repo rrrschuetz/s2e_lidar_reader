@@ -103,7 +103,7 @@ class s2eLidarReaderNode(Node):
         self.subscription_speed = self.create_subscription(
             Bool,
             'color_sensor',
-            self.color_reader_callback,
+            self.color_sensor_callback,
             qos_profile
         )
 
@@ -217,7 +217,7 @@ class s2eLidarReaderNode(Node):
     def speed_monitor_callback(self, msg):
         self._speed = eval(msg.data)
         #self.get_logger().info('Speed monitor: %s m/s' % self._speed)
-    def color_reader_callback(self, msg):
+    def color_sensor_callback(self, msg):
         if msg.data:
             self._line_cnt += 1
             self.get_logger().info('Lines crossed: %s ' % self._line_cnt)
