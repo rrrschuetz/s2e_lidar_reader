@@ -28,6 +28,8 @@ class s2eLidarReaderNode(Node):
 
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
+        self.publisher_ = self.create_publisher(String, 'main_logger', 10)
+
         qos_profile = QoSProfile(
             depth=1,
             history=QoSHistoryPolicy.KEEP_LAST,
@@ -51,7 +53,10 @@ class s2eLidarReaderNode(Node):
 
         self.get_logger().info('calibrating ESC')
         self._pwm.set_pwm(1, 0, self.neutral_pulse)
-        #time.sleep(10)
+
+        msg = String()
+        msg.data = "ESC"
+        self.publisher_.publish(msg)
 
         self.subscription_lidar = self.create_subscription(
             LaserScan,

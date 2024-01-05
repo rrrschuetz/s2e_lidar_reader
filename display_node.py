@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Bool, String
+from std_msgs.msg import String
 import Adafruit_SSD1306
 from PIL import Image, ImageDraw, ImageFont
 
@@ -8,31 +8,31 @@ class DisplayNode(Node):
     def __init__(self):
         super().__init__('oled_display_node')
 
-        # Subscription for color_detected
-        self.color_subscription = self.create_subscription(
-            Bool,
-            'color_detected',
-            self.color_callback,
-            10)
-        self.color_subscription  # prevent unused variable warning
-
         # Subscription for lidar_data from s2elidar_node
-        self.lidar_subscription = self.create_subscription(
+        self.logger_subscription = self.create_subscription(
             String,
-            'lidar_data',
+            'main_logger',
             self.lidar_callback,
             10)
-        self.lidar_subscription  # prevent unused variable warning
+        self.logger_subscription  # prevent unused variable warning
 
-        # OLED display initialization
-        # [Same as previous setup]
+        # Initialize the display
+        self.display = Adafruit_SSD1306.SSD1306_128_64(rst=None, i2c_address=0x3C)
+        self.display.begin()
+        self.display.clear()
+        self.display.display()
 
-    def color_callback(self, msg):
-        message = 'Color Detected' if msg.data else 'No Color'
-        self.update_display(message)
+        # Create blank image for drawing
+        self.width = self.display.width
+        self.height = self.display.height
+        self.image = Image.new('1', (self.width, self.height))
+        self.draw = ImageDraw.Draw(self.image)
 
-    def lidar_callback(self, msg):
-        message = f'Lidar: {msg.data}'
+        # Load default font
+        self.font = ImageFont.load_default()
+
+    def logger_callback(self, msg):
+        message = f'MAIN: {msg.data}'
         self.update_display(message)
 
     def update_display(self, message):
