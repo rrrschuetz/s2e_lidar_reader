@@ -34,6 +34,7 @@ class testDriveNode(Node):
     VPIX = 200
     HFOV = 70.8
     MIN_DIST = 0.15
+    scan_max_dist = 2.8
     num_scan = 1620
     num_scan2 = 810
     reverse_pulse = 204
@@ -169,7 +170,7 @@ class testDriveNode(Node):
             try:
                 # raw data
                 #scan = np.array(msg.ranges)
-                scan = np.array(msg.ranges[(self.num_scan2):]+msg.ranges[:(self.num_scan2)])
+                scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
 
                 # emergency brake assistant
                 num_sections = 36
@@ -186,6 +187,7 @@ class testDriveNode(Node):
                     return
         
                 scan[scan == np.inf] = np.nan
+                scan[scan > self.scan_max_dist] = np.nan
                 x = np.arange(len(scan))
                 finite_vals = np.isfinite(scan)
                 scan_interpolated = np.interp(x, x[finite_vals], scan[finite_vals])
