@@ -11,8 +11,8 @@ class ColorSensorNode(Node):
         self.S0 = 16  # Example GPIO pin number
         self.S1 = 21  # Example GPIO pin number
         self.S2 = 26  # Example GPIO pin number
-        self.S3 = 5  # Example GPIO pin number
-        self.OUT = 23 # Example GPIO pin number
+        self.S3 = 6  # Example GPIO pin number
+        self.OUT = 5 # Example GPIO pin number
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.OUT, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.setup(self.S0, GPIO.OUT)
