@@ -33,7 +33,7 @@ class DisplayNode(Node):
 
         # Initialize a list to store lines of text
         self.lines = []
-        self.max_lines = self.height // 12  # Assuming 8 pixels per line of text
+        self.max_lines = self.height // 15  # Assuming 15 pixels per line of text
 
     def logger_callback(self, msg):
         message = f'INFO: {msg.data}'
@@ -46,7 +46,7 @@ class DisplayNode(Node):
     def update_display(self):
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
         for i, line in enumerate(self.lines):
-            self.draw.text((0, i*12), line, font=self.font, fill=255)
+            self.draw.text((0, i*15), line, font=self.font, fill=255)
         self.display.image(self.image)
         self.display.display()
 
