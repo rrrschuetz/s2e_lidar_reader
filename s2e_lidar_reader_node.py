@@ -14,7 +14,7 @@ class s2eLidarReaderNode(Node):
     HPIX = 320
     VPIX = 200
     HFOV = 70.8
-    scan_max_dist = 3.0
+    scan_max_dist = 2.8
     num_scan = 1620 # consider only front 18ß degrees
     num_scan2 = 810
     reverse_pulse = 204
