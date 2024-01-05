@@ -24,16 +24,16 @@ class ColorSensorNode(Node):
 
         # Frequency range definitions
         self.frequency_ranges = {
-            'Red':   (12000, 15500),
-            'Green': (10500, 14000),
-            'Blue':  (15000, 19000)
+            'Red':   (10000, 17000),
+            'Green': ( 8000, 16000),
+            'Blue':  (13000, 20000)
         }
 
         # Initialize the publisher
         self.publisher_ = self.create_publisher(Bool, 'color_sensor', 10)
         self.get_logger().info('Color Sensor Node initialized!')
 
-        self.timer = self.create_timer(0.5, self.timer_callback)  # Adjust the timer callback rate as needed
+        self.timer = self.create_timer(0.01, self.timer_callback)  # Adjust the timer callback rate as needed
 
     def timer_callback(self):
         color_readings = {'Red': 0, 'Green': 0, 'Blue': 0}
@@ -48,7 +48,7 @@ class ColorSensorNode(Node):
             # Check if the frequency is in the predefined range
             msg.data = msg.data and ( self.frequency_ranges[color][0] <= frequency <= self.frequency_ranges[color][1])
         if msg.data:
-            self.get_logger().info('Line detected!')
+            #self.get_logger().info('Line detected!')
             self.publisher_.publish(msg)
         return color_readings
 
