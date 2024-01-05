@@ -33,7 +33,7 @@ class ColorSensorNode(Node):
         self.publisher_ = self.create_publisher(Bool, 'color_sensor', 10)
         self.get_logger().info('Color Sensor Node initialized!')
 
-        self.timer = self.create_timer(0.01, self.timer_callback)  # Adjust the timer callback rate as needed
+        self.timer = self.create_timer(0.5, self.timer_callback)  # Adjust the timer callback rate as needed
 
     def timer_callback(self):
         color_readings = {'Red': 0, 'Green': 0, 'Blue': 0}
