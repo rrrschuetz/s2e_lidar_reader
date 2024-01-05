@@ -15,10 +15,10 @@ class ColorSensorNode(Node):
         self.OUT = 23 # Example GPIO pin number
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.OUT, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        #GPIO.setup(self.S0, GPIO.OUT)
-        #GPIO.setup(self.S1, GPIO.OUT)
-        #GPIO.output(self.S0, GPIO.HIGH)
-        #GPIO.output(self.S1, GPIO.LOW)
+        GPIO.setup(self.S0, GPIO.OUT)
+        GPIO.setup(self.S1, GPIO.OUT)
+        GPIO.output(self.S0, GPIO.HIGH)
+        GPIO.output(self.S1, GPIO.LOW)
 
         # Frequency range definitions
         self.frequency_ranges = {
