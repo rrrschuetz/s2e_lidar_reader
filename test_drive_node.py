@@ -66,6 +66,7 @@ class testDriveNode(Node):
         self._Y = 0.0
         self._Xtrim = 0.0
         self._speed = 0.0
+        self._line_cnt = 0
         self._dt = 0.1
         self._cx1 = 0
         self._cx2 = 0
