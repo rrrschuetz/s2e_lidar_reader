@@ -34,20 +34,28 @@ class ColorSensorNode(Node):
         self.get_logger().info('Color Sensor Node initialized!')
 
         # Use interrupts for efficient detection
+        GPIO.remove_event_detect(self.OUT)  # Remove any existing event detection
         GPIO.add_event_detect(self.OUT, GPIO.FALLING, callback=self.frequency_measurement_callback, bouncetime=10)
 
     def frequency_measurement_callback(self, channel):
-        frequency = self.measure_frequency()
-        self.get_logger().info(f"Detected Blue color - Frequency: {frequency} Hz")
-        msg = Bool()
-        msg.data = self.blue_frequency_range[0] <= frequency <= self.blue_frequency_range[1]
-        self.publisher_.publish(msg)
+        # Start frequency measurement
+        self.start_time = time.time()
+        self.pulse_count = 0
+        GPIO.add_event_detect(self.OUT, GPIO.FALLING, callback=self.count_pulse)
 
-    def measure_frequency(self):
-        start_time = time.time()
-        for _ in range(5):  # Reduced number of samples for faster response
-            GPIO.wait_for_edge(self.OUT, GPIO.FALLING)
-        return 5 / (time.time() - start_time)
+    def count_pulse(self, channel):
+        self.pulse_count += 1
+        if self.pulse_count >= 5:  # Number of pulses to count
+            GPIO.remove_event_detect(self.OUT)  # Stop counting pulses
+            frequency = self.calculate_frequency()
+            self.get_logger().info(f"Detected Blue color - Frequency: {frequency} Hz")
+            msg = Bool()
+            msg.data = self.blue_frequency_range[0] <= frequency <= self.blue_frequency_range[1]
+            self.publisher_.publish(msg)
+
+    def calculate_frequency(self):
+        elapsed_time = time.time() - self.start_time
+        return self.pulse_count / elapsed_time
 
 def main(args=None):
     rclpy.init(args=args)
