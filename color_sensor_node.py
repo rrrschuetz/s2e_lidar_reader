@@ -33,37 +33,41 @@ class ColorSensorNode(Node):
         self.publisher_ = self.create_publisher(Bool, 'color_sensor', 10)
         self.get_logger().info('Color Sensor Node initialized!')
 
-        # Use interrupts for efficient detection
-        GPIO.remove_event_detect(self.OUT)  # Remove any existing event detection
-        GPIO.add_event_detect(self.OUT, GPIO.FALLING, callback=self.frequency_measurement_callback, bouncetime=10)
-
-    def frequency_measurement_callback(self, channel):
-        # Start frequency measurement
+       # Continuous monitoring setup
         self.start_time = time.time()
         self.pulse_count = 0
         GPIO.add_event_detect(self.OUT, GPIO.FALLING, callback=self.count_pulse)
 
     def count_pulse(self, channel):
         self.pulse_count += 1
-        if self.pulse_count >= 5:  # Number of pulses to count
-            GPIO.remove_event_detect(self.OUT)  # Stop counting pulses
-            frequency = self.calculate_frequency()
-            self.get_logger().info(f"Detected Blue color - Frequency: {frequency} Hz")
-            msg = Bool()
-            msg.data = self.blue_frequency_range[0] <= frequency <= self.blue_frequency_range[1]
-            self.publisher_.publish(msg)
 
-    def calculate_frequency(self):
-        elapsed_time = time.time() - self.start_time
-        return self.pulse_count / elapsed_time
+    def monitor_frequency(self):
+        self.get_logger().info('monitor_frequency() called')
+        current_time = time.time()
+        if current_time - self.start_time >= 1:  # One-second interval
+            frequency = self.pulse_count / (current_time - self.start_time)
+            self.get_logger().info(f"Detected Frequency: {frequency} Hz")
+            is_blue = self.blue_frequency_range[0] <= frequency <= self.blue_frequency_range[1]
+            msg = Bool()
+            msg.data = is_blue
+            self.publisher_.publish(msg)
+            # Reset the counter and timer
+            self.pulse_count = 0
+            self.start_time = current_time
 
 def main(args=None):
     rclpy.init(args=args)
     node = ColorSensorNode()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.shutdown()
-    GPIO.cleanup()
+    try:
+        while True:
+            rclpy.spin_once(node)
+            node.monitor_frequency()  # Call the monitoring function
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+        GPIO.cleanup()
 
 if __name__ == '__main__':
     main()
