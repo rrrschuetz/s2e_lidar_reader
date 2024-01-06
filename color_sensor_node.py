@@ -58,16 +58,10 @@ class ColorSensorNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = ColorSensorNode()
-    try:
-        while True:
-            rclpy.spin_once(node)
-            node.monitor_frequency()  # Call the monitoring function
-    except KeyboardInterrupt:
-        pass
-    finally:
-        node.destroy_node()
-        rclpy.shutdown()
-        GPIO.cleanup()
+    rclpy.spin(speed_monitor)
+    speed_monitor.destroy_node()
+    rclpy.shutdown()
+    GPIO.cleanup()
 
 if __name__ == '__main__':
     main()
