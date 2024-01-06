@@ -58,8 +58,8 @@ class ColorSensorNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = ColorSensorNode()
-    rclpy.spin(speed_monitor)
-    speed_monitor.destroy_node()
+    rclpy.spin(node)
+    node.destroy_node()
     rclpy.shutdown()
     GPIO.cleanup()
 
