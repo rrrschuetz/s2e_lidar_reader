@@ -40,20 +40,19 @@ class ColorSensorNode(Node):
 
     def count_pulse(self, channel):
         self.pulse_count += 1
+        if self.pulse_count > self.blue_frequency_range[1]: self.monitor_frequency()
 
     def monitor_frequency(self):
-        self.get_logger().info('monitor_frequency() called')
         current_time = time.time()
-        if current_time - self.start_time >= 1:  # One-second interval
-            frequency = self.pulse_count / (current_time - self.start_time)
-            self.get_logger().info(f"Detected Frequency: {frequency} Hz")
-            is_blue = self.blue_frequency_range[0] <= frequency <= self.blue_frequency_range[1]
-            msg = Bool()
-            msg.data = is_blue
-            self.publisher_.publish(msg)
-            # Reset the counter and timer
-            self.pulse_count = 0
-            self.start_time = current_time
+        frequency = self.pulse_count / (current_time - self.start_time)
+        self.get_logger().info(f"Detected Frequency: {frequency} Hz")
+        is_blue = self.blue_frequency_range[0] <= frequency <= self.blue_frequency_range[1]
+        msg = Bool()
+        msg.data = is_blue
+        self.publisher_.publish(msg)
+        # Reset the counter and timer
+        self.pulse_count = 0
+        self.start_time = current_time
 
 def main(args=None):
     rclpy.init(args=args)
