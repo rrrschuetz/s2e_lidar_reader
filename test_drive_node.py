@@ -97,8 +97,6 @@ class testDriveNode(Node):
         self._start_time = self.get_clock().now()
         self._end_time = self.get_clock().now()
 
-        self._custom_logger = self.setup_custom_logger('/home/rrrschuetz/test/logfile.txt')
-
         self.subscription_lidar = self.create_subscription(
             LaserScan,
             '/scan',
