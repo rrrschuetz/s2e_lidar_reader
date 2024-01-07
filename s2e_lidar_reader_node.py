@@ -7,8 +7,8 @@ from sensor_msgs.msg import Joy
 from std_msgs.msg import String
 from std_msgs.msg import Bool
 import numpy as np
-
 from Adafruit_PCA9685 import PCA9685
+from sense_hat import SenseHat
 
 class s2eLidarReaderNode(Node):
     HPIX = 320
@@ -46,6 +46,8 @@ class s2eLidarReaderNode(Node):
         self._dt = 0.1
         self._start_time = self.get_clock().now()
         self._end_time = self.get_clock().now()
+        self._inital_heading = self.get_heading()
+        self.get_logger().info(f"Initial heading: {self._initial_heading} degrees")
 
         # Initialize PCA9685
         self._pwm = PCA9685()
@@ -120,6 +122,13 @@ class s2eLidarReaderNode(Node):
     labels = os.path.exists(filepath)
     with open(filepath, 'a') as f:
         if not labels: f.write(line)
+
+    def get_heading(self):
+        north = get_compass_raw()
+        heading = math.atan2(north['y'],nort['x'])
+        heading = math.degrees(heading)
+        heading = (heading + 360) % 360
+        return heading
 
     def lidar_callback(self, msg):
         # Convert the laser scan data to a string
