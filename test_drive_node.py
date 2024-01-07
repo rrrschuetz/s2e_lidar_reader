@@ -251,7 +251,7 @@ class testDriveNode(Node):
                     self._Y = 0
                     self.get_logger().info('emergency brake, max speed exceeded')
                 else:
-                    self._Y = min(self.Ymax,self.pid_controller.update(self.speed_target, self._speed))
+                    self._Y = max(0,min(self.Ymax,self.pid_controller.update(self.speed_target, self._speed)))  # max() for safety!
 
                 XX = int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl)
                 YY = int(self.neutral_pulse+self._Y*self.motor_ctl)
