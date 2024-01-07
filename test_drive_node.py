@@ -173,7 +173,7 @@ class testDriveNode(Node):
             # Round completion check
             self._current_heading = self.get_heading()
             heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
-            if abs(heading_change) > 1:
+            if abs(heading_change) > 5:
                 self._total_heading_change += heading_change
                 self._last_heading = self._current_heading
                 self.get_logger().info(f"Current Heading: {self._current_heading} degrees, Total Change: {self._total_heading_change} degrees")
