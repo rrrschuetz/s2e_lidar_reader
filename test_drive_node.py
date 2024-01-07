@@ -155,10 +155,11 @@ class testDriveNode(Node):
         heading = math.degrees(heading)
         heading = (heading + 360) % 360
         return heading
-    def calculate_heading_change(self, start_heading, current_heading):
-        # Calculate the smallest difference between two headings
-        diff = (current_heading - start_heading + 180) % 360 - 180
-        return diff if diff < 0 else 360 - diff
+    def calculate_heading_change(start_heading, current_heading):
+        # Calculate the difference between two headings
+        diff = (current_heading - start_heading + 360) % 360
+        # Return the smaller of the two possible angles
+        return min(diff, 360 - diff)
 
     def lidar_callback(self, msg):
         #self.get_logger().info('current speed m/s: %s' % self._speed)
@@ -173,10 +174,11 @@ class testDriveNode(Node):
             # Round completion check
             self._current_heading = self.get_heading()
             heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
+            self.get_logger().info("Heading change: %s" % heading_change)
             if abs(heading_change) > 10:
                 self._total_heading_change += heading_change
                 self._last_heading = self._current_heading
-                self.get_logger().info(f"Current Heading: {self._current_heading} degrees, Total Change: {self._total_heading_change} degrees")
+                self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
                 if self._total_heading_change >= 350:
                     self.get_logger().info("Round completed!")
 
@@ -185,10 +187,6 @@ class testDriveNode(Node):
             self._end_time = self._start_time
 
             try:
-                self._initial_heading = self.get_heading()
-                self._start_heading = self._initial_heading
-                self.get_logger().info(f"Heading: {self._initial_heading} degrees")
-
                 # raw data
                 #scan = np.array(msg.ranges)
                 scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
@@ -270,6 +268,7 @@ class testDriveNode(Node):
                 self._tf_control = True
                 self._Y = 1.0
                 self._start_heading = self.get_heading()
+                self._last_heading = self._start_heading
             # Check if 'B' button is pressed - switch off AI steering
             elif msg.buttons[1] == 1:
                 self._tf_control = False
