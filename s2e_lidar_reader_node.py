@@ -49,7 +49,7 @@ class s2eLidarReaderNode(Node):
 
         # Initialize compass
         self._sense = SenseHat()
-        self._inital_heading = self.get_heading()
+        self._initial_heading = self.get_heading()
         self.get_logger().info(f"Initial heading: {self._initial_heading} degrees")
 
         # Initialize PCA9685
