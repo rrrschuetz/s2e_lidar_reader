@@ -155,7 +155,7 @@ class testDriveNode(Node):
         heading = math.degrees(heading)
         heading = (heading + 360) % 360
         return heading
-    def calculate_heading_change(self. start_heading, current_heading):
+    def calculate_heading_change(self, start_heading, current_heading):
         # Calculate the raw difference
         raw_diff = current_heading - start_heading
         # Adjust the difference to find the shortest path and preserve the turn direction
