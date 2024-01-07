@@ -74,7 +74,8 @@ class testDriveNode(Node):
         self._color1 = np.zeros(self.HPIX)
         self._color2 = np.zeros(self.HPIX)
 
-        self.pid_controller = PIDController(kp=0.1, ki=0.01, kd=0.05)  # Tune these parameters
+        #self.pid_controller = PIDController(kp=0.1, ki=0.01, kd=0.05)  # Tune these parameters
+        self.pid_controller = PIDController(kp=0.2, ki=0.01, kd=0.05)  # Tune these parameters
 
         # Initialize compass
         self._sense = SenseHat()
@@ -183,8 +184,9 @@ class testDriveNode(Node):
             if abs(heading_change) > 1:
                 self._total_heading_change += heading_change
                 self._last_heading = self._current_heading
-                #self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
-                if self._total_heading_change >= 350:
+                self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
+                if self._total_heading_change >= 360:
+                    self._total_heading_change = 0
                     self.get_logger().info("Round completed!")
 
             self._start_time = self.get_clock().now()
@@ -243,7 +245,7 @@ class testDriveNode(Node):
                 #self._Y = predictions[0, 1]
                 #self.get_logger().info('Predicted axes: "%s"' % predictions)
 
-                self.get_logger().info('current speed m/s: %s' % self._speed)
+                #self.get_logger().info('current speed m/s: %s' % self._speed)
 
                 if self._speed > self.speed_max:
                     self._Y = 0
@@ -254,7 +256,7 @@ class testDriveNode(Node):
                 XX = int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl)
                 YY = int(self.neutral_pulse+self._Y*self.motor_ctl)
                 #self.get_logger().info('Steering: %s,%s ' % (self._X,self._Xtrim))
-                self.get_logger().info('Power: %s,%s,%s ' % (self._Y,YY,self._dt))
+                #self.get_logger().info('Power: %s,%s,%s ' % (self._Y,YY,self._dt))
 
                 self._pwm.set_pwm(0, 0, XX)
                 self._pwm.set_pwm(1, 0, YY)
