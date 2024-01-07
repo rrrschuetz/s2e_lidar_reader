@@ -172,11 +172,13 @@ class testDriveNode(Node):
 
             # Round completion check
             self._current_heading = self.get_heading()
-            self._total_heading_change += self.calculate_heading_change(self._last_heading, self._current_heading)
-            self.get_logger().info(f"Current Heading: {self._current_heading} degrees, Total Change: {self._total_heading_change} degrees")
-            if self._total_heading_change >= 350:
-                self.get_logger().info("Round completed!")
-            self._last_heading = self._current_heading
+            heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
+            if abs(heading_change) > 1:
+                self._total_heading_change += heading_change
+                self._last_heading = self._current_heading
+                self.get_logger().info(f"Current Heading: {self._current_heading} degrees, Total Change: {self._total_heading_change} degrees")
+                if self._total_heading_change >= 350:
+                    self.get_logger().info("Round completed!")
 
             self._start_time = self.get_clock().now()
             self._dt = (self._start_time - self._end_time).nanoseconds * 1e-9
