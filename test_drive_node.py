@@ -77,7 +77,7 @@ class testDriveNode(Node):
         self.pid_controller = PIDController(kp=0.1, ki=0.01, kd=0.05)  # Tune these parameters
 
         # Initialize compass
-        #self._sense = SenseHat()
+        self._sense = SenseHat()
         self._initial_heading = self.get_heading()
         self._start_heading = self._initial_heading
         self._last_heading = self._initial_heading
@@ -150,7 +150,6 @@ class testDriveNode(Node):
         self.publisher_.publish(msg)
 
     def get_heading(self):
-        return 0
         north = self._sense.get_compass_raw()
         heading = math.atan2(north['y'],north['x'])
         heading = math.degrees(heading)
