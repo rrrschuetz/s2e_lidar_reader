@@ -75,7 +75,7 @@ class testDriveNode(Node):
         self._color2 = np.zeros(self.HPIX)
 
         #self.pid_controller = PIDController(kp=0.1, ki=0.01, kd=0.05)  # Tune these parameters
-        self.pid_controller = PIDController(kp=0.2, ki=0.01, kd=0.05)  # Tune these parameters
+        self.pid_controller = PIDController(kp=0.1, ki=0.02, kd=0.05)  # Tune these parameters
 
         # Initialize compass
         self._sense = SenseHat()
