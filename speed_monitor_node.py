@@ -7,7 +7,7 @@ import time
 class SpeedMonitorNode(Node):
     def __init__(self):
         super().__init__('speed_monitor')
-        self.gpio_pin = 17
+        self.gpio_pin = 22
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.gpio_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
@@ -20,7 +20,7 @@ class SpeedMonitorNode(Node):
         self._stop_timeout = 0.1  # seconds to consider as stopped
 
         GPIO.add_event_detect(self.gpio_pin, GPIO.FALLING, callback=self.pin_callback)
-        self.timer = self.create_timer(0.1, self.timer_callback)  # Check every second
+        self.timer = self.create_timer(0.1, self.timer_callback)  # Check every 0.1 second
 
     def pin_callback(self, channel):
         self._last_movement_time = time.time()

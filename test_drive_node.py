@@ -243,7 +243,7 @@ class testDriveNode(Node):
                 #self._Y = predictions[0, 1]
                 #self.get_logger().info('Predicted axes: "%s"' % predictions)
 
-                #self.get_logger().info('current speed m/s: %s' % self._speed)
+                self.get_logger().info('current speed m/s: %s' % self._speed)
 
                 if self._speed > self.speed_max:
                     self._Y = 0
@@ -254,7 +254,7 @@ class testDriveNode(Node):
                 XX = int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl)
                 YY = int(self.neutral_pulse+self._Y*self.motor_ctl)
                 #self.get_logger().info('Steering: %s,%s ' % (self._X,self._Xtrim))
-                #self.get_logger().info('Power: %s,%s,%s ' % (self._Y,YY,self._dt))
+                self.get_logger().info('Power: %s,%s,%s ' % (self._Y,YY,self._dt))
 
                 self._pwm.set_pwm(0, 0, XX)
                 self._pwm.set_pwm(1, 0, YY)
@@ -338,6 +338,7 @@ class testDriveNode(Node):
                 # self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
     def speed_monitor_callback(self, msg):
         self._speed = eval(msg.data)
+        self.get_logger().warning("speed update received %s" % self._speed)
 
 def main(args=None):
     rclpy.init(args=args)
