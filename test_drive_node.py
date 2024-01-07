@@ -79,6 +79,8 @@ class testDriveNode(Node):
         # Initialize compass
         self._sense = SenseHat()
         self._initial_heading = self.get_heading()
+        self._start_heading = self._initial_heading
+        self._current_heading = self._initial_heading
         self.get_logger().info(f"Initial heading: {self._initial_heading} degrees")
 
         # Initialize PCA9685
@@ -165,10 +167,21 @@ class testDriveNode(Node):
         else:
             self._processing = True
 
+            # Round completion check
+            self._current_heading = self.get_heading()
+            self.get_logger().info(f"Initial heading: {self._current_heading} degrees")
+            if abs(self._start_heading - self._current_heading) < 10:
+                self.get_logger().info(f"Initial heading: {self._current_heading} degrees")
+
             self._start_time = self.get_clock().now()
             self._dt = (self._start_time - self._end_time).nanoseconds * 1e-9
             self._end_time = self._start_time
+
             try:
+                self._initial_heading = self.get_heading()
+                self._start_heading = self._initial_heading
+                self.get_logger().info(f"Heading: {self._initial_heading} degrees")
+
                 # raw data
                 #scan = np.array(msg.ranges)
                 scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
@@ -249,6 +262,7 @@ class testDriveNode(Node):
             if msg.buttons[0] == 1:
                 self._tf_control = True
                 self._Y = 1.0
+                self._start_heading = self.get_heading()
             # Check if 'B' button is pressed - switch off AI steering
             elif msg.buttons[1] == 1:
                 self._tf_control = False
