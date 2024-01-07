@@ -47,7 +47,7 @@ class testDriveNode(Node):
     servo_ctl = int(-(servo_max-servo_min)/2 * 1.7)
     speed_min = 0.1
     speed_max = 1.0
-    speed_target = 0.3
+    speed_target = 0.2
     Ymax = 0.2
     motor_ctl = 36
     
@@ -338,7 +338,7 @@ class testDriveNode(Node):
                 # self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
     def speed_monitor_callback(self, msg):
         self._speed = eval(msg.data)
-        self.get_logger().warning("speed update received %s" % self._speed)
+        #self.get_logger().warning("speed update received %s" % self._speed)
 
 def main(args=None):
     rclpy.init(args=args)
