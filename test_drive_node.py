@@ -80,7 +80,8 @@ class testDriveNode(Node):
         self._sense = SenseHat()
         self._initial_heading = self.get_heading()
         self._start_heading = self._initial_heading
-        self._current_heading = self._initial_heading
+        self._last_heading = self._initial_heading
+        self._total_heading_change = 0
         self.get_logger().info(f"Initial heading: {self._initial_heading} degrees")
 
         # Initialize PCA9685
@@ -154,6 +155,10 @@ class testDriveNode(Node):
         heading = math.degrees(heading)
         heading = (heading + 360) % 360
         return heading
+    def calculate_heading_change(start_heading, current_heading):
+        # Calculate the smallest difference between two headings
+        diff = (current_heading - start_heading + 180) % 360 - 180
+        return diff if diff < 0 else 360 - diff
 
     def lidar_callback(self, msg):
         #self.get_logger().info('current speed m/s: %s' % self._speed)
@@ -167,9 +172,11 @@ class testDriveNode(Node):
 
             # Round completion check
             self._current_heading = self.get_heading()
-            self.get_logger().info(f"Current heading: {self._current_heading} degrees")
-            if abs(self._start_heading - self._current_heading) < 10:
-                self.get_logger().info("Round completed")
+            self._total_heading_change += self.calculate_heading_change(self._last_heading, self._current_heading)
+            self.get_logger().info(f"Current Heading: {current_heading} degrees, Total Change: {total_heading_change} degrees")
+            if total_heading_change >= 350:
+                self.get_logger().info("Round completed!")
+            self._last_heading = self._current_heading
 
             self._start_time = self.get_clock().now()
             self._dt = (self._start_time - self._end_time).nanoseconds * 1e-9
