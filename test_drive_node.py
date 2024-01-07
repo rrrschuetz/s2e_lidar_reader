@@ -13,6 +13,7 @@ import pickle
 import logging
 from logging.handlers import RotatingFileHandler
 from Adafruit_PCA9685 import PCA9685
+from sense_hat import SenseHat
 
 class PIDController:
     def __init__(self, kp, ki, kd):
@@ -74,6 +75,11 @@ class testDriveNode(Node):
         self._color2 = np.zeros(self.HPIX)
 
         self.pid_controller = PIDController(kp=0.1, ki=0.01, kd=0.05)  # Tune these parameters
+
+        # Initialize compass
+        self._sense = SenseHat()
+        self._initial_heading = self.get_heading()
+        self.get_logger().info(f"Initial heading: {self._initial_heading} degrees")
 
         # Initialize PCA9685
         self.get_logger().info('calibrating ESC')
@@ -142,22 +148,13 @@ class testDriveNode(Node):
         msg.data = "Ready!"
         self.publisher_.publish(msg)
 
-    def setup_custom_logger(self, filename):
-        logger = logging.getLogger('rclpy')
-        logger.setLevel(logging.DEBUG)
-    
-        # Create a file handler and set its level to debug
-        handler = RotatingFileHandler(filename, maxBytes=1024*1024*10, backupCount=5) # 10MB file
-        handler.setLevel(logging.DEBUG)
-    
-        # Create a logging format
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        handler.setFormatter(formatter)
-    
-        # Add the handler to the logger
-        logger.addHandler(handler)
-        return logger
-    
+    def get_heading(self):
+        north = self._sense.get_compass_raw()
+        heading = math.atan2(north['y'],north['x'])
+        heading = math.degrees(heading)
+        heading = (heading + 360) % 360
+        return heading
+
     def lidar_callback(self, msg):
         #self.get_logger().info('current speed m/s: %s' % self._speed)
 
