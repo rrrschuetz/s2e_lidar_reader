@@ -46,6 +46,9 @@ class s2eLidarReaderNode(Node):
         self._dt = 0.1
         self._start_time = self.get_clock().now()
         self._end_time = self.get_clock().now()
+
+        # Initialize compass
+        self._sense = SenseHat()
         self._inital_heading = self.get_heading()
         self.get_logger().info(f"Initial heading: {self._initial_heading} degrees")
 
@@ -124,7 +127,7 @@ class s2eLidarReaderNode(Node):
         if not labels: f.write(line)
 
     def get_heading(self):
-        north = get_compass_raw()
+        north = _self.get_compass_raw()
         heading = math.atan2(north['y'],nort['x'])
         heading = math.degrees(heading)
         heading = (heading + 360) % 360
