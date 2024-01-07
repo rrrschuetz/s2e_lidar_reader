@@ -167,9 +167,9 @@ class testDriveNode(Node):
 
             # Round completion check
             self._current_heading = self.get_heading()
-            self.get_logger().info(f"Initial heading: {self._current_heading} degrees")
+            self.get_logger().info(f"Current heading: {self._current_heading} degrees")
             if abs(self._start_heading - self._current_heading) < 10:
-                self.get_logger().info(f"Initial heading: {self._current_heading} degrees")
+                self.get_logger().info("Round completed")
 
             self._start_time = self.get_clock().now()
             self._dt = (self._start_time - self._end_time).nanoseconds * 1e-9
