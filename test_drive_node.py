@@ -155,7 +155,7 @@ class testDriveNode(Node):
         heading = math.degrees(heading)
         heading = (heading + 360) % 360
         return heading
-    def calculate_heading_change(start_heading, current_heading):
+    def calculate_heading_change(self, start_heading, current_heading):
         # Calculate the difference between two headings
         diff = (current_heading - start_heading + 360) % 360
         # Return the smaller of the two possible angles
@@ -175,7 +175,7 @@ class testDriveNode(Node):
             self._current_heading = self.get_heading()
             heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
             self.get_logger().info("Heading change: %s" % heading_change)
-            if abs(heading_change) > 10:
+            if abs(heading_change) > 5:
                 self._total_heading_change += heading_change
                 self._last_heading = self._current_heading
                 self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
