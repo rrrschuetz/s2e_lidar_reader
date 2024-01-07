@@ -127,7 +127,7 @@ class s2eLidarReaderNode(Node):
         if not labels: f.write(line)
 
     def get_heading(self):
-        north = _self.get_compass_raw()
+        north = self._sense.get_compass_raw()
         heading = math.atan2(north['y'],nort['x'])
         heading = math.degrees(heading)
         heading = (heading + 360) % 360
