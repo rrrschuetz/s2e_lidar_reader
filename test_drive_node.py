@@ -155,11 +155,16 @@ class testDriveNode(Node):
         heading = math.degrees(heading)
         heading = (heading + 360) % 360
         return heading
-    def calculate_heading_change(self, start_heading, current_heading):
-        # Calculate the difference between two headings
-        diff = (current_heading - start_heading + 360) % 360
-        # Return the smaller of the two possible angles
-        return min(diff, 360 - diff)
+    def calculate_heading_change(self. start_heading, current_heading):
+        # Calculate the raw difference
+        raw_diff = current_heading - start_heading
+        # Adjust the difference to find the shortest path and preserve the turn direction
+        if raw_diff > 180:
+            return raw_diff - 360
+        elif raw_diff < -180:
+            return raw_diff + 360
+        else:
+            return raw_diff
 
     def lidar_callback(self, msg):
         #self.get_logger().info('current speed m/s: %s' % self._speed)
@@ -175,7 +180,7 @@ class testDriveNode(Node):
             self._current_heading = self.get_heading()
             heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
             self.get_logger().info("Heading change: %s" % heading_change)
-            if abs(heading_change) > 5:
+            if abs(heading_change) > 1:
                 self._total_heading_change += heading_change
                 self._last_heading = self._current_heading
                 self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
