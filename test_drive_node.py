@@ -126,13 +126,6 @@ class testDriveNode(Node):
             qos_profile
         )
 
-        self.subscription_speed = self.create_subscription(
-            Bool,
-            'color_sensor',
-            self.color_sensor_callback,
-            qos_profile
-        )
-
         # Load the trained model and the scaler
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
         with open('/home/rrrschuetz/test/scaler.pkl', 'rb') as f:
@@ -323,10 +316,6 @@ class testDriveNode(Node):
                 # self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
     def speed_monitor_callback(self, msg):
         self._speed = eval(msg.data)
-    def color_sensor_callback(self, msg):
-        if msg.data:
-            self._line_cnt += 1
-            self.get_logger().info('Lines crossed: %s ' % self._line_cnt)
 
 def main(args=None):
     rclpy.init(args=args)

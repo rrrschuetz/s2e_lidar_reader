@@ -105,13 +105,6 @@ class s2eLidarReaderNode(Node):
             qos_profile
         )
 
-        self.subscription_speed = self.create_subscription(
-            Bool,
-            'color_sensor',
-            self.color_sensor_callback,
-            qos_profile
-        )
-
     num_colr = HPIX  # Assuming HPIX is defined elsewhere in your code
     
     scan_labels = [f'SCAN.{i}' for i in range(1, num_scan+1)]
@@ -229,10 +222,6 @@ class s2eLidarReaderNode(Node):
     def speed_monitor_callback(self, msg):
         self._speed = eval(msg.data)
         #self.get_logger().info('Speed monitor: %s m/s' % self._speed)
-    def color_sensor_callback(self, msg):
-        if msg.data:
-            self._line_cnt += 1
-            self.get_logger().info('Lines crossed: %s ' % self._line_cnt)
 
 def main(args=None):
     rclpy.init(args=args)
