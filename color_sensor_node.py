@@ -15,49 +15,44 @@ class ColorSensorNode(Node):
         self.OUT = 5  # Example GPIO pin number
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.OUT, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        GPIO.setup(self.S0, GPIO.OUT)
-        GPIO.setup(self.S1, GPIO.OUT)
+        #GPIO.setup(self.S0, GPIO.OUT)
+        #GPIO.setup(self.S1, GPIO.OUT)
         GPIO.setup(self.S2, GPIO.OUT)
         GPIO.setup(self.S3, GPIO.OUT)
-        GPIO.output(self.S0, GPIO.HIGH)
-        GPIO.output(self.S1, GPIO.LOW)
+        #GPIO.output(self.S0, GPIO.HIGH)
+        #GPIO.output(self.S1, GPIO.LOW)
 
-        # Frequency range definitions
-        self.frequency_ranges = {
-            'Red':   (10000, 17000),
-            'Green': ( 8000, 16000),
-            'Blue':  (13000, 20000)
-        }
+        # Blue color setup
+        GPIO.output(self.S2, GPIO.LOW)
+        GPIO.output(self.S3, GPIO.HIGH)
+
+        # Frequency range for dark blue
+        self.blue_frequency_range = (13000, 20000)
 
         # Initialize the publisher
         self.publisher_ = self.create_publisher(Bool, 'color_sensor', 10)
         self.get_logger().info('Color Sensor Node initialized!')
 
-        self.timer = self.create_timer(0.5, self.timer_callback)  # Adjust the timer callback rate as needed
+       # Continuous monitoring setup
+        self.start_time = time.time()
+        self.pulse_count = 0
+        GPIO.add_event_detect(self.OUT, GPIO.FALLING, callback=self.count_pulse)
 
-    def timer_callback(self):
-        color_readings = {'Red': 0, 'Green': 0, 'Blue': 0}
+    def count_pulse(self, channel):
+        self.pulse_count += 1
+        if self.pulse_count > self.blue_frequency_range[1]: self.monitor_frequency()
+
+    def monitor_frequency(self):
+        current_time = time.time()
+        frequency = self.pulse_count / (current_time - self.start_time)
+        self.get_logger().info(f"Detected Frequency: {frequency} Hz")
+        is_blue = self.blue_frequency_range[0] <= frequency <= self.blue_frequency_range[1]
         msg = Bool()
-        msg.data = True
-        for color, pins in {'Red': (GPIO.LOW, GPIO.LOW), 'Blue': (GPIO.LOW, GPIO.HIGH), 'Green': (GPIO.HIGH, GPIO.HIGH)}.items():
-            GPIO.output(self.S2, pins[0])
-            GPIO.output(self.S3, pins[1])
-            frequency = self.measure_frequency()
-            color_readings[color] = frequency
-            #self.get_logger().info(f"Detected {color} color - Frequency: {frequency} Hz")
-            # Check if the frequency is in the predefined range
-            msg.data = msg.data and ( self.frequency_ranges[color][0] <= frequency <= self.frequency_ranges[color][1])
-        if msg.data:
-            #self.get_logger().info('Line detected!')
-            self.publisher_.publish(msg)
-        return color_readings
-
-    def measure_frequency(self):
-        GPIO.wait_for_edge(self.OUT, GPIO.FALLING)
-        start_time = time.time()
-        for _ in range(10):
-            GPIO.wait_for_edge(self.OUT, GPIO.FALLING)
-        return 10 / (time.time() - start_time)
+        msg.data = is_blue
+        self.publisher_.publish(msg)
+        # Reset the counter and timer
+        self.pulse_count = 0
+        self.start_time = current_time
 
 def main(args=None):
     rclpy.init(args=args)
