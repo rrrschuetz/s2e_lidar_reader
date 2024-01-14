@@ -75,7 +75,7 @@ class testDriveNode(Node):
         self._color2 = np.zeros(self.HPIX)
 
         #self.pid_controller = PIDController(kp=0.1, ki=0.01, kd=0.05)  # Tune these parameters
-        self.pid_controller = PIDController(kp=1, ki=0.04, kd=0.0)  # Tune these parameters
+        self.pid_controller = PIDController(kp=2, ki=0.04, kd=0.0)  # Tune these parameters
 
         # Initialize compass
         self._sense = SenseHat()
@@ -186,7 +186,7 @@ class testDriveNode(Node):
                     self._total_heading_change = 0
                     self._round_end_time = self.get_clock().now()
                     duration_in_seconds = (self._round_end_time - self._round_start_time).nanoseconds * 1e-9
-                    elf._round_start_time = self._round_end_time
+                    self._round_start_time = self._round_end_time
                     self.get_logger().info(f"Round {self._total_rounds} in {duration_in_seconds} sec completed!")
                     if self._total_rounds >= 3:
                         self._tf_control = False
