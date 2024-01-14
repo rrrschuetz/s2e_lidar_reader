@@ -185,8 +185,9 @@ class testDriveNode(Node):
                     self._total_rounds += 1
                     self._total_heading_change = 0
                     self._round_end_time = self.get_clock().now()
-                    self.get_logger().info(f"Round {self._total_rounds} in {self._round_end_time-self._round_start_time} sec completed!")
-                    self._round_start_time = self._round_end_time
+                    duration_in_seconds = (self._round_end_time - self._round_start_time).nanoseconds * 1e-9
+                    elf._round_start_time = self._round_end_time
+                    self.get_logger().info(f"Round {self._total_rounds} in {duration_in_seconds} sec completed!")
                     if self._total_rounds >= 3:
                         self._tf_control = False
                         self._processing = False
