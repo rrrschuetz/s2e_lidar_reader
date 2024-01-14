@@ -82,6 +82,7 @@ class testDriveNode(Node):
         self._initial_heading = self._sense.gyro['yaw']
         self._start_heading = self._initial_heading
         self._last_heading = self._initial_heading
+        self._total_rounds = 0
         self._total_heading_change = 0
         self.get_logger().info(f"Initial heading: {self._initial_heading} degrees")
 
@@ -178,10 +179,18 @@ class testDriveNode(Node):
             if abs(heading_change) > 1:
                 self._total_heading_change += heading_change
                 self._last_heading = self._current_heading
-                self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
+                #self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
                 if abs(self._total_heading_change) >= 360:
+                    self._total_rounds += 1
                     self._total_heading_change = 0
                     self.get_logger().info("Round completed!")
+                    if self._total_rounds >= 3:
+                        self._tf_control = False
+                        self._processing = False
+                        self._pwm.set_pwm(0, 0, int(self.servo_neutral))
+                        self._pwm.set_pwm(1, 0, int(self.neutral_pulse))
+                        self.get_logger().info("Race completed!")
+                        return
 
             self._start_time = self.get_clock().now()
             self._dt = (self._start_time - self._end_time).nanoseconds * 1e-9
