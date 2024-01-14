@@ -268,7 +268,7 @@ class testDriveNode(Node):
             if msg.buttons[0] == 1:
                 self._tf_control = True
                 self._Y = 1.0
-                self._start_heading = self.sense.gyro['yaw']
+                self._start_heading = self._sense.gyro['yaw']
                 self._last_heading = self._start_heading
             # Check if 'B' button is pressed - switch off AI steering
             elif msg.buttons[1] == 1:
