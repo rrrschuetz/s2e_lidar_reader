@@ -185,7 +185,7 @@ class testDriveNode(Node):
                 self._total_heading_change += heading_change
                 self._last_heading = self._current_heading
                 self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
-                if self._total_heading_change >= 360:
+                if abs(self._total_heading_change) >= 360:
                     self._total_heading_change = 0
                     self.get_logger().info("Round completed!")
 
