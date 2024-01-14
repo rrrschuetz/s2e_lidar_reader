@@ -79,7 +79,7 @@ class testDriveNode(Node):
 
         # Initialize compass
         self._sense = SenseHat()
-        self._initial_heading = self.get_heading()
+        self._initial_heading = self._sense.gyro['yaw']
         self._start_heading = self._initial_heading
         self._last_heading = self._initial_heading
         self._total_heading_change = 0
@@ -150,12 +150,6 @@ class testDriveNode(Node):
         msg.data = "Ready!"
         self.publisher_.publish(msg)
 
-    def get_heading(self):
-        north = self._sense.get_compass_raw()
-        heading = math.atan2(north['y'],north['x'])
-        heading = math.degrees(heading)
-        heading = (heading + 360) % 360
-        return heading
     def calculate_heading_change(self, start_heading, current_heading):
         # Calculate the raw difference
         raw_diff = current_heading - start_heading
@@ -178,7 +172,7 @@ class testDriveNode(Node):
             self._processing = True
 
             # Round completion check
-            self._current_heading = self.get_heading()
+            self._current_heading = self._sense.gyro['yaw']
             heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
             #self.get_logger().info("Heading change: %s" % heading_change)
             if abs(heading_change) > 1:
@@ -274,7 +268,7 @@ class testDriveNode(Node):
             if msg.buttons[0] == 1:
                 self._tf_control = True
                 self._Y = 1.0
-                self._start_heading = self.get_heading()
+                self._start_heading = self.sense.gyro['yaw']
                 self._last_heading = self._start_heading
             # Check if 'B' button is pressed - switch off AI steering
             elif msg.buttons[1] == 1:
