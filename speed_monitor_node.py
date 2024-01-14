@@ -16,7 +16,7 @@ class SpeedMonitorNode(Node):
         self._speed = 0
         self._last_time = None
         self._last_movement_time = time.time()
-        self._distance_per_rotation = 0.01
+        self._distance_per_rotation = 0.02
         self._stop_timeout = 0.1  # seconds to consider as stopped
 
         GPIO.add_event_detect(self.gpio_pin, GPIO.FALLING, callback=self.pin_callback)
