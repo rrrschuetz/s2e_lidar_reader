@@ -16,8 +16,10 @@ class SpeedMonitorNode(Node):
         self._speed = 0
         self._last_time = None
         self._last_movement_time = time.time()
-        self._distance_per_rotation = 0.02
+        self._distance_per_rotation = 0.05
         self._stop_timeout = 0.1  # seconds to consider as stopped
+        self.speeds = []  # List to store recent speeds
+        self.rolling_average_size = 5  # Number of measurements to consider for rolling average
 
         GPIO.add_event_detect(self.gpio_pin, GPIO.FALLING, callback=self.pin_callback)
         self.timer = self.create_timer(0.1, self.timer_callback)  # Check every 0.1 second
@@ -31,21 +33,29 @@ class SpeedMonitorNode(Node):
             if self._count > 3:
                 self._count = 0
                 current_time = self._last_movement_time
-                self._speed = self.calculate_speed(current_time - self._last_time)
-                self._last_time = current_time
-                self.publish_speed(self._speed)
-
+                speed = self.calculate_speed(current_time - self._last_time)
+                if speed != 0:  # Only add non-zero speeds to the list
+                    self.add_to_rolling_average(speed)
+                    self._last_time = current_time
+                    self.publish_speed(self.calculate_rolling_average())
+    def add_to_rolling_average(self, speed):
+        self.speeds.append(speed)
+        if len(self.speeds) > self.rolling_average_size:
+            self.speeds.pop(0)  # Remove the oldest speed measurement
+    def calculate_rolling_average(self):
+        if len(self.speeds) == 0:
+            return 0
+        return sum(self.speeds) / len(self.speeds)
     def timer_callback(self):
         if time.time() - self._last_movement_time > self._stop_timeout:
             self._speed = 0
-            self.publish_speed(self._speed)
-
+            self.add_to_rolling_average(self._speed)
+            self.publish_speed(self.calculate_rolling_average())
     def calculate_speed(self, time_interval):
         if time_interval > 0:
             return self._distance_per_rotation / time_interval
         else:
             return 0
-
     def publish_speed(self, speed):
         msg = String()
         msg.data = str(speed)
