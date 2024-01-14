@@ -96,9 +96,10 @@ class testDriveNode(Node):
         msg.data = "Switch on ESC"
         self.publisher_.publish(msg)
 
-        self._counter = 0
         self._start_time = self.get_clock().now()
-        self._end_time = self.get_clock().now()
+        self._end_time = self._start_time
+        self._round_start_time = self._start_time
+        self._round_end_time = self._start_time
 
         self.subscription_lidar = self.create_subscription(
             LaserScan,
@@ -183,7 +184,9 @@ class testDriveNode(Node):
                 if abs(self._total_heading_change) >= 360:
                     self._total_rounds += 1
                     self._total_heading_change = 0
-                    self.get_logger().info("Round completed!")
+                    self._round_end_time = self.get_clock().now()
+                    self.get_logger().info(f"Round {self._total_rounds} in {self._round_end_time-self._round_start_time} sec completed!")
+                    self._round_start_time = self._round_end_time
                     if self._total_rounds >= 3:
                         self._tf_control = False
                         self._processing = False
@@ -279,6 +282,7 @@ class testDriveNode(Node):
                 self._Y = 1.0
                 self._start_heading = self._sense.gyro['yaw']
                 self._last_heading = self._start_heading
+                self._round_start_time = self.get_clock().now()
             # Check if 'B' button is pressed - switch off AI steering
             elif msg.buttons[1] == 1:
                 self._tf_control = False
