@@ -46,8 +46,8 @@ class testDriveNode(Node):
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 * 1.7)
     speed_min = 0.1
-    speed_max = 1.5
-    speed_target = 0.6
+    speed_max = 2.0
+    speed_target = 0.8
     Ymax = 0.2
     motor_ctl = 36
     
@@ -75,7 +75,7 @@ class testDriveNode(Node):
         self._color2 = np.zeros(self.HPIX)
 
         #self.pid_controller = PIDController(kp=0.1, ki=0.01, kd=0.05)  # Tune these parameters
-        self.pid_controller = PIDController(kp=16, ki=0.04, kd=0.0)  # Tune these parameters
+        self.pid_controller = PIDController(kp=16, ki=0.5, kd=0.0)  # Tune these parameters
 
         # Initialize compass
         self._sense = SenseHat()
