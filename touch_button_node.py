@@ -17,7 +17,7 @@ class TouchButtonNode(Node):
         msg = Bool()
         msg.data = True
         self.publisher.publish(msg)
-        self.get_logger().info('Publishing: "%s"' % msg.data)
+        #self.get_logger().info('Publishing: "%s"' % msg.data)
 
 def main(args=None):
     rclpy.init(args=args)
