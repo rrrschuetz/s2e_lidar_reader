@@ -313,12 +313,15 @@ class testDriveNode(Node):
         self._pwm.set_pwm(1, 0, int(self.neutral_pulse-self._Y*self.motor_ctl))
 
     def touch_button_callback(self, msg):
-        self.get_logger().info('Start button pressed!')
         self._tf_control = True
         self._Y = 1.0
         self._start_heading = self._sense.gyro['yaw']
         self._last_heading = self._start_heading
         self._round_start_time = self.get_clock().now()
+        ack = String()
+        ack.data = "Race Mode ON"
+        self.publisher_.publish(ack)
+        self.get_logger().info('Start button pressed!')
 
     def openmv_h7_callback1(self, msg):
         #self.get_logger().info('cam msg received: "%s"' % msg)
