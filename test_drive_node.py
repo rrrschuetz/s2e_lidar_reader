@@ -47,7 +47,7 @@ class testDriveNode(Node):
     servo_ctl = int(-(servo_max-servo_min)/2 * 1.7)
     speed_min = 0.1
     speed_max = 2.0
-    speed_target = 0.8
+    speed_target = 0.7
     Ymax = 0.2
     motor_ctl = 36
     
