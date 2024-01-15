@@ -136,6 +136,13 @@ class testDriveNode(Node):
             qos_profile
         )
 
+        self.subscription_speed = self.create_subscription(
+            Bool,
+            'touch_button',
+            self.touch_button_callback,
+            qos_profile
+        )
+
         # Load the trained model and the scaler
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
         with open('/home/rrrschuetz/test/scaler.pkl', 'rb') as f:
@@ -304,6 +311,14 @@ class testDriveNode(Node):
         #self.get_logger().info('Power: %s ' % self._Y)
         self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl))
         self._pwm.set_pwm(1, 0, int(self.neutral_pulse-self._Y*self.motor_ctl))
+
+    def touch_button_callback(self, msg):
+        self.get_logger().info('Start button pressed!')
+        self._tf_control = True
+        self._Y = 1.0
+        self._start_heading = self._sense.gyro['yaw']
+        self._last_heading = self._start_heading
+        self._round_start_time = self.get_clock().now()
 
     def openmv_h7_callback1(self, msg):
         #self.get_logger().info('cam msg received: "%s"' % msg)
