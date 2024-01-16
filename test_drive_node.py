@@ -163,6 +163,7 @@ class testDriveNode(Node):
         self._output_details = self._interpreter.get_output_details()
         self.get_logger().info('prediction model loaded')
 
+        msg = String()
         msg.data = "Ready!"
         self.publisher_.publish(msg)
 
