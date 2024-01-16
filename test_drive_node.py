@@ -9,9 +9,9 @@ from std_msgs.msg import String
 from std_msgs.msg import Bool
 import numpy as np
 import tensorflow as tf
-import pickle
-import logging
-from logging.handlers import RotatingFileHandler
+#import pickle
+#import logging
+#from logging.handlers import RotatingFileHandler
 from Adafruit_PCA9685 import PCA9685
 from sense_hat import SenseHat
 
@@ -56,6 +56,7 @@ class testDriveNode(Node):
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
         self.publisher_ = self.create_publisher(String, 'main_logger', 10)
+        self.speed_publisher_ = self.create_publisher(String, 'set_speed', 10)
 
         qos_profile = QoSProfile(
                 depth=1, 
@@ -66,15 +67,18 @@ class testDriveNode(Node):
         self._processing = False
         self._tf_control = False
         self._X = 0.0 
-        self._Y = 0.0
+#        self._Y = 0.0
         self._Xtrim = 0.0
-        self._speed = 0.0
+#        self._speed = 0.0
         self._line_cnt = 0
         self._dt = 0.1
         self._cx1 = 0
         self._cx2 = 0
         self._color1 = np.zeros(self.HPIX)
         self._color2 = np.zeros(self.HPIX)
+
+        self._speed_msg = String()
+        self._speed_msg.data = "0"
 
  #       #self.pid_controller = PIDController(kp=0.1, ki=0.01, kd=0.05)  # Tune these parameters
  #       self.pid_controller = PIDController(kp=16, ki=0.5, kd=0.0)  # Tune these parameters
@@ -202,6 +206,8 @@ class testDriveNode(Node):
                         self._processing = False
                         self._pwm.set_pwm(0, 0, int(self.servo_neutral))
  #                       self._pwm.set_pwm(1, 0, int(self.neutral_pulse))
+                        self._speed_msg.data = "0"
+                        self.speed_publisher_.publish(self._speed_msg)
                         self.get_logger().info("Race completed!")
                         return
 
@@ -263,19 +269,19 @@ class testDriveNode(Node):
 
                 #self.get_logger().info('current speed m/s: %s' % self._speed)
 
-                if self._speed > self.speed_max:
-                    self._Y = 0
-                    self.get_logger().info('emergency brake, max speed exceeded')
-                else:
-                    self._Y = max(0,min(self.Ymax,self.pid_controller.update(self.speed_target, self._speed)))  # max() for safety!
+#                if self._speed > self.speed_max:
+#                    self._Y = 0
+#                    self.get_logger().info('emergency brake, max speed exceeded')
+#                else:
+#                    self._Y = max(0,min(self.Ymax,self.pid_controller.update(self.speed_target, self._speed)))  # max() for safety!
 
                 XX = int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl)
-                YY = int(self.neutral_pulse+self._Y*self.motor_ctl)
+#                YY = int(self.neutral_pulse+self._Y*self.motor_ctl)
                 #self.get_logger().info('Steering: %s,%s ' % (self._X,self._Xtrim))
-                #self.get_logger().info('Power: %s,%s,%s ' % (self._Y,YY,self._dt))
+#                #self.get_logger().info('Power: %s,%s,%s ' % (self._Y,YY,self._dt))
 
                 self._pwm.set_pwm(0, 0, XX)
-                self._pwm.set_pwm(1, 0, YY)
+#                self._pwm.set_pwm(1, 0, YY)
         
             except ValueError as e:
                 self.get_logger().error('Model rendered nan: %s' % str(e))
@@ -310,9 +316,9 @@ class testDriveNode(Node):
             self._Y = msg.axes[1]
 
         #self.get_logger().info('Steering: %s,%s ' % (self._X,self._Xtrim))
-        #self.get_logger().info('Power: %s ' % self._Y)
+#       #self.get_logger().info('Power: %s ' % self._Y)
         self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl))
-        self._pwm.set_pwm(1, 0, int(self.neutral_pulse-self._Y*self.motor_ctl))
+#        self._pwm.set_pwm(1, 0, int(self.neutral_pulse-self._Y*self.motor_ctl))
 
     def touch_button_callback(self, msg):
         self._tf_control = True
@@ -366,9 +372,10 @@ class testDriveNode(Node):
             if fcol > 0.0:
                 self._color2[cx1:cx2+1] = fcol
                 # self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
-    def speed_monitor_callback(self, msg):
-        self._speed = eval(msg.data)
-        #self.get_logger().warning("speed update received %s" % self._speed)
+    
+#    def speed_monitor_callback(self, msg):
+#        self._speed = eval(msg.data)
+#        #self.get_logger().warning("speed update received %s" % self._speed)
 
 def main(args=None):
     rclpy.init(args=args)
