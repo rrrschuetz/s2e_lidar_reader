@@ -41,7 +41,7 @@ class s2eLidarReaderNode(Node):
         self._color2 = np.zeros(self.HPIX)
         self._X = 0.0 
         self._Y = 0.0
-        self._speed = 0.0
+#        self._speed = 0.0
         self._line_cnt = 0
         self._dt = 0.1
         self._start_time = self.get_clock().now()
@@ -98,12 +98,12 @@ class s2eLidarReaderNode(Node):
             qos_profile
         )
 
-        self.subscription_speed = self.create_subscription(
-            String,
-            'speed_monitor',
-            self.speed_monitor_callback,
-            qos_profile
-        )
+#        self.subscription_speed = self.create_subscription(
+#            String,
+#            'speed_monitor',
+#            self.speed_monitor_callback,
+#            qos_profile
+#       )
 
     num_colr = HPIX  # Assuming HPIX is defined elsewhere in your code
     
@@ -219,9 +219,9 @@ class s2eLidarReaderNode(Node):
                 self._color2[cx1:cx2+1] = fcol
                 #self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
 
-    def speed_monitor_callback(self, msg):
-        self._speed = eval(msg.data)
-        #self.get_logger().info('Speed monitor: %s m/s' % self._speed)
+#    def speed_monitor_callback(self, msg):
+#        self._speed = eval(msg.data)
+#        #self.get_logger().info('Speed monitor: %s m/s' % self._speed)
 
 def main(args=None):
     rclpy.init(args=args)
