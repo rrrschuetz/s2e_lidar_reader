@@ -4,19 +4,27 @@ from std_msgs.msg import String
 import RPi.GPIO as GPIO
 import time
 from simple_pid import PID
+from Adafruit_PCA9685 import PCA9685
 
 class SpeedControlNode(Node):
+    reverse_pulse = 204
+    neutral_pulse = 307
+    forward_pulse = 409
+
     def __init__(self):
-        super().__init__('speed_monitor')
+        super().__init__('speed_control')
         self.gpio_pin = 22
         GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.gpio_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-
-        self.publisher = self.create_publisher(String, 'motor_power', 10)
+        GPIO.setup(self.gpio_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)   
         self.subscriber = self.create_subscription(String, 'set_speed', self.set_speed_callback, 10)
 
+        self.get_logger().info('calibrating ESC')
+        self.pwm = PCA9685()
+        self.pwm.set_pwm_freq(50)  # Set frequency to 50Hz
+        self.pwm.set_pwm(1, 0, self.neutral_pulse)
+        
         self.impulse_count = 0
-        self.desired_speed = 5  # Default desired speed
+        self.desired_speed = 0
         self.pid = PID(1.0, 0.1, 0.05, setpoint=self.desired_speed)
         self.pid.sample_time = 0.01  # Update every 0.01 seconds
 
@@ -35,14 +43,13 @@ class SpeedControlNode(Node):
         self.impulse_count += 1
 
     def timer_callback(self):
-        motor_power = self.pid(self.impulse_count)
+        if self.impule_count > self.max_impulse_count:
+            y = 0
+        else:
+            y = self.pid(self.impulse_count)
+            y = min(self.max_y,abs(int(self.neutral_pulse+y*self.motor_ctl)))
         self.impulse_count = 0  # Reset the count after each measurement
-        self.publish_motor_power(motor_power)
-
-    def publish_motor_power(self, power):
-        msg = String()
-        msg.data = str(power)
-        self.publisher.publish(msg)
+        self.pwm.set_pwm(1, 0, y)
 
 def main(args=None):
     rclpy.init(args=args)
