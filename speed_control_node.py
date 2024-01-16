@@ -51,7 +51,7 @@ class SpeedControlNode(Node):
             y_pwm = 0
         else:
             y_raw = self.pid(self.impulse_count)
-            y_pwm = min(self.max_y,abs(int(self.neutral_pulse+y*self.motor_ctl)))
+            y_pwm = min(self.max_y,abs(int(self.neutral_pulse+y_raw*self.motor_ctl)))
 
         self.get_logger().info(f"impulse count: {self.impulse_count} - y_raw/y_pwm value set: {y_raw}/{y_pwm}")
         self.impulse_count = 0  # Reset the count after each measurement
