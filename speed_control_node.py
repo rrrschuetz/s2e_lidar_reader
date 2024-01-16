@@ -23,7 +23,7 @@ class SpeedControlNode(Node):
         self.pwm.set_pwm_freq(50)  # Set frequency to 50Hz
         self.pwm.set_pwm(1, 0, self.neutral_pulse)
 
-        self.motor_ctl = 36
+        self.motor_ctl = 1
         self.max_y = 350
         self.max_impulse_count = 10
         self.impulse_count = 0
