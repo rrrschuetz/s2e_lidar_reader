@@ -2,7 +2,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 import RPi.GPIO as GPIO
-import time
+import collections
 from simple_pid import PID
 from Adafruit_PCA9685 import PCA9685
 
@@ -15,7 +15,7 @@ class SpeedControlNode(Node):
         super().__init__('speed_control')
         self.gpio_pin = 22
         GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.gpio_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)   
+        GPIO.setup(self.gpio_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         self.subscriber = self.create_subscription(String, 'set_speed', self.set_speed_callback, 10)
 
         self.get_logger().info('calibrating ESC')
@@ -26,7 +26,8 @@ class SpeedControlNode(Node):
         self.motor_ctl = 1
         self.max_y = 350
         self.max_impulse_count = 10
-        self.impulse_count = 0
+        self.rolling_avg_size = 5  # Number of measurements for the rolling average
+        self.impulse_history = collections.deque(maxlen=self.rolling_avg_size)
         self.desired_speed = 0
         self.pid = PID(1.0, 0.1, 0.05, setpoint=self.desired_speed)
         self.pid.sample_time = 0.01  # Update every 0.01 seconds
@@ -43,25 +44,26 @@ class SpeedControlNode(Node):
             self.get_logger().error("Received invalid speed setting")
 
     def impulse_callback(self, channel):
-        self.impulse_count += 1
+        self.impulse_history.append(1)
 
     def timer_callback(self):
-        if self.impulse_count > self.max_impulse_count:
+        impulse_count = sum(self.impulse_history)
+        if impulse_count > self.max_impulse_count:
             y_raw = 0
             y_pwm = 0
         else:
-            y_raw = self.pid(self.impulse_count)
-            y_pwm = min(self.max_y,abs(int(self.neutral_pulse+y_raw*self.motor_ctl)))
+            y_raw = self.pid(impulse_count)
+            y_pwm = min(self.max_y, abs(int(self.neutral_pulse + y_raw * self.motor_ctl)))
 
-        self.get_logger().info(f"impulse count: {self.impulse_count} - y_raw/y_pwm value set: {y_raw}/{y_pwm}")
-        self.impulse_count = 0  # Reset the count after each measurement
+        self.get_logger().info(f"impulse count: {impulse_count} - y_raw/y_pwm value set: {y_raw}/{y_pwm}")
+        self.impulse_history.clear()  # Reset the history after each measurement
         self.pwm.set_pwm(1, 0, y_pwm)
 
 def main(args=None):
     rclpy.init(args=args)
     speed_control = SpeedControlNode()
     rclpy.spin(speed_control)
-    speed_monitor.destroy_node()
+    speed_control.destroy_node()
     rclpy.shutdown()
 
 if __name__ == '__main__':
