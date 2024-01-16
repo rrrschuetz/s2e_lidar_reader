@@ -47,12 +47,13 @@ class SpeedControlNode(Node):
 
     def timer_callback(self):
         if self.impulse_count > self.max_impulse_count:
-            y = 0
+            y_raw = 0
+            y_pwm = 0
         else:
-            y = self.pid(self.impulse_count)
-            y = min(self.max_y,abs(int(self.neutral_pulse+y*self.motor_ctl)))
+            y_raw = self.pid(self.impulse_count)
+            y_pwm = min(self.max_y,abs(int(self.neutral_pulse+y*self.motor_ctl)))
 
-        self.get_logger().info(f"impulse count: {self.impulse_count} - pwm y value set: {y}")
+        self.get_logger().info(f"impulse count: {self.impulse_count} - y_raw/y_pwm value set: {y_raw}/{y_pwm}")
         self.impulse_count = 0  # Reset the count after each measurement
         self.pwm.set_pwm(1, 0, y)
 
