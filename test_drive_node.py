@@ -47,11 +47,12 @@ class testDriveNode(Node):
     servo_max = 375  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 * 1.7)
-    speed_min = 0.1
-    speed_max = 2.0
-    speed_target = 0.7
-    Ymax = 0.2
-    motor_ctl = 36
+
+#    speed_min = 0.1
+#    speed_max = 2.0
+#    speed_target = 0.7
+#    Ymax = 0.2
+#    motor_ctl = 36
     
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
