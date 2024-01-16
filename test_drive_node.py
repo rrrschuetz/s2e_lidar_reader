@@ -93,10 +93,11 @@ class testDriveNode(Node):
         self._total_heading_change = 0
         self.get_logger().info(f"Initial heading: {self._initial_heading} degrees")
 
- #       # Initialize PCA9685
+        # Initialize PCA9685
+        self._pwm = PCA9685()
+        self._pwm.set_pwm_freq(50)  # Set frequency to 50Hz
+
  #       self.get_logger().info('calibrating ESC')
- #       self._pwm = PCA9685()
- #       self._pwm.set_pwm_freq(50)  # Set frequency to 50Hz
  #       self._pwm.set_pwm(1, 0, self.neutral_pulse)
 
  #       msg = String()
