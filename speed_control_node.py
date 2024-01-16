@@ -22,7 +22,9 @@ class SpeedControlNode(Node):
         self.pwm = PCA9685()
         self.pwm.set_pwm_freq(50)  # Set frequency to 50Hz
         self.pwm.set_pwm(1, 0, self.neutral_pulse)
-        
+
+        self.max_y = 350
+        self.max_impulse_count = 10
         self.impulse_count = 0
         self.desired_speed = 0
         self.pid = PID(1.0, 0.1, 0.05, setpoint=self.desired_speed)
@@ -50,6 +52,7 @@ class SpeedControlNode(Node):
             y = min(self.max_y,abs(int(self.neutral_pulse+y*self.motor_ctl)))
         self.impulse_count = 0  # Reset the count after each measurement
         self.pwm.set_pwm(1, 0, y)
+        self.get_logger().info(f"pwm y value set: {y}")
 
 def main(args=None):
     rclpy.init(args=args)
