@@ -9,7 +9,7 @@ from std_msgs.msg import String
 from std_msgs.msg import Bool
 import numpy as np
 import tensorflow as tf
-#import pickle
+import pickle
 #import logging
 #from logging.handlers import RotatingFileHandler
 from Adafruit_PCA9685 import PCA9685
