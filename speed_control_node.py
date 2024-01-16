@@ -43,7 +43,7 @@ class SpeedControlNode(Node):
         self.impulse_count += 1
 
     def timer_callback(self):
-        if self.impule_count > self.max_impulse_count:
+        if self.impulse_count > self.max_impulse_count:
             y = 0
         else:
             y = self.pid(self.impulse_count)
