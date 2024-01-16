@@ -15,20 +15,20 @@ from logging.handlers import RotatingFileHandler
 from Adafruit_PCA9685 import PCA9685
 from sense_hat import SenseHat
 
-class PIDController:
-    def __init__(self, kp, ki, kd):
-        self.kp = kp
-        self.ki = ki
-        self.kd = kd
-        self._previous_error = 0
-        self._integral = 0
-    def update(self, setpoint, measured_value):
-        error = setpoint - measured_value
-        self._integral += error
-        derivative = error - self._previous_error
-        output = self.kp * error + self.ki * self._integral + self.kd * derivative
-        self._previous_error = error
-        return output
+#class PIDController:
+#    def __init__(self, kp, ki, kd):
+#        self.kp = kp
+#        self.ki = ki
+#        self.kd = kd
+#        self._previous_error = 0
+#        self._integral = 0
+#    def update(self, setpoint, measured_value):
+#        error = setpoint - measured_value
+#        self._integral += error
+#        derivative = error - self._previous_error
+#        output = self.kp * error + self.ki * self._integral + self.kd * derivative
+#        self._previous_error = error
+#        return output
 
 class testDriveNode(Node):
     HPIX = 320
@@ -38,9 +38,11 @@ class testDriveNode(Node):
     scan_max_dist = 2.8
     num_scan = 1620
     num_scan2 = 810
-    reverse_pulse = 204
-    neutral_pulse = 307
-    forward_pulse = 409
+    
+#    reverse_pulse = 204
+#    neutral_pulse = 307
+#    forward_pulse = 409
+    
     servo_min = 240  # Min pulse length out of 4096
     servo_max = 375  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
@@ -74,8 +76,8 @@ class testDriveNode(Node):
         self._color1 = np.zeros(self.HPIX)
         self._color2 = np.zeros(self.HPIX)
 
-        #self.pid_controller = PIDController(kp=0.1, ki=0.01, kd=0.05)  # Tune these parameters
-        self.pid_controller = PIDController(kp=16, ki=0.5, kd=0.0)  # Tune these parameters
+ #       #self.pid_controller = PIDController(kp=0.1, ki=0.01, kd=0.05)  # Tune these parameters
+ #       self.pid_controller = PIDController(kp=16, ki=0.5, kd=0.0)  # Tune these parameters
 
         # Initialize compass
         self._sense = SenseHat()
@@ -86,15 +88,15 @@ class testDriveNode(Node):
         self._total_heading_change = 0
         self.get_logger().info(f"Initial heading: {self._initial_heading} degrees")
 
-        # Initialize PCA9685
-        self.get_logger().info('calibrating ESC')
-        self._pwm = PCA9685()
-        self._pwm.set_pwm_freq(50)  # Set frequency to 50Hz
-        self._pwm.set_pwm(1, 0, self.neutral_pulse)
+ #       # Initialize PCA9685
+ #       self.get_logger().info('calibrating ESC')
+ #       self._pwm = PCA9685()
+ #       self._pwm.set_pwm_freq(50)  # Set frequency to 50Hz
+ #       self._pwm.set_pwm(1, 0, self.neutral_pulse)
 
-        msg = String()
-        msg.data = "Switch on ESC"
-        self.publisher_.publish(msg)
+ #       msg = String()
+ #       msg.data = "Switch on ESC"
+ #       self.publisher_.publish(msg)
 
         self._start_time = self.get_clock().now()
         self._end_time = self._start_time
@@ -129,12 +131,12 @@ class testDriveNode(Node):
             qos_profile
         )
 
-        self.subscription_speed = self.create_subscription(
-            String,
-            'speed_monitor',
-            self.speed_monitor_callback,
-            qos_profile
-        )
+#        self.subscription_speed = self.create_subscription(
+#            String,
+#            'speed_monitor',
+#            self.speed_monitor_callback,
+#            qos_profile
+#        )
 
         self.subscription_speed = self.create_subscription(
             Bool,
@@ -199,7 +201,7 @@ class testDriveNode(Node):
                         self._tf_control = False
                         self._processing = False
                         self._pwm.set_pwm(0, 0, int(self.servo_neutral))
-                        self._pwm.set_pwm(1, 0, int(self.neutral_pulse))
+ #                       self._pwm.set_pwm(1, 0, int(self.neutral_pulse))
                         self.get_logger().info("Race completed!")
                         return
 
@@ -222,7 +224,7 @@ class testDriveNode(Node):
                     self._tf_control = False
                     self._processing = False
                     self._pwm.set_pwm(0, 0, int(self.servo_neutral))
-                    self._pwm.set_pwm(1, 0, int(self.neutral_pulse))
+ #                   self._pwm.set_pwm(1, 0, int(self.neutral_pulse))
                     self.get_logger().info('Emergency brake active: "%s"' % min_section_index)
                     return
         
