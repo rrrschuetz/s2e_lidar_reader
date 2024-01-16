@@ -55,7 +55,7 @@ class SpeedControlNode(Node):
 
         self.get_logger().info(f"impulse count: {self.impulse_count} - y_raw/y_pwm value set: {y_raw}/{y_pwm}")
         self.impulse_count = 0  # Reset the count after each measurement
-        self.pwm.set_pwm(1, 0, y)
+        self.pwm.set_pwm(1, 0, y_pwm)
 
 def main(args=None):
     rclpy.init(args=args)
