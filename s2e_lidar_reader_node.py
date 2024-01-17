@@ -91,20 +91,6 @@ class s2eLidarReaderNode(Node):
             qos_profile
         )
 
-        self.subscription_speed = self.create_subscription(
-            String,
-            'openmv_topic2',
-            self.openmv_h7_callback2,
-            qos_profile
-        )
-
-#        self.subscription_speed = self.create_subscription(
-#            String,
-#            'speed_monitor',
-#            self.speed_monitor_callback,
-#            qos_profile
-#       )
-
     num_colr = HPIX  # Assuming HPIX is defined elsewhere in your code
     
     scan_labels = [f'SCAN.{i}' for i in range(1, num_scan+1)]
@@ -118,13 +104,6 @@ class s2eLidarReaderNode(Node):
     labels = os.path.exists(filepath)
     with open(filepath, 'a') as f:
         if not labels: f.write(line)
-
-    def get_heading(self):
-        north = self._sense.get_compass_raw()
-        heading = math.atan2(north['y'],north['x'])
-        heading = math.degrees(heading)
-        heading = (heading + 360) % 360
-        return heading
 
     def lidar_callback(self, msg):
         # Convert the laser scan data to a string
