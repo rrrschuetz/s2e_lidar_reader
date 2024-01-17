@@ -9,6 +9,7 @@ from std_msgs.msg import Bool
 import numpy as np
 from Adafruit_PCA9685 import PCA9685
 from sense_hat import SenseHat
+import RPi.GPIO as GPIO
 
 class s2eLidarReaderNode(Node):
     HPIX = 320
@@ -58,6 +59,9 @@ class s2eLidarReaderNode(Node):
 
         self.get_logger().info('calibrating ESC')
         self._pwm.set_pwm(1, 0, self.neutral_pulse)
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(relay_pin, GPIO.OUT)
+        GPIO.output(relay_pin, GPIO.HIGH)
 
         msg = String()
         msg.data = "Switch on ESC"
@@ -91,6 +95,10 @@ class s2eLidarReaderNode(Node):
             qos_profile
         )
 
+    def __del__(self):
+        GPIO.output(relay_pin, GPIO.LOW)
+        GPIO.cleanup()
+        
     num_colr = HPIX  # Assuming HPIX is defined elsewhere in your code
     
     scan_labels = [f'SCAN.{i}' for i in range(1, num_scan+1)]
