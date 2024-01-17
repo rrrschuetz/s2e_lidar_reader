@@ -386,21 +386,132 @@ class testDriveNode(Node):
 #        self._speed = eval(msg.data)
 #        #self.get_logger().warning("speed update received %s" % self._speed)
 
+
+class parkingNode(Node):
+    num_scan = 1620
+    num_scan2 = 810
+    
+    reverse_pulse = 204
+    neutral_pulse = 307
+    forward_pulse = 409
+    
+    servo_min = 240  # Min pulse length out of 4096
+    servo_max = 375  # Max pulse length out of 4096
+    servo_neutral = int((servo_max+servo_min)/2)
+    servo_ctl = int(-(servo_max-servo_min)/2 * 1.7)
+
+    motor_ctl = 36
+    
+    def __init__(self):
+        super().__init__('s2e_lidar_reader_node')
+
+        qos_profile = QoSProfile(
+                depth=1, 
+                history=QoSHistoryPolicy.KEEP_LAST, 
+                reliability=QoSReliabilityPolicy.BEST_EFFORT,
+                durability=QoSDurabilityPolicy.VOLATILE)
+            
+        self._processing = False
+        self._tf_control = False
+        self._X = 0.0 
+        self._Y = 0.0
+        self._speed = 0.0
+
+        # Initialize PCA9685
+        self._pwm = PCA9685()
+        self._pwm.set_pwm_freq(50)  
+        self._pwm.set_pwm(0, 0, int(self.servo_neutral))
+        self._pwm.set_pwm(1, 0, self.neutral_pulse)
+ 
+        self.subscription_lidar = self.create_subscription(
+            LaserScan,
+            '/scan',
+            self.lidar_callback,
+            qos_profile
+        )
+        
+        # Load the trained model and the scaler
+        tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+        with open('/home/rrrschuetz/test/scaler_p.pkl', 'rb') as f:
+            self._scaler = pickle.load(f)
+            
+        self._interpreter = tf.lite.Interpreter(model_path="/home/rrrschuetz/test/model_p.tflite")
+        self._interpreter.allocate_tensors()
+        # Get input and output tensors information
+        self._input_details = self._interpreter.get_input_details()
+        self._output_details = self._interpreter.get_output_details()
+        self.get_logger().info('parking prediction model loaded')
+
+    def lidar_callback(self, msg):
+        if not self._tf_control: return
+        if self._processing:
+            self.get_logger().info('Scan skipped')
+            return
+        else:
+            self._processing = True
+
+            try:
+                # raw data
+                #scan = np.array(msg.ranges)
+                scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
+        
+                scan[scan == np.inf] = np.nan
+                scan[scan > self.scan_max_dist] = np.nan
+                x = np.arange(len(scan))
+                finite_vals = np.isfinite(scan)
+                scan_interpolated = np.interp(x, x[finite_vals], scan[finite_vals])
+
+                # add color data
+                combined = list(scan_interpolated)  # Convert to list for easier appending
+                combined = np.reshape(combined, (1, -1))
+                combined_standardized = self._scaler.transform(combined)
+
+                # reshape for 1D CNN input
+                combined_standardized = np.reshape(combined_standardized, (combined_standardized.shape[0], combined_standardized.shape[1], 1))
+                combined_standardized = combined_standardized.astype(np.float32)
+
+                # Model prediction
+                #predictions = self._model.predict(combined_standardized)
+
+                # Set the value of the input tensor
+                self._interpreter.set_tensor(self._input_details[0]['index'], combined_standardized)
+                # Run inference
+                self._interpreter.invoke()
+                # Retrieve the output of the model
+                predictions = self._interpreter.get_tensor(self._output_details[0]['index'])
+                
+                self._X = predictions[0, 0]
+                self._Y = predictions[0, 1]
+                #self.get_logger().info('Predicted axes: "%s"' % predictions)
+                #self.get_logger().info('current speed m/s: %s' % self._speed)
+
+                XX = int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl)
+                YY = int(self.neutral_pulse+self._Y*self.motor_ctl)
+                #self.get_logger().info('Steering: %s,%s ' % (self._X,XX))
+                #self.get_logger().info('Power: %s,%s ' % (self._Y,YY))
+
+                self._pwm.set_pwm(0, 0, XX)
+                self._pwm.set_pwm(1, 0, YY)
+            
+            except ValueError as e:
+                self.get_logger().error('Model rendered nan: %s' % str(e))
+
+            self._processing = False
+
+
 def main(args=None):
     rclpy.init(args=args)
+    
     test_drive_node = testDriveNode()
+    rclpy.spin(test_drive_node)
+    test_drive_node.destroy_node()
+    
+#    parking_node = parkingNode()
+#    rclpy.spin(parking_node)
+#    parking_node.destroy_node()
+    
+    rclpy.shutdown()
 
-    executor = SingleThreadedExecutor()
-    executor.add_node(test_drive_node)
-
-    try:
-        executor.spin()  # Handle callbacks until shutdown
-    finally:
-        # Shutdown and cleanup
-        executor.shutdown()
-        test_drive_node.destroy_node()
-        rclpy.shutdown()
-        
 if __name__ == '__main__':
     main()
 
