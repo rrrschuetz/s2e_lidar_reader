@@ -400,7 +400,7 @@ class parkingNode(Node):
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 * 1.7)
 
-    motor_ctl = 36
+    motor_ctl = 12
     
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
