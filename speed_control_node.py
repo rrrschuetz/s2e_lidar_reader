@@ -73,7 +73,6 @@ def main(args=None):
     rclpy.init(args=args)
     speed_control = SpeedControlNode()
     rclpy.spin(speed_control)
-    del speed_control
     speed_control.destroy_node()
     rclpy.shutdown()
 
