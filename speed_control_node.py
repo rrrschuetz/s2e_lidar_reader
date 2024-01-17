@@ -10,11 +10,14 @@ class SpeedControlNode(Node):
     reverse_pulse = 204
     neutral_pulse = 307
     forward_pulse = 409
+    gpio_pin = 22
+    relay_pin = 17
 
     def __init__(self):
         super().__init__('speed_control')
-        self.gpio_pin = 22
         GPIO.setmode(GPIO.BCM)
+        
+        GPIO.setup(relay_pin, GPIO.OUT)
         GPIO.setup(self.gpio_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         self.subscriber = self.create_subscription(String, 'set_speed', self.set_speed_callback, 10)
 
@@ -22,6 +25,7 @@ class SpeedControlNode(Node):
         self.pwm = PCA9685()
         self.pwm.set_pwm_freq(50)  # Set frequency to 50Hz
         self.pwm.set_pwm(1, 0, self.neutral_pulse)
+        GPIO.output(relay_pin, GPIO.HIGH)
 
         self.motor_ctl = 1
         self.max_y = 350
@@ -34,6 +38,10 @@ class SpeedControlNode(Node):
 
         GPIO.add_event_detect(self.gpio_pin, GPIO.FALLING, callback=self.impulse_callback)
         self.timer = self.create_timer(0.1, self.timer_callback)
+
+    def __del__(self):
+        GPIO.output(relay_pin, GPIO.LOW)
+        GPIO.cleanup()
 
     def set_speed_callback(self, msg):
         try:
@@ -60,9 +68,11 @@ class SpeedControlNode(Node):
         self.pwm.set_pwm(1, 0, y_pwm)
 
 def main(args=None):
+    relay_pin = 17
     rclpy.init(args=args)
     speed_control = SpeedControlNode()
     rclpy.spin(speed_control)
+    del speed_control
     speed_control.destroy_node()
     rclpy.shutdown()
 
