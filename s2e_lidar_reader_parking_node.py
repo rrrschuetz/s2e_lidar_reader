@@ -8,6 +8,7 @@ from std_msgs.msg import String
 from std_msgs.msg import Bool
 import numpy as np
 from Adafruit_PCA9685 import PCA9685
+import RPi.GPIO as GPIO
 
 class s2eLidarReaderParkingNode(Node):
     num_scan = 1620 # consider only front 18ß degrees
@@ -20,7 +21,8 @@ class s2eLidarReaderParkingNode(Node):
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 *1.7)
     motor_ctl = 12
-
+    relay_pin = 17
+    
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
         self.publisher_ = self.create_publisher(String, 'main_logger', 10)
@@ -41,6 +43,9 @@ class s2eLidarReaderParkingNode(Node):
 
         self.get_logger().info('calibrating ESC')
         self._pwm.set_pwm(1, 0, self.neutral_pulse)
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(relay_pin, GPIO.OUT)
+        GPIO.output(relay_pin, GPIO.HIGH)
 
         msg = String()
         msg.data = "Switch on ESC"
@@ -60,6 +65,10 @@ class s2eLidarReaderParkingNode(Node):
             10
         )
 
+    def __del__(self):
+        GPIO.output(relay_pin, GPIO.LOW)
+        GPIO.cleanup()
+        
     scan_labels = [f'SCAN.{i}' for i in range(1, num_scan+1)]
     labels = ['X', 'Y'] + scan_labels 
     line = ','.join(labels) + '\n'
