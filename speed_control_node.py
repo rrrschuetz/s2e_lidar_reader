@@ -28,12 +28,13 @@ class SpeedControlNode(Node):
         GPIO.output(relay_pin, GPIO.HIGH)
 
         self.motor_ctl = 1
-        self.max_y = 350
+        self.max_y = 330
         self.max_impulse_count = 10
         self.rolling_avg_size = 5  # Number of measurements for the rolling average
         self.impulse_history = collections.deque(maxlen=self.rolling_avg_size)
         self.desired_speed = 0
-        self.pid = PID(1.0, 0.1, 0.05, setpoint=self.desired_speed)
+        #self.pid = PID(1.0, 0.1, 0.05, setpoint=self.desired_speed)
+        self.pid = PID(1.0, 0.0, 0.00, setpoint=self.desired_speed)
         self.pid.sample_time = 0.01  # Update every 0.01 seconds
 
         GPIO.add_event_detect(self.gpio_pin, GPIO.FALLING, callback=self.impulse_callback)
