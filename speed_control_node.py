@@ -17,7 +17,7 @@ class SpeedControlNode(Node):
         super().__init__('speed_control')
         GPIO.setmode(GPIO.BCM)
         
-        GPIO.setup(relay_pin, GPIO.OUT)
+        GPIO.setup(self.relay_pin, GPIO.OUT)
         GPIO.setup(self.gpio_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         self.subscriber = self.create_subscription(String, 'set_speed', self.set_speed_callback, 10)
 
@@ -25,7 +25,7 @@ class SpeedControlNode(Node):
         self.pwm = PCA9685()
         self.pwm.set_pwm_freq(50)  # Set frequency to 50Hz
         self.pwm.set_pwm(1, 0, self.neutral_pulse)
-        GPIO.output(relay_pin, GPIO.HIGH)
+        GPIO.output(self.relay_pin, GPIO.HIGH)
 
         self.motor_ctl = 1
         self.max_y = 330
@@ -41,13 +41,14 @@ class SpeedControlNode(Node):
         self.timer = self.create_timer(0.1, self.timer_callback)
 
     def __del__(self):
-        GPIO.output(relay_pin, GPIO.LOW)
+        GPIO.output(self.relay_pin, GPIO.LOW)
         GPIO.cleanup()
 
     def set_speed_callback(self, msg):
         try:
             new_speed = float(msg.data)
             self.pid.setpoint = new_speed
+            self.pid = PID(1.0, 0.0, 0.00, setpoint=self.desired_speed)
             self.get_logger().info(f"New desired speed set to: {new_speed}")
         except ValueError:
             self.get_logger().error("Received invalid speed setting")
@@ -73,6 +74,8 @@ def main(args=None):
     rclpy.init(args=args)
     speed_control = SpeedControlNode()
     rclpy.spin(speed_control)
+    GPIO.output(17, GPIO.LOW)
+    GPIO.cleanup()
     speed_control.destroy_node()
     rclpy.shutdown()
 
