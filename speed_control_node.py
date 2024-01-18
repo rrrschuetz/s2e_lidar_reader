@@ -112,11 +112,11 @@ class SpeedControlNode(Node):
         self.pwm.set_pwm(1, 0, self.neutral_pulse)
         GPIO.output(self.relay_pin, GPIO.HIGH)
 
-        self.motor_ctl = 2
+        self.motor_ctl = 1
         self.max_y = 330
         self.base_pwm = self.neutral_pulse  # Base PWM value for steady motor speed
         self.max_impulse_count = 10
-        self.rolling_avg_size = 5  # Number of measurements for the rolling average
+        self.rolling_avg_size = 50  # Number of measurements for the rolling average
         self.impulse_history = collections.deque(maxlen=self.rolling_avg_size)
         self.desired_speed = 0
         self.pid = PID(1.0, 0.0, 0.00, setpoint=self.desired_speed)
