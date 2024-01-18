@@ -287,8 +287,6 @@ class testDriveNode(Node):
 
                 self._pwm.set_pwm(0, 0, XX)
 #                self._pwm.set_pwm(1, 0, YY)
-                self._speed_msg.data = "5"
-                self.speed_publisher_.publish(self._speed_msg)
             
             except ValueError as e:
                 self.get_logger().error('Model rendered nan: %s' % str(e))
@@ -306,6 +304,8 @@ class testDriveNode(Node):
                 self._start_heading = self._sense.gyro['yaw']
                 self._last_heading = self._start_heading
                 self._round_start_time = self.get_clock().now()
+                self._speed_msg.data = "5"
+                self.speed_publisher_.publish(self._speed_msg)
             # Check if 'B' button is pressed - switch off AI steering
             elif msg.buttons[1] == 1:
                 self._tf_control = False
@@ -336,9 +336,11 @@ class testDriveNode(Node):
             self._start_heading = self._sense.gyro['yaw']
             self._last_heading = self._start_heading
             self._round_start_time = self.get_clock().now()
+            self.publisher_.publish(ack)
+            self._speed_msg.data = "5"
+            self.speed_publisher_.publish(self._speed_msg)
             ack = String()
             ack.data = "Race Mode ON"
-            self.publisher_.publish(ack)
             self.get_logger().info('Start button pressed!')
         else:
             self._tf_control = False
