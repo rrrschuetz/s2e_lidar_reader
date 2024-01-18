@@ -38,7 +38,8 @@ class testDriveNode(Node):
     scan_max_dist = 2.8
     num_scan = 1620
     num_scan2 = 810
-    
+    SPEED = "10"
+
 #    reverse_pulse = 204
 #    neutral_pulse = 307
 #    forward_pulse = 409
@@ -304,7 +305,7 @@ class testDriveNode(Node):
                 self._start_heading = self._sense.gyro['yaw']
                 self._last_heading = self._start_heading
                 self._round_start_time = self.get_clock().now()
-                self._speed_msg.data = "5"
+                self._speed_msg.data = self.SPEED
                 self.speed_publisher_.publish(self._speed_msg)
             # Check if 'B' button is pressed - switch off AI steering
             elif msg.buttons[1] == 1:
@@ -320,14 +321,14 @@ class testDriveNode(Node):
 
         elif hasattr(msg, 'axes') and len(msg.axes) > 5:
             self._X = msg.axes[2]
-#            self._Y = msg.axes[1]
+#           self._Y = msg.axes[1]
         
-        #self.get_logger().info('Steering: %s,%s ' % (self._X,self._Xtrim))
-#       #self.get_logger().info('Power: %s ' % self._Y)
-        self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl))
-#        self._pwm.set_pwm(1, 0, int(self.neutral_pulse-self._Y*self.motor_ctl))
-        self._speed_msg.data = "5"
-        self.speed_publisher_.publish(self._speed_msg)
+            #self.get_logger().info('Steering: %s,%s ' % (self._X,self._Xtrim))
+#           #self.get_logger().info('Power: %s ' % self._Y)
+            self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl))
+#           self._pwm.set_pwm(1, 0, int(self.neutral_pulse-self._Y*self.motor_ctl))
+            self._speed_msg.data = self.SPEED
+            self.speed_publisher_.publish(self._speed_msg)
 
     def touch_button_callback(self, msg):
         if not self._tf_control:
@@ -336,7 +337,7 @@ class testDriveNode(Node):
             self._start_heading = self._sense.gyro['yaw']
             self._last_heading = self._start_heading
             self._round_start_time = self.get_clock().now()
-            self._speed_msg.data = "5"
+            self._speed_msg.data = self.SPEED
             self.speed_publisher_.publish(self._speed_msg)
             ack = String()
             ack.data = "Race Mode ON"
