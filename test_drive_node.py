@@ -336,11 +336,11 @@ class testDriveNode(Node):
             self._start_heading = self._sense.gyro['yaw']
             self._last_heading = self._start_heading
             self._round_start_time = self.get_clock().now()
-            self.publisher_.publish(ack)
             self._speed_msg.data = "5"
             self.speed_publisher_.publish(self._speed_msg)
             ack = String()
             ack.data = "Race Mode ON"
+            self.publisher_.publish(ack)
             self.get_logger().info('Start button pressed!')
         else:
             self._tf_control = False
