@@ -287,7 +287,7 @@ class testDriveNode(Node):
 
                 self._pwm.set_pwm(0, 0, XX)
 #                self._pwm.set_pwm(1, 0, YY)
-                self._speed_msg.data = "3"
+                self._speed_msg.data = "5"
                 self.speed_publisher_.publish(self._speed_msg)
             
             except ValueError as e:
@@ -326,19 +326,28 @@ class testDriveNode(Node):
 #       #self.get_logger().info('Power: %s ' % self._Y)
         self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl))
 #        self._pwm.set_pwm(1, 0, int(self.neutral_pulse-self._Y*self.motor_ctl))
-        self._speed_msg.data = "3"
+        self._speed_msg.data = "5"
         self.speed_publisher_.publish(self._speed_msg)
 
     def touch_button_callback(self, msg):
-        self._tf_control = True
-        self._Y = 1.0
-        self._start_heading = self._sense.gyro['yaw']
-        self._last_heading = self._start_heading
-        self._round_start_time = self.get_clock().now()
-        ack = String()
-        ack.data = "Race Mode ON"
-        self.publisher_.publish(ack)
-        self.get_logger().info('Start button pressed!')
+        if not self._tf_control:
+            self._tf_control = True
+            self._Y = 1.0
+            self._start_heading = self._sense.gyro['yaw']
+            self._last_heading = self._start_heading
+            self._round_start_time = self.get_clock().now()
+            ack = String()
+            ack.data = "Race Mode ON"
+            self.publisher_.publish(ack)
+            self.get_logger().info('Start button pressed!')
+        else:
+            self._tf_control = False
+            self._processing = False
+            self._pwm.set_pwm(0, 0, int(self.servo_neutral))
+ #          self._pwm.set_pwm(1, 0, int(self.neutral_pulse))
+            self._speed_msg.data = "-1"
+            self.speed_publisher_.publish(self._speed_msg)
+
 
     def openmv_h7_callback1(self, msg):
         #self.get_logger().info('cam msg received: "%s"' % msg)

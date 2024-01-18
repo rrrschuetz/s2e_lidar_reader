@@ -27,7 +27,7 @@ class SpeedControlNode(Node):
         self.pwm.set_pwm(1, 0, self.neutral_pulse)
         GPIO.output(self.relay_pin, GPIO.HIGH)
 
-        self.motor_ctl = 1
+        self.motor_ctl = 2
         self.max_y = 330
         self.max_impulse_count = 10
         self.rolling_avg_size = 5  # Number of measurements for the rolling average
@@ -47,9 +47,12 @@ class SpeedControlNode(Node):
     def set_speed_callback(self, msg):
         try:
             new_speed = float(msg.data)
-            self.pid.setpoint = new_speed
-            self.pid = PID(1.0, 0.0, 0.00, setpoint=self.desired_speed)
-            self.get_logger().info(f"New desired speed set to: {new_speed}")
+            if new_speed < 0:
+                GPIO.output(self.relay_pin, GPIO.LOW)
+                GPIO.cleanup()
+            else:
+                self.pid.setpoint = new_speed
+                self.get_logger().info(f"New desired speed set to: {new_speed}")
         except ValueError:
             self.get_logger().error("Received invalid speed setting")
 
@@ -74,8 +77,6 @@ def main(args=None):
     rclpy.init(args=args)
     speed_control = SpeedControlNode()
     rclpy.spin(speed_control)
-    GPIO.output(17, GPIO.LOW)
-    GPIO.cleanup()
     speed_control.destroy_node()
     rclpy.shutdown()
 
