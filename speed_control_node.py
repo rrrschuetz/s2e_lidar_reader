@@ -30,7 +30,6 @@ class SpeedControlNode(Node):
         self.motor_ctl = 0.5
         self.max_y = 330
         self.base_pwm = self.neutral_pulse  # Base PWM value for steady motor speed
-        self.max_impulse_count = 10
         self.rolling_avg_size = 50  # Number of measurements for the rolling average
         self.impulse_history = collections.deque(maxlen=self.rolling_avg_size)
         self.desired_speed = 0
