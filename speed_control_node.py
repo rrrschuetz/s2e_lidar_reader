@@ -112,7 +112,7 @@ class SpeedControlNode(Node):
         self.pwm.set_pwm(1, 0, self.neutral_pulse)
         GPIO.output(self.relay_pin, GPIO.HIGH)
 
-        self.motor_ctl = 1
+        self.motor_ctl = 0.5
         self.max_y = 330
         self.base_pwm = self.neutral_pulse  # Base PWM value for steady motor speed
         self.max_impulse_count = 10
@@ -123,7 +123,7 @@ class SpeedControlNode(Node):
         self.pid.sample_time = 0.01  # Update every 0.01 seconds
 
         GPIO.add_event_detect(self.gpio_pin, GPIO.FALLING, callback=self.impulse_callback)
-        self.timer = self.create_timer(0.1, self.timer_callback)
+        self.timer = self.create_timer(0.05, self.timer_callback)
 
     def __del__(self):
         GPIO.output(self.relay_pin, GPIO.LOW)
