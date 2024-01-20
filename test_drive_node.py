@@ -340,6 +340,7 @@ class testDriveNode(Node):
             self.speed_publisher_.publish(self._speed_msg)
 
     def touch_button_callback(self, msg):
+        ack = String()
         if not self._tf_control:
             self._tf_control = True
             self._Y = 1.0
@@ -348,9 +349,7 @@ class testDriveNode(Node):
             self._round_start_time = self.get_clock().now()
             self._speed_msg.data = self.SPEED
             self.speed_publisher_.publish(self._speed_msg)
-            ack = String()
             ack.data = "Race Mode ON"
-            self.publisher_.publish(ack)
             self.get_logger().info('Start button pressed!')
         else:
             self._tf_control = False
@@ -359,7 +358,9 @@ class testDriveNode(Node):
  #          self._pwm.set_pwm(1, 0, int(self.neutral_pulse))
             self._speed_msg.data = "-1"
             self.speed_publisher_.publish(self._speed_msg)
-
+            ack.data = "Race Mode OFF"
+            self.get_logger().info('Stop button pressed!')
+        self.publisher_.publish(ack)
 
     def openmv_h7_callback1(self, msg):
         #self.get_logger().info('cam msg received: "%s"' % msg)
