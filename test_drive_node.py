@@ -44,8 +44,8 @@ class testDriveNode(Node):
 #    neutral_pulse = 307
 #    forward_pulse = 409
     
-    servo_min = 240  # Min pulse length out of 4096
-    servo_max = 375  # Max pulse length out of 4096
+    servo_min = 230  # Min pulse length out of 4096
+    servo_max = 385  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 * 1.7)
 
