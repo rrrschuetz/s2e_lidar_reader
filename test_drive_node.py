@@ -172,6 +172,7 @@ class testDriveNode(Node):
         self.publisher_.publish(msg)
 
     def __del__(self):
+        self.get_logger().info('Switch off ESC')
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.relay_pin, GPIO.OUT)
         GPIO.output(self.relay_pin, GPIO.LOW)
@@ -464,6 +465,7 @@ class parkingNode(Node):
         self.get_logger().info('parking prediction model loaded')
 
     def __del__(self):
+        self.get_logger().info('Switch off ESC')
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.relay_pin, GPIO.OUT)
         GPIO.output(self.relay_pin, GPIO.LOW)
