@@ -14,6 +14,7 @@ import pickle
 #from logging.handlers import RotatingFileHandler
 from Adafruit_PCA9685 import PCA9685
 from sense_hat import SenseHat
+import RPi.GPIO as GPIO
 
 #class PIDController:
 #    def __init__(self, kp, ki, kd):
@@ -38,6 +39,7 @@ class testDriveNode(Node):
     scan_max_dist = 2.8
     num_scan = 1620
     num_scan2 = 810
+    relay_pin = 17
     SPEED = "10"
 
 #    reverse_pulse = 204
@@ -168,6 +170,10 @@ class testDriveNode(Node):
         msg = String()
         msg.data = "Ready!"
         self.publisher_.publish(msg)
+
+    def __del__(self):
+        GPIO.output(self.relay_pin, GPIO.LOW)
+        GPIO.cleanup()
 
     def calculate_heading_change(self, start_heading, current_heading):
         # Calculate the raw difference
@@ -413,6 +419,7 @@ class parkingNode(Node):
     servo_ctl = int(-(servo_max-servo_min)/2 * 1.7)
 
     motor_ctl = 12
+    relay_pin = 17
     
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
@@ -434,7 +441,7 @@ class parkingNode(Node):
         self._pwm.set_pwm_freq(50)  
         self._pwm.set_pwm(0, 0, int(self.servo_neutral))
         self._pwm.set_pwm(1, 0, self.neutral_pulse)
- 
+
         self.subscription_lidar = self.create_subscription(
             LaserScan,
             '/scan',
@@ -453,6 +460,10 @@ class parkingNode(Node):
         self._input_details = self._interpreter.get_input_details()
         self._output_details = self._interpreter.get_output_details()
         self.get_logger().info('parking prediction model loaded')
+
+    def __del__(self):
+        GPIO.output(self.relay_pin, GPIO.LOW)
+        GPIO.cleanup()
 
     def lidar_callback(self, msg):
         if not self._tf_control: return
