@@ -44,8 +44,8 @@ class s2eLidarReaderParkingNode(Node):
         self.get_logger().info('calibrating ESC')
         self._pwm.set_pwm(1, 0, self.neutral_pulse)
         GPIO.setmode(GPIO.BCM)
-        GPIO.setup(relay_pin, GPIO.OUT)
-        GPIO.output(relay_pin, GPIO.HIGH)
+        GPIO.setup(self.relay_pin, GPIO.OUT)
+        GPIO.output(self.relay_pin, GPIO.HIGH)
 
         msg = String()
         msg.data = "Switch on ESC"
@@ -66,7 +66,7 @@ class s2eLidarReaderParkingNode(Node):
         )
 
     def __del__(self):
-        GPIO.output(relay_pin, GPIO.LOW)
+        GPIO.output(self.relay_pin, GPIO.LOW)
         GPIO.cleanup()
         
     scan_labels = [f'SCAN.{i}' for i in range(1, num_scan+1)]

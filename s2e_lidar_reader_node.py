@@ -49,11 +49,6 @@ class s2eLidarReaderNode(Node):
         self._start_time = self.get_clock().now()
         self._end_time = self.get_clock().now()
 
-        # Initialize compass
-        self._sense = SenseHat()
-        self._initial_heading = self.get_heading()
-        self.get_logger().info(f"Initial heading: {self._initial_heading} degrees")
-
         # Initialize PCA9685
         self._pwm = PCA9685()
         self._pwm.set_pwm_freq(50)  # Set frequency to 50Hz
@@ -61,8 +56,8 @@ class s2eLidarReaderNode(Node):
         self.get_logger().info('calibrating ESC')
         self._pwm.set_pwm(1, 0, self.neutral_pulse)
         GPIO.setmode(GPIO.BCM)
-        GPIO.setup(relay_pin, GPIO.OUT)
-        GPIO.output(relay_pin, GPIO.HIGH)
+        GPIO.setup(self.relay_pin, GPIO.OUT)
+        GPIO.output(self.relay_pin, GPIO.HIGH)
 
         msg = String()
         msg.data = "Switch on ESC"
@@ -97,7 +92,7 @@ class s2eLidarReaderNode(Node):
         )
 
     def __del__(self):
-        GPIO.output(relay_pin, GPIO.LOW)
+        GPIO.output(self.relay_pin, GPIO.LOW)
         GPIO.cleanup()
         
     num_colr = HPIX  # Assuming HPIX is defined elsewhere in your code
