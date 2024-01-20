@@ -25,7 +25,7 @@ class s2eLidarReaderNode(Node):
     servo_max = 385  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 *1.7)
-    motor_ctl = 12
+    motor_ctl = 8
     relay_pin = 17
 
     def __init__(self):
@@ -94,7 +94,7 @@ class s2eLidarReaderNode(Node):
     def __del__(self):
         GPIO.output(self.relay_pin, GPIO.LOW)
         GPIO.cleanup()
-        
+
     num_colr = HPIX  # Assuming HPIX is defined elsewhere in your code
     
     scan_labels = [f'SCAN.{i}' for i in range(1, num_scan+1)]
