@@ -27,10 +27,13 @@ def make_column_names_unique(df):
 # 1. Preprocess data
 data_raw = pd.read_csv('~/test/file.txt')
 make_column_names_unique(data_raw)
-print(data_raw.columns)
+print("Raw data columns:", data_raw.columns)
+print("Raw data shape:", data_raw.shape)
 
 # Split data into train and test sets
 train, test = train_test_split(data_raw, test_size=0.2)
+print("Train data shape:", train.shape)
+print("Test data shape:", test.shape)
 
 # Split the training and testing data into input and target
 cols_to_include = [col for col in train.columns if col not in ['X', 'Y']]
@@ -38,15 +41,24 @@ x_train = train[cols_to_include].values
 y_train = train[['X', 'Y']].values
 x_test = test[cols_to_include].values
 y_test = test[['X', 'Y']].values
+print("x_train shape:", x_train.shape)
+print("y_train shape:", y_train.shape)
+print("x_test shape:", x_test.shape)
+print("y_test shape:", y_test.shape)
 
 # Standardization
 scaler = StandardScaler().fit(x_train)
+print("Scaler fitted on x_train")
 x_train = scaler.transform(x_train)
 x_test = scaler.transform(x_test)
+print("After standardization, x_train shape:", x_train.shape)
+print("After standardization, x_test shape:", x_test.shape)
 
 # Reshape the data to 3D - (batch_size, steps, 1)
 x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1)
 x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1)
+print("After reshaping, x_train shape:", x_train.shape)
+print("After reshaping, x_test shape:", x_test.shape)
 
 # 2. Define the 1D CNN model
 
@@ -65,6 +77,7 @@ x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1)
 #    return modeldef create_cnn_model(input_shape):
 
 def create_cnn_model(input_shape):
+    print("Creating model with input shape:", input_shape)
     model = tf.keras.models.Sequential()
     model.add(Conv1D(64, kernel_size=5, activation='relu', input_shape=input_shape))
 #    model.add(BatchNormalization())  # Add Batch Normalization
@@ -89,7 +102,7 @@ def create_cnn_model(input_shape):
     return model
 
 # Create EarlyStopping callback
-early_stopping_callback = EarlyStopping(monitor='val_loss', patience=3)
+early_stopping_callback = EarlyStopping(monitor='val_loss', patience=2)
 
 # Define the Keras TensorBoard callback
 logdir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
