@@ -35,7 +35,7 @@ class testDriveNode(Node):
     HPIX = 320
     VPIX = 200
     HFOV = 70.8
-    MIN_DIST = 0.15
+    MIN_DIST = 0.05
     scan_max_dist = 2.8
     num_scan = 1620
     num_scan2 = 810
@@ -340,8 +340,8 @@ class testDriveNode(Node):
 #           #self.get_logger().info('Power: %s ' % self._Y)
             self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl))
 #           self._pwm.set_pwm(1, 0, int(self.neutral_pulse-self._Y*self.motor_ctl))
-            self._speed_msg.data = self.SPEED
-            self.speed_publisher_.publish(self._speed_msg)
+            #self._speed_msg.data = self.SPEED
+            #self.speed_publisher_.publish(self._speed_msg)
 
     def touch_button_callback(self, msg):
         ack = String()
