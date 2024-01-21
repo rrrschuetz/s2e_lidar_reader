@@ -215,6 +215,7 @@ class testDriveNode(Node):
                     self._round_start_time = self._round_end_time
                     self.get_logger().info(f"Round {self._total_rounds} in {duration_in_seconds} sec completed!")
                     if self._total_rounds >= 3:
+                        self._total_rounds = 0
                         self._tf_control = False
                         self._processing = False
                         self._pwm.set_pwm(0, 0, int(self.servo_neutral))
