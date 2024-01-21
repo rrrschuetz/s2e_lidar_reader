@@ -327,6 +327,7 @@ class testDriveNode(Node):
 
             # Check if 'B' button is pressed - switch off AI steering
             elif msg.buttons[1] == 1:
+                self.get_logger().info('emergency shutdown initiated by supervisor')
                 self._tf_control = False
                 self._processing = False
                 self._pwm.set_pwm(0, 0, int(self.servo_neutral))
