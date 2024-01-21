@@ -173,6 +173,9 @@ class testDriveNode(Node):
 
     def __del__(self):
         self.get_logger().info('Switch off ESC')
+        self.motor_off()
+
+    def motor_off(self):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.relay_pin, GPIO.OUT)
         GPIO.output(self.relay_pin, GPIO.LOW)
@@ -311,6 +314,7 @@ class testDriveNode(Node):
         #self.get_logger().info('current speed m/s: %s' % self._speed)
 
         if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
+
             # Check if 'A' button is pressed - switch on AI steering
             if msg.buttons[0] == 1:
                 self._tf_control = True
@@ -320,13 +324,22 @@ class testDriveNode(Node):
                 self._round_start_time = self.get_clock().now()
                 self._speed_msg.data = self.SPEED
                 self.speed_publisher_.publish(self._speed_msg)
+
             # Check if 'B' button is pressed - switch off AI steering
             elif msg.buttons[1] == 1:
                 self._tf_control = False
+                self._processing = False
+                self._pwm.set_pwm(0, 0, int(self.servo_neutral))
+ #              self._pwm.set_pwm(1, 0, int(self.neutral_pulse))
+                self._speed_msg.data = "0"
+                self.speed_publisher_.publish(self._speed_msg)
+                self.motor_off()
+
             # Check if 'X' button is pressed - trim right
             elif msg.buttons[2] == 1:
                 self._Xtrim += 0.05
                 self.get_logger().info('X Trim: "%s"' % self._Xtrim)
+
             # Check if 'Y' button is pressed - trim left
             elif msg.buttons[3] == 1:
                 self._Xtrim -= 0.05
@@ -340,8 +353,6 @@ class testDriveNode(Node):
 #           #self.get_logger().info('Power: %s ' % self._Y)
             self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl))
 #           self._pwm.set_pwm(1, 0, int(self.neutral_pulse-self._Y*self.motor_ctl))
-            #self._speed_msg.data = self.SPEED
-            #self.speed_publisher_.publish(self._speed_msg)
 
     def touch_button_callback(self, msg):
         ack = String()
