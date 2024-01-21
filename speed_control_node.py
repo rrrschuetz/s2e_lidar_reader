@@ -65,7 +65,10 @@ class SpeedControlNode(Node):
         y_pwm = min(self.max_y, abs(int(self.base_pwm + pid_output * self.motor_ctl)))
         #self.get_logger().info(f"impulse count: {impulse_count} - y_pwm value set: {y_pwm}")
         self.impulse_history.clear()  # Reset the history after each measurement
-        self.pwm.set_pwm(1, 0, y_pwm)
+        try:
+            self.pwm.set_pwm(1, 0, y_pwm)
+        except IOError as e:
+            self.get_logger().error('IOError I2C occurred: %s' % str(e))
 
 def main(args=None):
     relay_pin = 17

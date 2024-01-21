@@ -107,12 +107,15 @@ class s2eLidarReaderParkingNode(Node):
         if hasattr(msg, 'axes') and len(msg.axes) > 2:
             self._X = msg.axes[2]
             self._Y = msg.axes[1]
-        
-        #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+self._X*self.servo_ctl))
-        #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+self._Y*40))
-        self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
-        self._pwm.set_pwm(1, 0, int(self.neutral_pulse-self._Y*self.motor_ctl))
 
+        try:
+            #self.get_logger().info('Steering: "%s"' % str(self.servo_neutral+self._X*self.servo_ctl))
+            #self.get_logger().info('Power: "%s"' % str(self.neutral_pulse+self._Y*40))
+            self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
+            self._pwm.set_pwm(1, 0, int(self.neutral_pulse-self._Y*self.motor_ctl))
+
+        except IOError as e:
+            self.get_logger().error('IOError I2C occurred: %s' % str(e))
 def main(args=None):
     rclpy.init(args=args)
     lidar_reader_parking_node = s2eLidarReaderParkingNode()

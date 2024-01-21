@@ -301,6 +301,9 @@ class testDriveNode(Node):
             except ValueError as e:
                 self.get_logger().error('Model rendered nan: %s' % str(e))
 
+            except IOError as e:
+                self.get_logger().error('IOError I2C occurred: %s' % str(e))
+
             self._processing = False
        
     def joy_callback(self, msg):
@@ -525,6 +528,9 @@ class parkingNode(Node):
             
             except ValueError as e:
                 self.get_logger().error('Model rendered nan: %s' % str(e))
+
+            except IOError as e:
+                self.get_logger().error('IOError I2C occurred: %s' % str(e))
 
             self._processing = False
 
