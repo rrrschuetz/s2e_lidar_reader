@@ -394,11 +394,16 @@ class testDriveNode(Node):
             color, x1, x2 = blob
             cx1 = int(x1)
             cx2 = int(x2)
-            fcol = float(color)+1.0
-            if fcol > 0.0:
-                self._color1[cx1:cx2+1] = fcol
-                # self.get_logger().info('CAM1: blob inserted: %s,%s,%s' % (color,x1,x2))
-
+#            fcol = float(color)+1.0
+#            if fcol > 0.0:
+#                self._color1[cx1:cx2+1] = fcol
+#           self.get_logger().info('CAM1: blob inserted: %s,%s,%s' % (color,x1,x2))
+            if color == 0: encoded_color = [1, 0]
+            elif color == 1: encoded_color = [0, 1]
+            else: continue  # Skip if color is not recognized
+            for i in range(cx1, cx2 + 1):
+                self._color2[i] = encoded_color
+    
     def openmv_h7_callback2(self, msg):
         #self.get_logger().info('cam msg received: "%s"' % msg)
         self._color2 = np.zeros(self.HPIX)
@@ -410,16 +415,21 @@ class testDriveNode(Node):
             self.get_logger().error("Data length is not divisible by 3!")
             return
 
-        blobs = ((data[i],data[i+1],data[i+2]) for i in range (0,len(data),3))
+        blobs = ((data[i],data[i+1],data[i+2]) for i in range (0,len(data),3))  
         for blob in blobs:
             color, x1, x2 = blob
             cx1 = int(x1)
             cx2 = int(x2)
-            fcol = float(color)+1.0
-            if fcol > 0.0:
-                self._color2[cx1:cx2+1] = fcol
-                # self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
-    
+#            fcol = float(color)+1.0
+#            if fcol > 0.0:
+#                self._color2[cx1:cx2+1] = fcol
+#           self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
+            if color == 0: encoded_color = [1, 0]
+            elif color == 1: encoded_color = [0, 1]
+            else: continue  # Skip if color is not recognized
+            for i in range(cx1, cx2 + 1):
+                self._color2[i] = encoded_color
+
 #    def speed_monitor_callback(self, msg):
 #        self._speed = eval(msg.data)
 #        #self.get_logger().warning("speed update received %s" % self._speed)
