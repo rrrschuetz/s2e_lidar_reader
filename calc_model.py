@@ -24,9 +24,20 @@ def make_column_names_unique(df):
         cols[cols[cols == dup].index.values.tolist()] = [dup + '_' + str(i) if i != 0 else dup for i in range(sum(cols == dup))]
     df.columns = cols
 
+# One-hot encode the color columns (assuming they start with 'COL')
+def one_hot_encode_colors(df):
+    color_cols = df.filter(regex='^COL').columns
+    for col in color_cols:
+        df[col] = df[col].astype(int)
+        # Assuming 1 for red and 2 for green
+        df = pd.concat([df, pd.get_dummies(df[col], prefix=col)], axis=1)
+        df.drop(col, axis=1, inplace=True)
+    return df
+
 # 1. Preprocess data
 data_raw = pd.read_csv('~/test/file.txt')
 make_column_names_unique(data_raw)
+data_raw = one_hot_encode_colors(data_raw)
 print("Raw data columns:", data_raw.columns)
 print("Raw data shape:", data_raw.shape)
 
