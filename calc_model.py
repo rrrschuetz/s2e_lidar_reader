@@ -24,15 +24,23 @@ def make_column_names_unique(df):
         cols[cols[cols == dup].index.values.tolist()] = [dup + '_' + str(i) if i != 0 else dup for i in range(sum(cols == dup))]
     df.columns = cols
 
-# One-hot encode the color columns (assuming they start with 'COL')
 def one_hot_encode_colors(df):
     color_cols = df.filter(regex='^COL').columns
     for col in color_cols:
-        df[col] = df[col].astype(int)
-        # Assuming 1 for red and 2 for green
-        df = pd.concat([df, pd.get_dummies(df[col], prefix=col)], axis=1)
-        df.drop(col, axis=1, inplace=True)
+        df[f"{col_name}_R"] = (df[col_name] == 2).astype(int)
+        df[f"{col_name}_G"] = (df[col_name] == 1).astype(int)
     return df
+
+# Re-read the original CSV file to start fresh
+df_full_adjusted = pd.read_csv(file_path)
+
+# Apply the adjusted one-hot encoding
+df_full_adjusted = one_hot_encode_col_adjusted(df_full_adjusted, 'COL1')
+df_full_adjusted = one_hot_encode_col_adjusted(df_full_adjusted, 'COL2')
+
+# Check the result
+df_full_adjusted.head()
+
 
 # 1. Preprocess data
 data_raw = pd.read_csv('~/test/file.txt')
