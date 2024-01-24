@@ -26,25 +26,22 @@ def make_column_names_unique(df):
 
 def one_hot_encode_colors(df):
     color_cols = df.filter(regex='^COL').columns
-    new_cols = []
+    new_cols = pd.DataFrame()
 
     for col in color_cols:
-        # Create new DataFrames for red and green columns
-        df_red = (df[col] == 2).astype(int).rename(f"{col}_R")
-        df_green = (df[col] == 1).astype(int).rename(f"{col}_G")
-
-        # Append the new DataFrames to the list
-        new_cols.append(df_red)
-        new_cols.append(df_green)
+        # Create new columns for red and green directly in the new DataFrame
+        new_cols[f"{col}_R"] = (df[col] == 2).astype(int)
+        new_cols[f"{col}_G"] = (df[col] == 1).astype(int)
 
     # Concatenate all new columns with the original DataFrame
-    df = pd.concat([df] + new_cols, axis=1)
+    df = pd.concat([df, new_cols], axis=1)
     return df
 
 # 1. Preprocess data
 data_raw = pd.read_csv('~/test/file.txt')
 make_column_names_unique(data_raw)
 data_raw = one_hot_encode_colors(data_raw)
+data_raw.to_csv('~/test/file_converted.csv', index=False)
 print("Raw data columns:", data_raw.columns)
 print("Raw data shape:", data_raw.shape)
 
