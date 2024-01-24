@@ -26,21 +26,20 @@ def make_column_names_unique(df):
 
 def one_hot_encode_colors(df):
     color_cols = df.filter(regex='^COL').columns
+    new_cols = []
+
     for col in color_cols:
-        df[f"{col_name}_R"] = (df[col_name] == 2).astype(int)
-        df[f"{col_name}_G"] = (df[col_name] == 1).astype(int)
+        # Create new DataFrames for red and green columns
+        df_red = (df[col] == 2).astype(int).rename(f"{col}_R")
+        df_green = (df[col] == 1).astype(int).rename(f"{col}_G")
+
+        # Append the new DataFrames to the list
+        new_cols.append(df_red)
+        new_cols.append(df_green)
+
+    # Concatenate all new columns with the original DataFrame
+    df = pd.concat([df] + new_cols, axis=1)
     return df
-
-# Re-read the original CSV file to start fresh
-df_full_adjusted = pd.read_csv(file_path)
-
-# Apply the adjusted one-hot encoding
-df_full_adjusted = one_hot_encode_col_adjusted(df_full_adjusted, 'COL1')
-df_full_adjusted = one_hot_encode_col_adjusted(df_full_adjusted, 'COL2')
-
-# Check the result
-df_full_adjusted.head()
-
 
 # 1. Preprocess data
 data_raw = pd.read_csv('~/test/file.txt')
