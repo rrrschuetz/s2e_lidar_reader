@@ -380,7 +380,7 @@ class testDriveNode(Node):
 
     def openmv_h7_callback1(self, msg):
         #self.get_logger().info('cam msg received: "%s"' % msg)
-        self._color1 = np.zeros(self.HPIX)
+        self._color1 = np.zeros(self.HPIX*2)
         data = msg.data.split(',')
         if not msg.data:
             self.get_logger().warning("Received empty message!")
@@ -409,7 +409,7 @@ class testDriveNode(Node):
 
     def openmv_h7_callback2(self, msg):
         #self.get_logger().info('cam msg received: "%s"' % msg)
-        self._color2 = np.zeros(self.HPIX)
+        self._color2 = np.zeros(self.HPIX*2)
         data = msg.data.split(',')
         if not msg.data:
             self.get_logger().warning("Received empty message!")
@@ -429,11 +429,11 @@ class testDriveNode(Node):
 #           self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
             for i in range(cx1*2, cx2*2+1,2):
                 if color == 0:
-                    self._color1[i] = 1
-                    self._color[i+1] = 0
+                    self._color2[i] = 1
+                    self._color2[i+1] = 0
                 elif color == 1:
-                    self._color1[i] = 0
-                    self._color[i+1] = 1
+                    self._color2[i] = 0
+                    self._color2[i+1] = 1
                 else: continue
 
 #    def speed_monitor_callback(self, msg):
