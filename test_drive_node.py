@@ -78,8 +78,8 @@ class testDriveNode(Node):
         self._dt = 0.1
         self._cx1 = 0
         self._cx2 = 0
-        self._color1 = np.zeros(self.HPIX)
-        self._color2 = np.zeros(self.HPIX)
+        self._color1 = np.zeros(self.HPIX*2)
+        self._color2 = np.zeros(self.HPIX*2)
 
         self._speed_msg = String()
         self._speed_msg.data = "0"
@@ -398,12 +398,15 @@ class testDriveNode(Node):
 #            if fcol > 0.0:
 #                self._color1[cx1:cx2+1] = fcol
 #           self.get_logger().info('CAM1: blob inserted: %s,%s,%s' % (color,x1,x2))
-            if color == 0: encoded_color = [1, 0]
-            elif color == 1: encoded_color = [0, 1]
-            else: continue  # Skip if color is not recognized
-            for i in range(cx1, cx2 + 1):
-                self._color2[i] = encoded_color
-    
+            for i in range(cx1*2, cx2*2+1,2):
+                if color == 0:
+                    self._color1[i] = 1
+                    self._color[i+1] = 0
+                elif color == 1:
+                    self._color1[i] = 0
+                    self._color[i+1] = 1
+                else: continue
+
     def openmv_h7_callback2(self, msg):
         #self.get_logger().info('cam msg received: "%s"' % msg)
         self._color2 = np.zeros(self.HPIX)
@@ -424,11 +427,14 @@ class testDriveNode(Node):
 #            if fcol > 0.0:
 #                self._color2[cx1:cx2+1] = fcol
 #           self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
-            if color == 0: encoded_color = [1, 0]
-            elif color == 1: encoded_color = [0, 1]
-            else: continue  # Skip if color is not recognized
-            for i in range(cx1, cx2 + 1):
-                self._color2[i] = encoded_color
+            for i in range(cx1*2, cx2*2+1,2):
+                if color == 0:
+                    self._color1[i] = 1
+                    self._color[i+1] = 0
+                elif color == 1:
+                    self._color1[i] = 0
+                    self._color[i+1] = 1
+                else: continue
 
 #    def speed_monitor_callback(self, msg):
 #        self._speed = eval(msg.data)
