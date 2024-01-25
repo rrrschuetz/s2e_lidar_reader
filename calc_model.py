@@ -46,33 +46,47 @@ def apply_reciprocal_to_scan(df):
 #    # Concatenate all new columns with the original DataFrame
 #    df = pd.concat([df, new_cols], axis=1)
 #    return df
+import pandas as pd
 
 def one_hot_encode_colors(df):
     color_cols = df.filter(regex='^COL').columns
-    new_cols = pd.DataFrame(index=df.index)
+    green_cols = pd.DataFrame(index=df.index)
+    red_cols = pd.DataFrame(index=df.index)
 
     for col in color_cols:
-        # One-hot encoding for red and green
-        new_cols[f"{col}_R"] = (df[col] == 2).astype(int)
-        new_cols[f"{col}_G"] = (df[col] == 1).astype(int)
+        # One-hot encoding for green
+        green_cols[f"{col}_G"] = (df[col] == 1).astype(int)
 
-        # Count consecutive same-colored columns for red and green
-        for color in ['R', 'G']:
-            color_col = f"{col}_{color}"
+        # One-hot encoding for red
+        red_cols[f"{col}_R"] = (df[col] == 2).astype(int)
+
+    # Update the one-hot encoded columns to reflect the count of consecutive same-colored columns
+    def update_consecutive_counts(cols_df, color_value):
+        for col in cols_df.columns:
             consecutive_counts = []
             count = 0
 
             for i in df.index:
-                if new_cols.at[i, color_col] == 1:
+                if cols_df.at[i, col] == color_value:
                     count += 1
                 else:
                     if count > 0:
-                        consecutive_counts.append((i-count, count))
+                        consecutive_counts.append((i - count, count))
                     count = 0
 
             # Update the counts in the new columns
             for start_index, count in consecutive_counts:
-                new_cols.loc[start_index:start_index+count-1, color_col] = count
+                cols_df.loc[start_index:start_index + count - 1, col] = count
+
+    update_consecutive_counts(green_cols, 1)
+    update_consecutive_counts(red_cols, 2)
+
+    # Drop the original color columns
+    df.drop(color_cols, axis=1, inplace=True)
+
+    # Concatenate green and red columns with the original DataFrame
+    df = pd.concat([df, green_cols, red_cols], axis=1)
+    return df
 
     # Drop the original color columns
     df.drop(color_cols, axis=1, inplace=True)
@@ -80,7 +94,6 @@ def one_hot_encode_colors(df):
     # Concatenate all new columns with the original DataFrame
     df = pd.concat([df, new_cols], axis=1)
     return df
-
 
 
 # 1. Preprocess data
