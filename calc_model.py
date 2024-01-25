@@ -47,6 +47,42 @@ def one_hot_encode_colors(df):
     df = pd.concat([df, new_cols], axis=1)
     return df
 
+def one_hot_encode_colors(df):
+    color_cols = df.filter(regex='^COL').columns
+    new_cols = pd.DataFrame(index=df.index)
+
+    for col in color_cols:
+        # One-hot encoding for red and green
+        new_cols[f"{col}_R"] = (df[col] == 2).astype(int)
+        new_cols[f"{col}_G"] = (df[col] == 1).astype(int)
+
+        # Count consecutive same-colored columns for red and green
+        for color in ['R', 'G']:
+            color_col = f"{col}_{color}"
+            consecutive_counts = []
+            count = 0
+
+            for i in df.index:
+                if new_cols.at[i, color_col] == 1:
+                    count += 1
+                else:
+                    if count > 0:
+                        consecutive_counts.append((i-count, count))
+                    count = 0
+
+            # Update the counts in the new columns
+            for start_index, count in consecutive_counts:
+                new_cols.loc[start_index:start_index+count-1, color_col] = count
+
+    # Drop the original color columns
+    df.drop(color_cols, axis=1, inplace=True)
+
+    # Concatenate all new columns with the original DataFrame
+    df = pd.concat([df, new_cols], axis=1)
+    return df
+
+
+
 # 1. Preprocess data
 data_raw = pd.read_csv('~/test/file.txt')
 make_column_names_unique(data_raw)
