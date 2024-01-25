@@ -37,8 +37,8 @@ def one_hot_encode_colors(df):
 
     for col in color_cols:
         # Create new columns for red and green directly in the new DataFrame
-        new_cols[f"{col}_R"] = (df[col] == 2).astype(int)
-        new_cols[f"{col}_G"] = (df[col] == 1).astype(int)
+        new_cols[f"{col}_R"] = (df[col] == 2).astype(int)*2
+        new_cols[f"{col}_G"] = (df[col] == 1).astype(int)*2
 
     # Drop the original color columns
     df.drop(color_cols, axis=1, inplace=True)

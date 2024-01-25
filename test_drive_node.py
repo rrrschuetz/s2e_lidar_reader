@@ -401,11 +401,11 @@ class testDriveNode(Node):
 #           self.get_logger().info('CAM1: blob inserted: %s,%s,%s' % (color,x1,x2))
             for i in range(cx1*2, cx2*2+1,2):
                 if color == 0:
-                    self._color1[i] = 1
-                    self._color[i+1] = 0
+                    self._color1[i] = 2
+                    self._color1[i+1] = 0
                 elif color == 1:
                     self._color1[i] = 0
-                    self._color[i+1] = 1
+                    self._color1[i+1] = 2
                 else: continue
 
     def openmv_h7_callback2(self, msg):
@@ -430,11 +430,11 @@ class testDriveNode(Node):
 #           self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
             for i in range(cx1*2, cx2*2+1,2):
                 if color == 0:
-                    self._color2[i] = 1
+                    self._color2[i] = 2
                     self._color2[i+1] = 0
                 elif color == 1:
                     self._color2[i] = 0
-                    self._color2[i+1] = 1
+                    self._color2[i+1] = 2
                 else: continue
 
 #    def speed_monitor_callback(self, msg):
