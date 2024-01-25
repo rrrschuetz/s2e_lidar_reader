@@ -258,6 +258,7 @@ class testDriveNode(Node):
                 x = np.arange(len(scan))
                 finite_vals = np.isfinite(scan)
                 scan_interpolated = np.interp(x, x[finite_vals], scan[finite_vals])
+                scan_interpolated = [1/value if value != 0 else 0 for value in scan_interpolated]
 
                 # add color data
                 combined = list(scan_interpolated)  # Convert to list for easier appending

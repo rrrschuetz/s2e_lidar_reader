@@ -24,6 +24,13 @@ def make_column_names_unique(df):
         cols[cols[cols == dup].index.values.tolist()] = [dup + '_' + str(i) if i != 0 else dup for i in range(sum(cols == dup))]
     df.columns = cols
 
+def apply_reciprocal_to_scan(df):
+    scan_cols = df.filter(regex='^SCAN').columns
+    for col in scan_cols:
+        # Apply the reciprocal transformation, avoiding division by zero
+        df[col] = df[col].apply(lambda x: 1/x if x != 0 else 0)
+    return df
+
 def one_hot_encode_colors(df):
     color_cols = df.filter(regex='^COL').columns
     new_cols = pd.DataFrame(index=df.index)
@@ -43,6 +50,7 @@ def one_hot_encode_colors(df):
 # 1. Preprocess data
 data_raw = pd.read_csv('~/test/file.txt')
 make_column_names_unique(data_raw)
+data_raw = apply_reciprocal_to_scan(data_raw)
 data_raw = one_hot_encode_colors(data_raw)
 data_raw.to_csv('~/test/file_converted.csv', index=False)
 print("Raw data columns:", data_raw.columns)
