@@ -31,21 +31,21 @@ def apply_reciprocal_to_scan(df):
         df[col] = df[col].apply(lambda x: 1/x if x != 0 else 0)
     return df
 
-def one_hot_encode_colors(df):
-    color_cols = df.filter(regex='^COL').columns
-    new_cols = pd.DataFrame(index=df.index)
-
-    for col in color_cols:
-        # Create new columns for red and green directly in the new DataFrame
-        new_cols[f"{col}_R"] = (df[col] == 2).astype(int)*2
-        new_cols[f"{col}_G"] = (df[col] == 1).astype(int)*2
-
-    # Drop the original color columns
-    df.drop(color_cols, axis=1, inplace=True)
-
-    # Concatenate all new columns with the original DataFrame
-    df = pd.concat([df, new_cols], axis=1)
-    return df
+#def one_hot_encode_colors(df):
+#    color_cols = df.filter(regex='^COL').columns
+#    new_cols = pd.DataFrame(index=df.index)
+#
+#    for col in color_cols:
+#        # Create new columns for red and green directly in the new DataFrame
+#        new_cols[f"{col}_R"] = (df[col] == 2).astype(int)*2
+#        new_cols[f"{col}_G"] = (df[col] == 1).astype(int)*2
+#
+#    # Drop the original color columns
+#    df.drop(color_cols, axis=1, inplace=True)
+#
+#    # Concatenate all new columns with the original DataFrame
+#    df = pd.concat([df, new_cols], axis=1)
+#    return df
 
 def one_hot_encode_colors(df):
     color_cols = df.filter(regex='^COL').columns
