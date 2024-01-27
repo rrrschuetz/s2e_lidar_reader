@@ -239,10 +239,10 @@ class testDriveNode(Node):
                         return
 
             self._clockwise = (self._total_heading_change > 0)
-            if not self._clockwise:
-                self.get_logger().info("Using CAM1")
-            else:
-                self.get_logger().info("Using CAM2")
+            #if not self._clockwise:
+            #    self.get_logger().info("Using CAM1")
+            #else:
+            #    self.get_logger().info("Using CAM2")
 
             self._start_time = self.get_clock().now()
             self._dt = (self._start_time - self._end_time).nanoseconds * 1e-9
@@ -295,7 +295,7 @@ class testDriveNode(Node):
                 combined_standardized = combined_standardized.astype(np.float32)
 
                 if self._RED:
-                    self.get_logger().info('RED plan used')
+                    #self.get_logger().info('RED plan used')
                     # Set the value of the input tensor
                     self._interpreter_r.set_tensor(self._input_details_r[0]['index'], combined_standardized)
                     # Run inference
@@ -303,7 +303,7 @@ class testDriveNode(Node):
                     # Retrieve the output of the model
                     predictions = self._interpreter_r.get_tensor(self._output_details_r[0]['index'])
                 else:
-                    self.get_logger().info('GREEN plan used')
+                    #self.get_logger().info('GREEN plan used')
                     self._interpreter_g.set_tensor(self._input_details_g[0]['index'], combined_standardized)
                     self._interpreter_g.invoke()
                     predictions = self._interpreter_g.get_tensor(self._output_details_g[0]['index'])
@@ -387,7 +387,6 @@ class testDriveNode(Node):
         ack = String()
         if not self._tf_control:
             self._tf_control = True
-            self._clockwise = False
             self._Y = 1.0
             self._start_heading = self._sense.gyro['yaw']
             self._last_heading = self._start_heading
@@ -464,11 +463,6 @@ class testDriveNode(Node):
                 self._RED = True
                 #self.get_logger().info('RED plan activated')
             #self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
-
-#    def speed_monitor_callback(self, msg):
-#        self._speed = eval(msg.data)
-#        #self.get_logger().warning("speed update received %s" % self._speed)
-
 
 class parkingNode(Node):
     num_scan = 1620
