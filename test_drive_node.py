@@ -422,6 +422,7 @@ class testDriveNode(Node):
                     self._color1[i] = 0
                     self._color1[i+1] = self._weight
                     self._RED = True
+                    self.get_logger().info('RED plan activated')
                 else: continue
 
     def openmv_h7_callback2(self, msg):
@@ -454,6 +455,7 @@ class testDriveNode(Node):
                     self._color2[i] = 0
                     self._color2[i+1] = self._weight
                     self._RED = True
+                    self.get_logger().info('RED plan activated')
                 else: continue
 
 #    def speed_monitor_callback(self, msg):
