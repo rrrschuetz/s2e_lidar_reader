@@ -54,8 +54,8 @@ def one_hot_encode_colors(df):
 
     for col in color_cols:
         # One-hot encoding for green and red
-        green_cols[f"{col}_G"] = (df[col] == 1).astype(int)
-        red_cols[f"{col}_R"] = (df[col] == 2).astype(int)
+        green_cols[f"{col}_G"] = (df[col] == 2).astype(int)
+        red_cols[f"{col}_R"] = (df[col] == 3).astype(int)
 
     def update_consecutive_counts(cols_df, original_df, color_value):
         for col in cols_df.columns:
