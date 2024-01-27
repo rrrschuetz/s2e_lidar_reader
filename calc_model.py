@@ -69,7 +69,7 @@ def one_hot_encode_colors(df,weight):
 data_raw = pd.read_csv('~/test/file.txt')
 make_column_names_unique(data_raw)
 data_raw = apply_reciprocal_to_scan(data_raw)
-data_raw = one_hot_encode_colors(data_raw)
+data_raw = one_hot_encode_colors(data_raw,10)
 data_raw.to_csv('~/test/file_converted.csv', index=False)
 col_data_raw = data_raw.iloc[:, -1280:]
 col_data_raw.to_csv('~/test/file_colors.csv', index=False)
