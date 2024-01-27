@@ -271,7 +271,7 @@ class testDriveNode(Node):
                 # add color data
                 combined = list(scan_interpolated)  # Convert to list for easier appending
                 combined.extend(self._color1_g)
-                compbine.extend(self._color2_g)
+                combined.extend(self._color2_g)
                 combined.extend(self._color1_r)
                 combined.extend(self._color2_r)
 
