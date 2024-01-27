@@ -61,18 +61,22 @@ def one_hot_encode_colors(df):
         for col in cols_df.columns:
             original_col = col.split('_')[0]
             count = 0
+            start_index = None
 
             for i in df.index:
                 if original_df.at[i, original_col] == color_value:
+                    if start_index is None:
+                        start_index = i
                     count += 1
                 else:
                     if count > 0:
-                        cols_df.loc[i-count:i-1, col] = count
-                    count = 0
+                        cols_df.loc[start_index:start_index + count - 1, col] = count
+                        count = 0
+                        start_index = None
 
             # Handle case where the last rows are consecutive
             if count > 0:
-                cols_df.loc[i-count+1:i, col] = count
+                cols_df.loc[start_index:start_index + count - 1, col] = count
 
     update_consecutive_counts(green_cols, df, 1)
     update_consecutive_counts(red_cols, df, 2)
@@ -83,6 +87,7 @@ def one_hot_encode_colors(df):
     # Concatenate green and red columns with the original DataFrame
     df = pd.concat([df, green_cols, red_cols], axis=1)
     return df
+
 
 # 1. Preprocess data
 data_raw = pd.read_csv('~/test/file.txt')
