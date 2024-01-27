@@ -78,8 +78,10 @@ class testDriveNode(Node):
         self._dt = 0.1
         self._cx1 = 0
         self._cx2 = 0
-        self._color1 = np.zeros(self.HPIX*2)
-        self._color2 = np.zeros(self.HPIX*2)
+        self._color1_g = np.zeros(self.HPIX)
+        self._color2_g = np.zeros(self.HPIX)
+        self._color1_r = np.zeros(self.HPIX)
+        self._color2_r = np.zeros(self.HPIX)
         self._RED = False
 
         self._speed_msg = String()
@@ -268,8 +270,10 @@ class testDriveNode(Node):
 
                 # add color data
                 combined = list(scan_interpolated)  # Convert to list for easier appending
-                combined.extend(self._color1)
-                combined.extend(self._color2)
+                combined.extend(self._color1_g)
+                compbine.extend(self._color2_g)
+                combined.extend(self._color1_r)
+                combined.extend(self._color2_r)
 
                 # Reshape and standardize
                 combined = np.reshape(combined, (1, -1))
@@ -395,7 +399,8 @@ class testDriveNode(Node):
     def openmv_h7_callback1(self, msg):
         self._weight = 10
         #self.get_logger().info('cam msg received: "%s"' % msg)
-        self._color1 = np.zeros(self.HPIX*2)
+        self._color1_g = np.zeros(self.HPIX)
+        self._color1_r = np.zeros(self.HPIX)
         data = msg.data.split(',')
         if not msg.data:
             self.get_logger().warning("Received empty message!")
@@ -409,26 +414,22 @@ class testDriveNode(Node):
             color, x1, x2 = blob
             cx1 = int(x1)
             cx2 = int(x2)
-#            fcol = float(color)+1.0
-#            if fcol > 0.0:
-#                self._color1[cx1:cx2+1] = fcol
 #           self.get_logger().info('CAM1: blob inserted: %s,%s,%s' % (color,x1,x2))
-            for i in range(cx1*2, cx2*2+1,2):
+            for i in range(cx1, cx2+1):
                 if color == 1:
-                    self._color1[i] = self._weight
-                    self._color1[i+1] = 0
-                    self._RED = False
+                    self._color1_g[i] = self._weight
                 elif color == 2:
-                    self._color1[i] = 0
-                    self._color1[i+1] = self._weight
-                    self._RED = True
-                    self.get_logger().info('RED plan activated')
-                else: continue
+                    self._color1_r[i] = self._weight
+
+            self._RED = (color==2)
+            if self._RED:
+                self.get_logger().info('RED plan activated')
 
     def openmv_h7_callback2(self, msg):
         self._weight = 10
         #self.get_logger().info('cam msg received: "%s"' % msg)
-        self._color2 = np.zeros(self.HPIX*2)
+        self._color2_g = np.zeros(self.HPIX)
+        self._color2_r = np.zeros(self.HPIX)
         data = msg.data.split(',')
         if not msg.data:
             self.get_logger().warning("Received empty message!")
@@ -442,21 +443,16 @@ class testDriveNode(Node):
             color, x1, x2 = blob
             cx1 = int(x1)
             cx2 = int(x2)
-#            fcol = float(color)+1.0
-#            if fcol > 0.0:
-#                self._color2[cx1:cx2+1] = fcol
 #           self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
-            for i in range(cx1*2, cx2*2+1,2):
+            for i in range(cx1, cx2+1):
                 if color == 1:
-                    self._color2[i] = self._weight
-                    self._color2[i+1] = 0
-                    self._RED = False
+                    self._color2_g[i] = self._weight
                 elif color == 2:
-                    self._color2[i] = 0
-                    self._color2[i+1] = self._weight
-                    self._RED = True
-                    self.get_logger().info('RED plan activated')
-                else: continue
+                    self._color2_r[i] = self._weight
+
+            self._RED = (color==2)
+            if self._RED:
+                self.get_logger().info('RED plan activated')
 
 #    def speed_monitor_callback(self, msg):
 #        self._speed = eval(msg.data)
