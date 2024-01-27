@@ -167,10 +167,10 @@ class testDriveNode(Node):
         self._interpreter_g.allocate_tensors()
         self._interpreter_r.allocate_tensors()
         # Get input and output tensors information
-        self._input_details_g = self._interpreter.get_input_details()
-        self._input_details_r = self._interpreter.get_input_details()
-        self._output_details_g = self._interpreter.get_output_details()
-        self._output_details_r = self._interpreter.get_output_details()
+        self._input_details_g = self._interpreter_g.get_input_details()
+        self._input_details_r = self._interpreter_r.get_input_details()
+        self._output_details_g = self._interpreter_g.get_output_details()
+        self._output_details_r = self._interpreter_r.get_output_details()
         self.get_logger().info('prediction model loaded')
 
         msg = String()
