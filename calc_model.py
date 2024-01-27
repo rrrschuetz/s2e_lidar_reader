@@ -54,8 +54,8 @@ def one_hot_encode_colors(df,weight):
 
     for col in color_cols:
         # One-hot encoding for green and red
-        green_cols[f"{col}_G"] = (df[col] == 2).astype(int)*weight
-        red_cols[f"{col}_R"] = (df[col] == 3).astype(int)*weight
+        green_cols[f"{col}_G"] = (df[col] == 1).astype(int)*weight
+        red_cols[f"{col}_R"] = (df[col] == 2).astype(int)*weight
 
     # Drop the original color columns
     df.drop(color_cols, axis=1, inplace=True)

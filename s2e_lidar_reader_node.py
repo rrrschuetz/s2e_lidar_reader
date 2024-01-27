@@ -131,6 +131,8 @@ class s2eLidarReaderNode(Node):
         # add color data
         scan_data += ','.join(str(e) for e in self._color1)+','
         scan_data += ','.join(str(e) for e in self._color2)
+        self._color1 = np.zeros(self.HPIX)
+        self._color2 = np.zeros(self.HPIX)
 
         # Write the scan data to a file
         with open('/home/rrrschuetz/test/file.txt', 'a') as f:
@@ -176,7 +178,7 @@ class s2eLidarReaderNode(Node):
             color, x1, x2 = blob
             cx1 = int(x1)
             cx2 = int(x2)
-            fcol = float(color)+1.0
+            fcol = float(color)
             if fcol > 0.0:
                 self._color1[cx1:cx2+1] = fcol
                 #self.get_logger().info('CAM1: blob inserted: %s,%s,%s' % (color,x1,x2))
@@ -201,7 +203,7 @@ class s2eLidarReaderNode(Node):
             color, x1, x2 = blob
             cx1 = int(x1)
             cx2 = int(x2)
-            fcol = float(color)+1.0
+            fcol = float(color)
             if fcol > 0.0:
                 self._color2[cx1:cx2+1] = fcol
                 #self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))

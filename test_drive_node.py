@@ -401,10 +401,10 @@ class testDriveNode(Node):
 #                self._color1[cx1:cx2+1] = fcol
 #           self.get_logger().info('CAM1: blob inserted: %s,%s,%s' % (color,x1,x2))
             for i in range(cx1*2, cx2*2+1,2):
-                if color == 0:
+                if color == 1:
                     self._color1[i] = self._weight
                     self._color1[i+1] = 0
-                elif color == 1:
+                elif color == 2:
                     self._color1[i] = 0
                     self._color1[i+1] = self._weight
                 else: continue
@@ -431,10 +431,10 @@ class testDriveNode(Node):
 #                self._color2[cx1:cx2+1] = fcol
 #           self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
             for i in range(cx1*2, cx2*2+1,2):
-                if color == 0:
+                if color == 1:
                     self._color2[i] = self._weight
                     self._color2[i+1] = 0
-                elif color == 1:
+                elif color == 2:
                     self._color2[i] = 0
                     self._color2[i+1] = self._weight
                 else: continue
