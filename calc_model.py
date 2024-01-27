@@ -47,15 +47,15 @@ def apply_reciprocal_to_scan(df):
 #    df = pd.concat([df, new_cols], axis=1)
 #    return df
 
-def one_hot_encode_colors(df):
+def one_hot_encode_colors(df,weight):
     color_cols = df.filter(regex='^COL').columns
     green_cols = pd.DataFrame(0, index=df.index, columns=[f"{col}_G" for col in color_cols])
     red_cols = pd.DataFrame(0, index=df.index, columns=[f"{col}_R" for col in color_cols])
 
     for col in color_cols:
         # One-hot encoding for green and red
-        green_cols[f"{col}_G"] = (df[col] == 2).astype(int)
-        red_cols[f"{col}_R"] = (df[col] == 3).astype(int)
+        green_cols[f"{col}_G"] = (df[col] == 2).astype(int)*weight
+        red_cols[f"{col}_R"] = (df[col] == 3).astype(int)*weight
 
     # Drop the original color columns
     df.drop(color_cols, axis=1, inplace=True)
