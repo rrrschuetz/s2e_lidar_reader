@@ -285,16 +285,16 @@ class testDriveNode(Node):
                 if self._RED:
                     self.get_logger().info('RED plan used')
                     # Set the value of the input tensor
-                    self._interpreter_r.set_tensor(self._input_details[0]['index'], combined_standardized)
+                    self._interpreter_r.set_tensor(self._input_details_r[0]['index'], combined_standardized)
                     # Run inference
                     self._interpreter_r.invoke()
                     # Retrieve the output of the model
-                    predictions = self._interpreter_r.get_tensor(self._output_details[0]['index'])
+                    predictions = self._interpreter_r.get_tensor(self._output_details_r[0]['index'])
                 else:
                     self.get_logger().info('GREEN plan used')
-                    self._interpreter_g.set_tensor(self._input_details[0]['index'], combined_standardized)
+                    self._interpreter_g.set_tensor(self._input_details_g[0]['index'], combined_standardized)
                     self._interpreter_g.invoke()
-                    predictions = self._interpreter_g.get_tensor(self._output_details[0]['index'])
+                    predictions = self._interpreter_g.get_tensor(self._output_details_g[0]['index'])
 
                 self._X = predictions[0, 0]
                 #self._Y = predictions[0, 1]
@@ -513,8 +513,8 @@ class parkingNode(Node):
         self._interpreter_p = tf.lite.Interpreter(model_path="/home/rrrschuetz/test/model_p.tflite")
         self._interpreter_p.allocate_tensors()
         # Get input and output tensors information
-        self._input_details_p = self._interpreter.get_input_details()
-        self._output_details_p = self._interpreter.get_output_details()
+        self._input_details_p = self._interpreter_p.get_input_details()
+        self._output_details_p = self._interpreter_p.get_output_details()
         self.get_logger().info('parking prediction model loaded')
 
     def __del__(self):
@@ -556,11 +556,11 @@ class parkingNode(Node):
                 #predictions = self._model.predict(combined_standardized)
 
                 # Set the value of the input tensor
-                self._interpreter_p.set_tensor(self._input_details[0]['index'], combined_standardized)
+                self._interpreter_p.set_tensor(self._input_details_p[0]['index'], combined_standardized)
                 # Run inference
                 self._interpreter_p.invoke()
                 # Retrieve the output of the model
-                predictions = self._interpreter_p.get_tensor(self._output_details[0]['index'])
+                predictions = self._interpreter_p.get_tensor(self._output_details_p[0]['index'])
                 
                 self._X = predictions[0, 0]
                 self._Y = predictions[0, 1]
