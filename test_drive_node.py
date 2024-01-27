@@ -238,7 +238,7 @@ class testDriveNode(Node):
                         self.get_logger().info("Race completed!")
                         return
 
-            self._clockwise = (self._total_heading_change < 0)
+            self._clockwise = (self._total_heading_change > 0)
             if not self._clockwise:
                 self.get_logger().info("Using CAM1")
             else:
