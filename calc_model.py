@@ -57,30 +57,6 @@ def one_hot_encode_colors(df):
         green_cols[f"{col}_G"] = (df[col] == 2).astype(int)
         red_cols[f"{col}_R"] = (df[col] == 3).astype(int)
 
-    def update_consecutive_counts(cols_df, original_df, color_value):
-        for col in cols_df.columns:
-            original_col = col.split('_')[0]
-            count = 0
-            start_index = None
-
-            for i in df.index:
-                if original_df.at[i, original_col] == color_value:
-                    if start_index is None:
-                        start_index = i
-                    count += 1
-                else:
-                    if count > 0:
-                        cols_df.loc[start_index:start_index + count - 1, col] = count
-                        count = 0
-                        start_index = None
-
-            # Handle case where the last rows are consecutive
-            if count > 0:
-                cols_df.loc[start_index:start_index + count - 1, col] = count
-
-    update_consecutive_counts(green_cols, df, 1)
-    update_consecutive_counts(red_cols, df, 2)
-
     # Drop the original color columns
     df.drop(color_cols, axis=1, inplace=True)
 
