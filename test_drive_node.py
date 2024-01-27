@@ -413,6 +413,9 @@ class testDriveNode(Node):
         for blob in blobs:
             color, x1, x2 = blob
             color = int(color)
+            if color == 1:
+                self._RED = False
+                self.get_logger().info('GREEN plan activated')
             if color == 2:
                 self._RED = True
                 self.get_logger().info('RED plan activated')
@@ -442,6 +445,9 @@ class testDriveNode(Node):
         for blob in blobs:
             color, x1, x2 = blob
             color = int(color)
+            if color == 1:
+                self._RED = False
+                self.get_logger().info('GREEN plan activated')
             if color == 2:
                 self._RED = True
                 self.get_logger().info('RED plan activated')
