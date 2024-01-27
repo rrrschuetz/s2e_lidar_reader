@@ -85,7 +85,7 @@ def plot_color_data(color_data, chunk_size=1000):
     plt.show()
 
 # File reading and plotting
-filename = '/home/rrrschuetz/test/file_converted.csv'
+filename = '/home/rrrschuetz/test/file.txt'
 scan_data, color_data = read_data(filename)
 plot_radar_chart(scan_data)
 plot_color_data(color_data)

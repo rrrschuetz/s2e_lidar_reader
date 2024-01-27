@@ -418,20 +418,17 @@ class testDriveNode(Node):
         for blob in blobs:
             color, x1, x2 = blob
             color = int(color)
+            x1 = int(x1)
+            x2 = int(x2)
             if color == 1:
+                self._color1_g[x1:x2] = self.WEIGHT
                 self._RED = False
                 #self.get_logger().info('GREEN plan activated')
             if color == 2:
+                self._color1_r[x1:x2] = self.WEIGHT
                 self._RED = True
                 #self.get_logger().info('RED plan activated')
-            cx1 = int(x1)
-            cx2 = int(x2)
             #self.get_logger().info('CAM1: blob inserted: %s,%s,%s' % (color,x1,x2))
-            for i in range(cx1, cx2):
-                if color == 1:
-                    self._color1_g[i] = self.WEIGHT
-                elif color == 2:
-                    self._color1_r[i] = self.WEIGHT
 
     def openmv_h7_callback2(self, msg):
         if not self._clockwise: return
@@ -450,20 +447,17 @@ class testDriveNode(Node):
         for blob in blobs:
             color, x1, x2 = blob
             color = int(color)
+            x1 = int(x1)
+            x2 = int(x2)
             if color == 1:
+                self._color2_g[x1:x2] = self.WEIGHT
                 self._RED = False
                 #self.get_logger().info('GREEN plan activated')
             if color == 2:
+                self._color2_r[x1:x2] = self.WEIGHT
                 self._RED = True
                 #self.get_logger().info('RED plan activated')
-            cx1 = int(x1)
-            cx2 = int(x2)
             #self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
-            for i in range(cx1, cx2):
-                if color == 1:
-                    self._color2_g[i] = self.WEIGHT
-                elif color == 2:
-                    self._color2_r[i] = self.WEIGHT
 
 #    def speed_monitor_callback(self, msg):
 #        self._speed = eval(msg.data)

@@ -31,48 +31,32 @@ def apply_reciprocal_to_scan(df):
         df[col] = df[col].apply(lambda x: 1/x if x != 0 else 0)
     return df
 
-#def one_hot_encode_colors(df):
+#def one_hot_encode_colors(df,weight):
 #    color_cols = df.filter(regex='^COL').columns
-#    new_cols = pd.DataFrame(index=df.index)
-#
+#    green_cols = pd.DataFrame(0, index=df.index, columns=[f"{col}_G" for col in color_cols])
+#    red_cols = pd.DataFrame(0, index=df.index, columns=[f"{col}_R" for col in color_cols])
+
 #    for col in color_cols:
-#        # Create new columns for red and green directly in the new DataFrame
-#        new_cols[f"{col}_R"] = (df[col] == 2).astype(int)*2
-#        new_cols[f"{col}_G"] = (df[col] == 1).astype(int)*2
-#
+#        # One-hot encoding for green and red
+#        green_cols[f"{col}_G"] = (df[col] == 1).astype(int)*weight
+#        red_cols[f"{col}_R"] = (df[col] == 2).astype(int)*weight
+
 #    # Drop the original color columns
 #    df.drop(color_cols, axis=1, inplace=True)
-#
-#    # Concatenate all new columns with the original DataFrame
-#    df = pd.concat([df, new_cols], axis=1)
+
+#    # Concatenate green and red columns with the original DataFrame
+#    df = pd.concat([df, green_cols, red_cols], axis=1)
 #    return df
-
-def one_hot_encode_colors(df,weight):
-    color_cols = df.filter(regex='^COL').columns
-    green_cols = pd.DataFrame(0, index=df.index, columns=[f"{col}_G" for col in color_cols])
-    red_cols = pd.DataFrame(0, index=df.index, columns=[f"{col}_R" for col in color_cols])
-
-    for col in color_cols:
-        # One-hot encoding for green and red
-        green_cols[f"{col}_G"] = (df[col] == 1).astype(int)*weight
-        red_cols[f"{col}_R"] = (df[col] == 2).astype(int)*weight
-
-    # Drop the original color columns
-    df.drop(color_cols, axis=1, inplace=True)
-
-    # Concatenate green and red columns with the original DataFrame
-    df = pd.concat([df, green_cols, red_cols], axis=1)
-    return df
 
 
 # 1. Preprocess data
 data_raw = pd.read_csv('~/test/file.txt')
 make_column_names_unique(data_raw)
 data_raw = apply_reciprocal_to_scan(data_raw)
-data_raw = one_hot_encode_colors(data_raw,10)
-data_raw.to_csv('~/test/file_converted.csv', index=False)
-col_data_raw = data_raw.iloc[:, -1280:]
-col_data_raw.to_csv('~/test/file_colors.csv', index=False)
+#data_raw = one_hot_encode_colors(data_raw,10)
+#data_raw.to_csv('~/test/file_converted.csv', index=False)
+#col_data_raw = data_raw.iloc[:, -1280:]
+#col_data_raw.to_csv('~/test/file_colors.csv', index=False)
 print("Raw data columns:", data_raw.columns)
 print("Raw data shape:", data_raw.shape)
 

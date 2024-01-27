@@ -31,6 +31,7 @@ class s2eLidarReaderNode(Node):
     servo_ctl = int(-(servo_max-servo_min)/2 *1.7)
     motor_ctl = 8
     relay_pin = 17
+    WEIGHT = 10
 
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
@@ -43,8 +44,10 @@ class s2eLidarReaderNode(Node):
             durability=QoSDurabilityPolicy.VOLATILE)
 
         self._scan_interpolated = np.zeros(self.num_scan)
-        self._color1 = np.zeros(self.HPIX)
-        self._color2 = np.zeros(self.HPIX)
+        self._color1_g = np.zeros(self.HPIX)
+        self._color2_g = np.zeros(self.HPIX)
+        self._color1_r = np.zeros(self.HPIX)
+        self._color2_r = np.zeros(self.HPIX)
         self._clockwise = False
         self._X = 0.0 
         self._Y = 0.0
@@ -134,10 +137,14 @@ class s2eLidarReaderNode(Node):
         #scan_data += ','.join(str(e) for e in scan)
 
         # add color data
-        scan_data += ','.join(str(e) for e in self._color1)+','
-        scan_data += ','.join(str(e) for e in self._color2)
-        self._color1 = np.zeros(self.HPIX)
-        self._color2 = np.zeros(self.HPIX)
+        scan_data += ','.join(str(e) for e in self._color1_g)+','
+        scan_data += ','.join(str(e) for e in self._color2_g)+','
+        scan_data += ','.join(str(e) for e in self._color1_r)+','
+        scan_data += ','.join(str(e) for e in self._color2_r)
+        self._color1_g = np.zeros(self.HPIX)
+        self._color2_g = np.zeros(self.HPIX)
+        self._color1_r = np.zeros(self.HPIX)
+        self._color2_r = np.zeros(self.HPIX)
 
         # Write the scan data to a file
         with open('/home/rrrschuetz/test/file.txt', 'a') as f:
@@ -170,7 +177,8 @@ class s2eLidarReaderNode(Node):
             self.get_logger().info("Target line crossing")
             return
             
-        self._color1 = np.zeros(self.HPIX)
+        self._color1_g = np.zeros(self.HPIX)
+        self._color1_r = np.zeros(self.HPIX)
         data = msg.data.split(',')
         if not msg.data:
             self.get_logger().warning("Received empty message!")
@@ -182,12 +190,13 @@ class s2eLidarReaderNode(Node):
         blobs = ((data[i],data[i+1],data[i+2]) for i in range (0,len(data),3))
         for blob in blobs:
             color, x1, x2 = blob
-            cx1 = int(x1)
-            cx2 = int(x2)
-            fcol = float(color)
-            if fcol > 0.0:
-                self._color1[cx1:cx2+1] = fcol
-                #self.get_logger().info('CAM1: blob inserted: %s,%s,%s' % (color,x1,x2))
+            color = int(color)
+            x1 = int(x1)
+            x2 = int(x2)
+            if color == 1:
+                self._color1_g[x1:x2] = self.WEIGHT
+            elif color == 2:
+                self._color1_r[x1:x2] = self.WEIGHT
 
     def openmv_h7_callback2(self, msg):
         if not self._clockwise: return
@@ -196,7 +205,8 @@ class s2eLidarReaderNode(Node):
             self.get_logger().info("Target line crossing")
             return
 
-        self._color2 = np.zeros(self.HPIX)
+        self._color2_g = np.zeros(self.HPIX)
+        self._color2_r = np.zeros(self.HPIX)
         data = msg.data.split(',')
         if not msg.data:
             self.get_logger().warning("Received empty message!")
@@ -208,12 +218,13 @@ class s2eLidarReaderNode(Node):
         blobs = ((data[i],data[i+1],data[i+2]) for i in range (0,len(data),3))
         for blob in blobs:
             color, x1, x2 = blob
-            cx1 = int(x1)
-            cx2 = int(x2)
-            fcol = float(color)
-            if fcol > 0.0:
-                self._color2[cx1:cx2+1] = fcol
-                #self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
+            color = int(color)
+            x1 = int(x1)
+            x2 = int(x2)
+            if color == 1:
+                self._color2_g[x1:x2] = self.WEIGHT
+            elif color == 2:
+                self._color2_r[x1:x2] = self.WEIGHT
 
 #    def speed_monitor_callback(self, msg):
 #        self._speed = eval(msg.data)
