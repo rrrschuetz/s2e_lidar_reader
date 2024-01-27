@@ -11,6 +11,10 @@ from Adafruit_PCA9685 import PCA9685
 from sense_hat import SenseHat
 import RPi.GPIO as GPIO
 
+###############################
+# ADJUST self._clockwise
+###############################
+
 class s2eLidarReaderNode(Node):
     HPIX = 320
     VPIX = 200
@@ -41,6 +45,7 @@ class s2eLidarReaderNode(Node):
         self._scan_interpolated = np.zeros(self.num_scan)
         self._color1 = np.zeros(self.HPIX)
         self._color2 = np.zeros(self.HPIX)
+        self._clockwise = False
         self._X = 0.0 
         self._Y = 0.0
 #        self._speed = 0.0
@@ -120,7 +125,7 @@ class s2eLidarReaderNode(Node):
         scan[scan == np.inf] = np.nan
         scan[scan > self.scan_max_dist] = np.nan
         x = np.arange(len(scan))
-        finite_vals = np.isfinite(scan)
+        finite_vals = np.isfinite(scan)clockwis
         self._scan_interpolated = np.interp(x,x[finite_vals],scan[finite_vals])
 
         # Convert the laser scan data to a string
@@ -159,6 +164,7 @@ class s2eLidarReaderNode(Node):
             self.get_logger().error('IOError I2C occurred: %s' % str(e))
 
     def openmv_h7_callback1(self, msg):
+        if self._clockwise: return
         #self.get_logger().info('cam msg received: "%s"' % msg)
         if msg.data == "TARGET":
             self.get_logger().info("Target line crossing")
@@ -184,6 +190,7 @@ class s2eLidarReaderNode(Node):
                 #self.get_logger().info('CAM1: blob inserted: %s,%s,%s' % (color,x1,x2))
 
     def openmv_h7_callback2(self, msg):
+        if not self._clockwise: return
         #self.get_logger().info('cam msg received: "%s"' % msg)
         if msg.data == "TARGET":
             self.get_logger().info("Target line crossing")

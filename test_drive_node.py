@@ -41,6 +41,7 @@ class testDriveNode(Node):
     num_scan2 = 810
     relay_pin = 17
     SPEED = "10"
+    WEIGHT = 10
 
 #    reverse_pulse = 204
 #    neutral_pulse = 307
@@ -70,6 +71,7 @@ class testDriveNode(Node):
             
         self._processing = False
         self._tf_control = False
+        self._clockwise = False
         self._X = 0.0 
 #        self._Y = 0.0
         self._Xtrim = 0.0
@@ -333,9 +335,21 @@ class testDriveNode(Node):
 
         if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
 
-            # Check if 'A' button is pressed - switch on AI steering
+            # Check if 'A' button is pressed - switch on AI steering, counterclockwise
             if msg.buttons[0] == 1:
                 self._tf_control = True
+                self._clockwise = False
+                self._Y = 1.0
+                self._start_heading = self._sense.gyro['yaw']
+                self._last_heading = self._start_heading
+                self._round_start_time = self.get_clock().now()
+                self._speed_msg.data = self.SPEED
+                self.speed_publisher_.publish(self._speed_msg)
+
+            # Check if 'X' button is pressed - switch on AI steering, clockwise
+            if msg.buttons[2] == 1:
+                self._tf_control = True
+                self._clockwise = True
                 self._Y = 1.0
                 self._start_heading = self._sense.gyro['yaw']
                 self._last_heading = self._start_heading
@@ -354,16 +368,6 @@ class testDriveNode(Node):
                 self.speed_publisher_.publish(self._speed_msg)
                 self.motor_off()
 
-            # Check if 'X' button is pressed - trim right
-            elif msg.buttons[2] == 1:
-                self._Xtrim += 0.05
-                self.get_logger().info('X Trim: "%s"' % self._Xtrim)
-
-            # Check if 'Y' button is pressed - trim left
-            elif msg.buttons[3] == 1:
-                self._Xtrim -= 0.05
-                self.get_logger().info('X Trim: "%s"' % self._Xtrim)
-
         elif hasattr(msg, 'axes') and len(msg.axes) > 5:
             self._X = msg.axes[2]
 #           self._Y = msg.axes[1]
@@ -377,6 +381,7 @@ class testDriveNode(Node):
         ack = String()
         if not self._tf_control:
             self._tf_control = True
+            self._clockwise = False
             self._Y = 1.0
             self._start_heading = self._sense.gyro['yaw']
             self._last_heading = self._start_heading
@@ -397,7 +402,7 @@ class testDriveNode(Node):
         self.publisher_.publish(ack)
 
     def openmv_h7_callback1(self, msg):
-        self._weight = 10
+        if self._clockwise: return
         #self.get_logger().info('cam msg received: "%s"' % msg)
         self._color1_g = np.zeros(self.HPIX)
         self._color1_r = np.zeros(self.HPIX)
@@ -424,12 +429,12 @@ class testDriveNode(Node):
             #self.get_logger().info('CAM1: blob inserted: %s,%s,%s' % (color,x1,x2))
             for i in range(cx1, cx2):
                 if color == 1:
-                    self._color1_g[i] = self._weight
+                    self._color1_g[i] = self.WEIGHT
                 elif color == 2:
-                    self._color1_r[i] = self._weight
+                    self._color1_r[i] = self.WEIGHT
 
     def openmv_h7_callback2(self, msg):
-        self._weight = 10
+        if not self._clockwise: return
         #self.get_logger().info('cam msg received: "%s"' % msg)
         self._color2_g = np.zeros(self.HPIX)
         self._color2_r = np.zeros(self.HPIX)
@@ -456,9 +461,9 @@ class testDriveNode(Node):
             #self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
             for i in range(cx1, cx2):
                 if color == 1:
-                    self._color2_g[i] = self._weight
+                    self._color2_g[i] = self.WEIGHT
                 elif color == 2:
-                    self._color2_r[i] = self._weight
+                    self._color2_r[i] = self.WEIGHT
 
 #    def speed_monitor_callback(self, msg):
 #        self._speed = eval(msg.data)
