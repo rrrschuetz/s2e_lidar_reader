@@ -73,12 +73,8 @@ def plot_color_data(color_data, chunk_size=1000):
         # Set pixels based on color values (0: white, 1: red, 2: green)
         for i, line in enumerate(chunk):
             for j, value in enumerate(line):
-                if value == 1:
+                if value >0 :
                     canvas[i, j] = [1, 0, 0]  # Red
-                elif value == 2:
-                    #canvas[i, j] = [0, 1, 0]  # Green
-                    canvas[i, j] = [0, 0, 1]  # Blue
-
         ax.imshow(canvas)
 
     fig, ax = plt.subplots()
