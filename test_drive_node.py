@@ -156,15 +156,21 @@ class testDriveNode(Node):
 
         # Load the trained model and the scaler
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
-        with open('/home/rrrschuetz/test/scaler.pkl', 'rb') as f:
-            self._scaler = pickle.load(f)
-            
+        with open('/home/rrrschuetz/test/scaler_g.pkl', 'rb') as f:
+            self._scaler_g = pickle.load(f)
+        with open('/home/rrrschuetz/test/scaler_r.pkl', 'rb') as f:
+            self._scaler_r = pickle.load(f)
+
         #self._model = tf.keras.models.load_model('/home/rrrschuetz/test/model')
-        self._interpreter = tf.lite.Interpreter(model_path="/home/rrrschuetz/test/model.tflite")
-        self._interpreter.allocate_tensors()
+        self._interpreter_g = tf.lite.Interpreter(model_path="/home/rrrschuetz/test/model_g.tflite")
+        self._interpreter_r = tf.lite.Interpreter(model_path="/home/rrrschuetz/test/model_r.tflite")
+        self._interpreter_g.allocate_tensors()
+        self._interpreter_r.allocate_tensors()
         # Get input and output tensors information
-        self._input_details = self._interpreter.get_input_details()
-        self._output_details = self._interpreter.get_output_details()
+        self._input_details_g = self._interpreter.get_input_details()
+        self._input_details_r = self._interpreter.get_input_details()
+        self._output_details_g = self._interpreter.get_output_details()
+        self._output_details_r = self._interpreter.get_output_details()
         self.get_logger().info('prediction model loaded')
 
         msg = String()
@@ -193,7 +199,7 @@ class testDriveNode(Node):
             return raw_diff
 
     def lidar_callback(self, msg):
-        #self.get_logger().info('current speed m/s: %s' % self._speed)
+        self._RED = False
 
         if not self._tf_control: return
         if self._processing:
@@ -267,22 +273,29 @@ class testDriveNode(Node):
 
                 # Reshape and standardize
                 combined = np.reshape(combined, (1, -1))
-                combined_standardized = self._scaler.transform(combined)
+                if self._RED:
+                    combined_standardized = self._scaler_r.transform(combined)
+                else:
+                    combined_standardized = self._scaler_g.transform(combined)
 
                 # reshape for 1D CNN input
                 combined_standardized = np.reshape(combined_standardized, (combined_standardized.shape[0], combined_standardized.shape[1], 1))
                 combined_standardized = combined_standardized.astype(np.float32)
 
-                # Model prediction
-                #predictions = self._model.predict(combined_standardized)
+                if self._RED:
+                    self.get_logger().info('RED plan used')
+                    # Set the value of the input tensor
+                    self._interpreter_r.set_tensor(self._input_details[0]['index'], combined_standardized)
+                    # Run inference
+                    self._interpreter_r.invoke()
+                    # Retrieve the output of the model
+                    predictions = self._interpreter_r.get_tensor(self._output_details[0]['index'])
+                else:
+                    self.get_logger().info('GREEN plan used')
+                    self._interpreter_g.set_tensor(self._input_details[0]['index'], combined_standardized)
+                    self._interpreter_g.invoke()
+                    predictions = self._interpreter_g.get_tensor(self._output_details[0]['index'])
 
-                # Set the value of the input tensor
-                self._interpreter.set_tensor(self._input_details[0]['index'], combined_standardized)
-                # Run inference
-                self._interpreter.invoke()
-                # Retrieve the output of the model
-                predictions = self._interpreter.get_tensor(self._output_details[0]['index'])
-                
                 self._X = predictions[0, 0]
                 #self._Y = predictions[0, 1]
                 #self.get_logger().info('Predicted axes: "%s"' % predictions)
@@ -404,9 +417,11 @@ class testDriveNode(Node):
                 if color == 1:
                     self._color1[i] = self._weight
                     self._color1[i+1] = 0
+                    self._RED = False
                 elif color == 2:
                     self._color1[i] = 0
                     self._color1[i+1] = self._weight
+                    self._RED = True
                 else: continue
 
     def openmv_h7_callback2(self, msg):
@@ -434,9 +449,11 @@ class testDriveNode(Node):
                 if color == 1:
                     self._color2[i] = self._weight
                     self._color2[i+1] = 0
+                    self._RED = False
                 elif color == 2:
                     self._color2[i] = 0
                     self._color2[i+1] = self._weight
+                    self._RED = True
                 else: continue
 
 #    def speed_monitor_callback(self, msg):
@@ -491,13 +508,13 @@ class parkingNode(Node):
         # Load the trained model and the scaler
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
         with open('/home/rrrschuetz/test/scaler_p.pkl', 'rb') as f:
-            self._scaler = pickle.load(f)
+            self._scaler_p = pickle.load(f)
             
-        self._interpreter = tf.lite.Interpreter(model_path="/home/rrrschuetz/test/model_p.tflite")
-        self._interpreter.allocate_tensors()
+        self._interpreter_p = tf.lite.Interpreter(model_path="/home/rrrschuetz/test/model_p.tflite")
+        self._interpreter_p.allocate_tensors()
         # Get input and output tensors information
-        self._input_details = self._interpreter.get_input_details()
-        self._output_details = self._interpreter.get_output_details()
+        self._input_details_p = self._interpreter.get_input_details()
+        self._output_details_p = self._interpreter.get_output_details()
         self.get_logger().info('parking prediction model loaded')
 
     def __del__(self):
@@ -529,7 +546,7 @@ class parkingNode(Node):
                 # add color data
                 combined = list(scan_interpolated)  # Convert to list for easier appending
                 combined = np.reshape(combined, (1, -1))
-                combined_standardized = self._scaler.transform(combined)
+                combined_standardized = self._scaler_p.transform(combined)
 
                 # reshape for 1D CNN input
                 combined_standardized = np.reshape(combined_standardized, (combined_standardized.shape[0], combined_standardized.shape[1], 1))
@@ -539,11 +556,11 @@ class parkingNode(Node):
                 #predictions = self._model.predict(combined_standardized)
 
                 # Set the value of the input tensor
-                self._interpreter.set_tensor(self._input_details[0]['index'], combined_standardized)
+                self._interpreter_p.set_tensor(self._input_details[0]['index'], combined_standardized)
                 # Run inference
-                self._interpreter.invoke()
+                self._interpreter_p.invoke()
                 # Retrieve the output of the model
-                predictions = self._interpreter.get_tensor(self._output_details[0]['index'])
+                predictions = self._interpreter_p.get_tensor(self._output_details[0]['index'])
                 
                 self._X = predictions[0, 0]
                 self._Y = predictions[0, 1]
