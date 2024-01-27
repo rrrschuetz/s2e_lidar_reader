@@ -414,7 +414,7 @@ class testDriveNode(Node):
             color, x1, x2 = blob
             cx1 = int(x1)
             cx2 = int(x2)
-#           self.get_logger().info('CAM1: blob inserted: %s,%s,%s' % (color,x1,x2))
+            self.get_logger().info('CAM1: blob inserted: %s,%s,%s' % (color,x1,x2))
             for i in range(cx1, cx2+1):
                 if color == 1:
                     self._color1_g[i] = self._weight
@@ -443,7 +443,7 @@ class testDriveNode(Node):
             color, x1, x2 = blob
             cx1 = int(x1)
             cx2 = int(x2)
-#           self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
+            self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
             for i in range(cx1, cx2+1):
                 if color == 1:
                     self._color2_g[i] = self._weight
