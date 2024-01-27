@@ -90,6 +90,8 @@ make_column_names_unique(data_raw)
 data_raw = apply_reciprocal_to_scan(data_raw)
 data_raw = one_hot_encode_colors(data_raw)
 data_raw.to_csv('~/test/file_converted.csv', index=False)
+col_data_raw = data_raw.iloc[:, -1280:]
+col_data_raw.to_csv('~/test/file_colors.csv', index=False)
 print("Raw data columns:", data_raw.columns)
 print("Raw data shape:", data_raw.shape)
 
