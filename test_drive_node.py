@@ -80,6 +80,7 @@ class testDriveNode(Node):
         self._cx2 = 0
         self._color1 = np.zeros(self.HPIX*2)
         self._color2 = np.zeros(self.HPIX*2)
+        self._RED = False
 
         self._speed_msg = String()
         self._speed_msg.data = "0"
@@ -199,7 +200,6 @@ class testDriveNode(Node):
             return raw_diff
 
     def lidar_callback(self, msg):
-        self._RED = False
 
         if not self._tf_control: return
         if self._processing:
