@@ -238,6 +238,12 @@ class testDriveNode(Node):
                         self.get_logger().info("Race completed!")
                         return
 
+            self._clockwise = (self._total_heading_change < 0)
+            if not self._clockwise:
+                self.get_logger().info("Using CAM1")
+            else:
+                self.get_logger().info("Using CAM2")
+
             self._start_time = self.get_clock().now()
             self._dt = (self._start_time - self._end_time).nanoseconds * 1e-9
             self._end_time = self._start_time
