@@ -412,18 +412,18 @@ class testDriveNode(Node):
         blobs = ((data[i],data[i+1],data[i+2]) for i in range (0,len(data),3))
         for blob in blobs:
             color, x1, x2 = blob
+            color = int(color)
+            if color == 2:
+                self._RED = True
+                self.get_logger().info('RED plan activated')
             cx1 = int(x1)
             cx2 = int(x2)
-            self.get_logger().info('CAM1: blob inserted: %s,%s,%s' % (color,x1,x2))
-            for i in range(cx1, cx2+1):
+            #self.get_logger().info('CAM1: blob inserted: %s,%s,%s' % (color,x1,x2))
+            for i in range(cx1, cx2):
                 if color == 1:
                     self._color1_g[i] = self._weight
                 elif color == 2:
                     self._color1_r[i] = self._weight
-
-            self._RED = (color==2)
-            if self._RED:
-                self.get_logger().info('RED plan activated')
 
     def openmv_h7_callback2(self, msg):
         self._weight = 10
@@ -441,18 +441,18 @@ class testDriveNode(Node):
         blobs = ((data[i],data[i+1],data[i+2]) for i in range (0,len(data),3))  
         for blob in blobs:
             color, x1, x2 = blob
+            color = int(color)
+            if color == 2:
+                self._RED = True
+                self.get_logger().info('RED plan activated')
             cx1 = int(x1)
             cx2 = int(x2)
-            self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
-            for i in range(cx1, cx2+1):
+            #self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
+            for i in range(cx1, cx2):
                 if color == 1:
                     self._color2_g[i] = self._weight
                 elif color == 2:
                     self._color2_r[i] = self._weight
-
-            self._RED = (color==2)
-            if self._RED:
-                self.get_logger().info('RED plan activated')
 
 #    def speed_monitor_callback(self, msg):
 #        self._speed = eval(msg.data)
