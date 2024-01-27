@@ -415,10 +415,10 @@ class testDriveNode(Node):
             color = int(color)
             if color == 1:
                 self._RED = False
-                self.get_logger().info('GREEN plan activated')
+                #self.get_logger().info('GREEN plan activated')
             if color == 2:
                 self._RED = True
-                self.get_logger().info('RED plan activated')
+                #self.get_logger().info('RED plan activated')
             cx1 = int(x1)
             cx2 = int(x2)
             #self.get_logger().info('CAM1: blob inserted: %s,%s,%s' % (color,x1,x2))
@@ -447,10 +447,10 @@ class testDriveNode(Node):
             color = int(color)
             if color == 1:
                 self._RED = False
-                self.get_logger().info('GREEN plan activated')
+                #self.get_logger().info('GREEN plan activated')
             if color == 2:
                 self._RED = True
-                self.get_logger().info('RED plan activated')
+                #self.get_logger().info('RED plan activated')
             cx1 = int(x1)
             cx2 = int(x2)
             #self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
