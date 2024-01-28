@@ -106,10 +106,12 @@ class s2eLidarReaderNode(Node):
     num_colr = HPIX  # Assuming HPIX is defined elsewhere in your code
     
     scan_labels = [f'SCAN.{i}' for i in range(1, num_scan+1)]
-    col1_labels = [f'COL1.{i}' for i in range(1, HPIX+1)]
-    col2_labels = [f'COL2.{i}' for i in range(1, HPIX+1)]
+    col1_g_labels = [f'COL1_G.{i}' for i in range(1, HPIX+1)]
+    col2_g_labels = [f'COL2_G.{i}' for i in range(1, HPIX+1)]
+    col1_r_labels = [f'COL1_R.{i}' for i in range(1, HPIX+1)]
+    col2_r_labels = [f'COL2_R.{i}' for i in range(1, HPIX+1)]
 
-    labels = ['X', 'Y'] + scan_labels + col1_labels + col2_labels
+    labels = ['X', 'Y'] + scan_labels + col1_g_labels + col2_g_labels + col1_r_labels + col2_r_labels
     line = ','.join(labels) + '\n'
 
     filepath = '/home/rrrschuetz/test/file.txt'

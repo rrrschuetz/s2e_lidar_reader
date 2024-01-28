@@ -296,7 +296,7 @@ class testDriveNode(Node):
                 combined_standardized = combined_standardized.astype(np.float32)
 
                 if self._RED:
-                    #self.get_logger().info('RED plan used')
+                    self.get_logger().info('RED plan used')
                     # Set the value of the input tensor
                     self._interpreter_r.set_tensor(self._input_details_r[0]['index'], combined_standardized)
                     # Run inference
@@ -304,7 +304,7 @@ class testDriveNode(Node):
                     # Retrieve the output of the model
                     predictions = self._interpreter_r.get_tensor(self._output_details_r[0]['index'])
                 else:
-                    #self.get_logger().info('GREEN plan used')
+                    self.get_logger().info('GREEN plan used')
                     self._interpreter_g.set_tensor(self._input_details_g[0]['index'], combined_standardized)
                     self._interpreter_g.invoke()
                     predictions = self._interpreter_g.get_tensor(self._output_details_g[0]['index'])
