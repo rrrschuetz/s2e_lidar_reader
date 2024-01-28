@@ -80,10 +80,11 @@ class testDriveNode(Node):
         self._dt = 0.1
         self._cx1 = 0
         self._cx2 = 0
-        self._color1_g = np.zeros(self.HPIX)
-        self._color2_g = np.zeros(self.HPIX)
-        self._color1_r = np.zeros(self.HPIX)
-        self._color2_r = np.zeros(self.HPIX)
+        self._color1_g = np.zeros(self.HPIX, dtype=int)
+        self._color1_r = np.zeros(self.HPIX, dtype=int)
+        self._color2_g = np.zeros(self.HPIX, dtype=int)
+        self._color2_r = np.zeros(self.HPIX, dtype=int)
+
         self._RED = False
 
         self._speed_msg = String()
@@ -409,8 +410,8 @@ class testDriveNode(Node):
     def openmv_h7_callback1(self, msg):
         if self._clockwise: return
         #self.get_logger().info('cam msg received: "%s"' % msg)
-        self._color1_g = np.zeros(self.HPIX)
-        self._color1_r = np.zeros(self.HPIX)
+        self._color1_g = np.zeros(self.HPIX, dtype=int)
+        self._color1_r = np.zeros(self.HPIX, dtype=int)
         data = msg.data.split(',')
         if not msg.data:
             self.get_logger().warning("Received empty message!")
@@ -440,8 +441,8 @@ class testDriveNode(Node):
     def openmv_h7_callback2(self, msg):
         if not self._clockwise: return
         #self.get_logger().info('cam msg received: "%s"' % msg)
-        self._color2_g = np.zeros(self.HPIX)
-        self._color2_r = np.zeros(self.HPIX)
+        self._color2_g = np.zeros(self.HPIX, dtype=int)
+        self._color2_r = np.zeros(self.HPIX, dtype=int)
         data = msg.data.split(',')
         if not msg.data:
             self.get_logger().warning("Received empty message!")

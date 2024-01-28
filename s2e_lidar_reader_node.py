@@ -44,10 +44,10 @@ class s2eLidarReaderNode(Node):
             durability=QoSDurabilityPolicy.VOLATILE)
 
         self._scan_interpolated = np.zeros(self.num_scan)
-        self._color1_g = np.zeros(self.HPIX)
-        self._color2_g = np.zeros(self.HPIX)
-        self._color1_r = np.zeros(self.HPIX)
-        self._color2_r = np.zeros(self.HPIX)
+        self._color1_g = np.zeros(self.HPIX, dtype=int)
+        self._color2_g = np.zeros(self.HPIX, dtype=int)
+        self._color1_r = np.zeros(self.HPIX, dtype=int)
+        self._color2_r = np.zeros(self.HPIX, dtype=int)
         self._clockwise = False
         self._X = 0.0 
         self._Y = 0.0
@@ -141,10 +141,6 @@ class s2eLidarReaderNode(Node):
         scan_data += ','.join(str(e) for e in self._color2_g)+','
         scan_data += ','.join(str(e) for e in self._color1_r)+','
         scan_data += ','.join(str(e) for e in self._color2_r)
-        #self._color1_g = np.zeros(self.HPIX)
-        #self._color2_g = np.zeros(self.HPIX)
-        #self._color1_r = np.zeros(self.HPIX)
-        #self._color2_r = np.zeros(self.HPIX)
 
         # Write the scan data to a file
         with open('/home/rrrschuetz/test/file.txt', 'a') as f:
@@ -177,8 +173,9 @@ class s2eLidarReaderNode(Node):
             self.get_logger().info("Target line crossing")
             return
             
-        self._color1_g = np.zeros(self.HPIX)
-        self._color1_r = np.zeros(self.HPIX)
+        self._color1_g = np.zeros(self.HPIX, dtype=int)
+        self._color1_r = np.zeros(self.HPIX, dtype=int)
+
         data = msg.data.split(',')
         if not msg.data:
             self.get_logger().warning("Received empty message!")
@@ -207,8 +204,9 @@ class s2eLidarReaderNode(Node):
             self.get_logger().info("Target line crossing")
             return
 
-        self._color2_g = np.zeros(self.HPIX)
-        self._color2_r = np.zeros(self.HPIX)
+        self._color2_g = np.zeros(self.HPIX, dtype=int)
+        self._color2_r = np.zeros(self.HPIX, dtype=int)
+
         data = msg.data.split(',')
         if not msg.data:
             self.get_logger().warning("Received empty message!")
