@@ -128,7 +128,7 @@ class s2eLidarReaderNode(Node):
         scan[scan == np.inf] = np.nan
         scan[scan > self.scan_max_dist] = np.nan
         x = np.arange(len(scan))
-        finite_vals = np.isfinite(scan)clockwis
+        finite_vals = np.isfinite(scan)
         self._scan_interpolated = np.interp(x,x[finite_vals],scan[finite_vals])
 
         # Convert the laser scan data to a string
