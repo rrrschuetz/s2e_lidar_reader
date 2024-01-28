@@ -426,11 +426,13 @@ class testDriveNode(Node):
             x1 = int(x1)
             x2 = int(x2)
             if color == 1:
-                self._color1_g[x1:x2] = self.WEIGHT
+                #self._color1_g[x1:x2] = self.WEIGHT
+                self._color1_g[0:self.HPIX] = self.WEIGHT
                 self._RED = False
                 #self.get_logger().info('GREEN plan activated')
             if color == 2:
-                self._color1_r[x1:x2] = self.WEIGHT
+                #self._color1_r[x1:x2] = self.WEIGHT
+                self._color1_r[0:self.HPIX] = self.WEIGHT
                 self._RED = True
                 #self.get_logger().info('RED plan activated')
             #self.get_logger().info('CAM1: blob inserted: %s,%s,%s' % (color,x1,x2))
@@ -455,11 +457,13 @@ class testDriveNode(Node):
             x1 = int(x1)
             x2 = int(x2)
             if color == 1:
-                self._color2_g[x1:x2] = self.WEIGHT
+                #self._color2_g[x1:x2] = self.WEIGHT
+                self._color2_g[0:self.HPIX] = self.WEIGHT
                 self._RED = False
                 #self.get_logger().info('GREEN plan activated')
             if color == 2:
-                self._color2_r[x1:x2] = self.WEIGHT
+                #self._color2_r[x1:x2] = self.WEIGHT
+                self._color2_r[0:self.HPIX] = self.WEIGHT
                 self._RED = True
                 #self.get_logger().info('RED plan activated')
             #self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
