@@ -320,9 +320,9 @@ class testDriveNode(Node):
                 lidar_data = np.reshape(scan_interpolated, (1, -1))  # Reshape LIDAR data
                 lidar_data_standardized = self._scaler.transform(lidar_data)
                 if self._RED:
-                    color_data = np.array([[0]])
+                    color_data = np.array([[float(0)]])
                 else:
-                    color_data = np.array([[1]])  # Green is represented as 1
+                    color_data = np.array([[float(1)]]) # green as 1
 
                 # Reshape for TFLite model input
                 lidar_data_standardized = np.reshape(lidar_data_standardized, (1, lidar_data_standardized.shape[1], 1)).astype(np.float32)
