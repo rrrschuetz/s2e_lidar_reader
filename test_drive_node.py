@@ -318,18 +318,17 @@ class testDriveNode(Node):
 #                    predictions = self._interpreter_g.get_tensor(self._output_details_g[0]['index'])
 
                 lidar_data = np.reshape(scan_interpolated, (1, -1))  # Reshape LIDAR data
+                lidar_data_standardized = self._scaler.transform(lidar_data)
                 if self._RED:
-                    color_data = np.array([[0]]) 
-                    lidar_data_standardized = self._scaler.transform(lidar_data)
+                    color_data = np.array([[0]])
                 else:
-                    color_data = np.array([[0]])  # Green is represented as 0
-                    lidar_data_standardized = self._scaler.transform(lidar_data)
+                    color_data = np.array([[1]])  # Green is represented as 1
 
                 # Reshape for TFLite model input
                 lidar_data_standardized = np.reshape(lidar_data_standardized, (1, lidar_data_standardized.shape[1], 1)).astype(np.float32)
 
                 # Reshape color_data to (1, 1, 1) to match dimensions
-                color_data = np.reshape(color_data, (1, 1, 1))
+                #color_data = np.reshape(color_data, (1, 1, 1))
 
                 # Combine LIDAR and color data for the model input (concatenation, as required by your model)
                 combined_input = np.concatenate([lidar_data_standardized, color_data], axis=1)
