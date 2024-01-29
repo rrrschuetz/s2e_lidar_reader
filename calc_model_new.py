@@ -50,16 +50,16 @@ train_lidar = train.iloc[:, 2:1622]
 test_lidar = test.iloc[:, 2:1622]
 train_color = train.iloc[:, 1622:1623]
 test_color = test.iloc[:, 1622:1623]
-train_color = train_color / 10
-test_color = test_color / 10
+train_color = (train_color / 10).astype(np.float32)
+test_color = (test_color / 10).astype(np.float32)
 y_train = train.iloc[:, 0:2]
 y_test = test.iloc[:, 0:2]
 
 # Standardization
 scaler_lidar = StandardScaler().fit(train_lidar)
 print("Scaler fitted on x_train")
-train_lidar = scaler_lidar.transform(train_lidar)
-test_lidar = scaler_lidar.transform(test_lidar)
+train_lidar = scaler_lidar.transform(train_lidar).astype(np.float32)
+test_lidar = scaler_lidar.transform(test_lidar).astype(np.float32)
 print("After standardization, x_train shape:", train_lidar.shape)
 print("After standardization, x_test shape:", test_lidar.shape)
 
