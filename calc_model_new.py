@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input
-from tensorflow.keras.layers import Concatenate
+from tensorflow.keras.layers import Concatenate, Layer
 from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense
 from tensorflow.keras.layers import Dropout, BatchNormalization
 from tensorflow.keras.layers import LSTM  # Import LSTM layer
