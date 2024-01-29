@@ -45,6 +45,7 @@ print("Raw data shape:", data_raw.shape)
 
 lidar_data = data_raw.iloc[:, 2:1622]
 color_data = data_raw.iloc[:, 1622:1623]
+color_data = color_data / 10
 
 # Split into train and test sets for both LIDAR and color data
 train_lidar, test_lidar = train_test_split(lidar_data, test_size=0.2)
@@ -64,12 +65,9 @@ y_train = train[['X', 'Y']].values
 
 # Standardization
 scaler_lidar = StandardScaler().fit(x_train_lidar)
-scaler_color = StandardScaler().fit(x_train_color)
 print("Scaler fitted on x_train")
 x_train_lidar = scaler_lidar.transform(x_train_lidar)
-x_train_color = scaler_color.transform(x_train_color)
 x_test_lidar = scaler_lidar.transform(x_test_lidar)
-x_test_color = scaler_color.transform(x_test_color)
 #print("After standardization, x_train shape:", x_train.shape)
 #print("After standardization, x_test shape:", x_test.shape)
 
