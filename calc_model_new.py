@@ -56,10 +56,10 @@ y_train = train.iloc[:, 0:2]
 y_test = test.iloc[:, 0:2]
 
 # Standardization
-scaler_lidar = StandardScaler().fit(train_lidar)
+scaler_lidar = StandardScaler().fit(train_lidar.values)
 print("Scaler fitted on x_train")
-train_lidar = scaler_lidar.transform(train_lidar).astype(np.float32)
-test_lidar = scaler_lidar.transform(test_lidar).astype(np.float32)
+train_lidar = scaler_lidar.transform(train_lidar.values).astype(np.float32)
+test_lidar = scaler_lidar.transform(test_lidar.values).astype(np.float32)
 print("After standardization, x_train shape:", train_lidar.shape)
 print("After standardization, x_test shape:", test_lidar.shape)
 
