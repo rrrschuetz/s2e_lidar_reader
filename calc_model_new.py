@@ -75,6 +75,14 @@ x_train_color = train_color.values.reshape(train_color.shape[0], 1)
 x_test_color = test_color.values.reshape(test_color.shape[0], 1)
 
 # 2. Define the 1D CNN model
+class WeightedConcatenate(Layer):
+    def __init__(self, weight_lidar=0.5, weight_color=0.5, **kwargs):
+         super(WeightedConcatenate, self).__init__(**kwargs)
+         self.weight_lidar = weight_lidar
+         self.weight_color = weight_color
+     def call(self, inputs):
+         lidar, color = inputs
+         return tf.concat([self.weight_lidar * lidar, self.weight_color * color], axis=-1)
 
 def create_cnn_model(lidar_input_shape, color_input_shape):
     # LIDAR data path
@@ -92,7 +100,8 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     color_path = Flatten()(color_path)  # Flatten if necessary
 
     # Concatenation
-    concatenated = Concatenate()([lidar_path, color_path])
+    #concatenated = Concatenate()([lidar_path, color_path])
+    concatenated = WeightedConcatenate(weight_lidar=0.3, weight_color=0.7)([lidar_path, color_path])
 
     # Further processing
     combined = Dense(64, activation='relu')(concatenated)
