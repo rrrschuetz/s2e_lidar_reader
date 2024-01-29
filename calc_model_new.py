@@ -80,7 +80,7 @@ class WeightedConcatenate(Layer):
          super(WeightedConcatenate, self).__init__(**kwargs)
          self.weight_lidar = weight_lidar
          self.weight_color = weight_color
-     def call(self, inputs):
+    def call(self, inputs):
          lidar, color = inputs
          return tf.concat([self.weight_lidar * lidar, self.weight_color * color], axis=-1)
 
