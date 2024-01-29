@@ -333,8 +333,7 @@ class testDriveNode(Node):
 
                 # Combine LIDAR and color data for the model input (concatenation, as required by your model)
                 combined_input = np.concatenate([lidar_data_standardized, color_data], axis=1)
-
-                # Set the value of the input tensor
+                combined_input = combined_input.astype(np.float32)
                 self._interpreter.set_tensor(self._input_details[0]['index'], combined_input)
 
                 # Run inference
