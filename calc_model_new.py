@@ -48,8 +48,8 @@ print("Test data shape:", test.shape)
 
 train_lidar = train.iloc[:, 2:1622]
 test_lidar = test.iloc[:, 2:1622]
-train_color = train.iloc[:, :-1280].astype(np.float32)
-test_color = test.iloc[:, :-1280].astype(np.float32)
+train_color = train.iloc[:, :-1280]
+test_color = test.iloc[:, :-1280]
 y_train = train.iloc[:, 0:2]
 y_test = test.iloc[:, 0:2]
 
@@ -64,14 +64,15 @@ print("After standardization, x_test shape:", test_lidar.shape)
 # Convert to numpy arrays and reshape as needed for LIDAR data
 #x_train_lidar = train_lidar.values.reshape(train_lidar.shape[0], train_lidar.shape[1], 1)
 x_train_lidar = train_lidar.reshape(train_lidar.shape[0], train_lidar.shape[1], 1)
-
-#x_test_lidar = test_lidar.values.reshape(test_lidar.shape[0], test_lidar.shape[1], 1)
+#x_test_lidar = test_lidar.values.reshape(test_lidar.shape[0], test_lidar.shape[1], 1
 x_test_lidar = test_lidar.reshape(test_lidar.shape[0], test_lidar.shape[1], 1)
 
-# Reshape color data as it's a single channel
+train_color = train_color.values.astype(np.float32)
+test_color = test_color.values.astype(np.float32)
+
 #x_train_color = train_color.values.reshape(train_color.shape[0], 1)
-#x_test_color = test_color.values.reshape(test_color.shape[0], 1)
 x_train_color = train_color.reshape(train_color.shape[0], train_color.shape[1], 1)
+#x_test_color = test_color.values.reshape(test_color.shape[0], 1)
 x_test_color = test_color.reshape(test_color.shape[0], test_color.shape[1], 1)
 
 # 2. Define the 1D CNN model
