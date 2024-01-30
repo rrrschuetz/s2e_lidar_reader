@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input
-from tensorflow.keras.layers import concatenate, Layer
+from tensorflow.keras.layers import Concatenate, Layer
 from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense
 from tensorflow.keras.layers import Dropout, BatchNormalization
 from tensorflow.keras.layers import LSTM  # Import LSTM layer
@@ -93,21 +93,25 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
     lidar_path = Flatten()(lidar_path)
 
-    # Color data path - Binary information
+    # Color data path
     color_input = Input(shape=color_input_shape)
-    color_path = Dense(16, activation='relu')(color_input)  # Simple processing
-    color_path = Flatten()(color_path)
+    color_path = Dense(64, activation='relu')(color_input)
+    color_path = Dense(64, activation='relu')(color_path)
+    color_path = Dense(64, activation='relu')(color_path)  # Additional layer
+    color_path = Flatten()(color_path)  # Flatten if necessary
 
-    # Combining LiDAR and Color data
-    combined = concatenate([lidar_path, color_path])
+    # Concatenation
+    #concatenated = Concatenate()([lidar_path, color_path])
+    concatenated = WeightedConcatenate(weight_lidar=0.01, weight_color=0.99)([lidar_path, color_path])
 
     # Further processing
-    decision = Dense(64, activation='relu')(combined)
-    decision = Dense(32, activation='relu')(decision)
-    output = Dense(2, activation='softmax')(decision)  # Binary decision: right or left
+    combined = Dense(64, activation='relu')(concatenated)
+    #combined = Dense(64, activation='relu')(lidar_path)
+    combined = Dense(32, activation='relu')(combined)
+    output = Dense(2)(combined)
 
     model = Model(inputs=[lidar_input, color_input], outputs=output)
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
     return model
 
 # Create EarlyStopping callback
