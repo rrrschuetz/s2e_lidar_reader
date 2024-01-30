@@ -93,26 +93,23 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
     lidar_path = Flatten()(lidar_path)
 
-    # Color data path
+    # Color data path - Binary information
     color_input = Input(shape=color_input_shape)
-    color_path = Dense(64, activation='relu')(color_input)
-    color_path = Dense(64, activation='relu')(color_path)
-    color_path = Dense(64, activation='relu')(color_path)  # Additional layer
-    color_path = Flatten()(color_path)  # Flatten if necessary
+    color_path = Dense(16, activation='relu')(color_input)  # Simple processing
+    color_path = Flatten()(color_path)
 
-    # Concatenation
-    #concatenated = Concatenate()([lidar_path, color_path])
-    concatenated = WeightedConcatenate(weight_lidar=0.01, weight_color=0.99)([lidar_path, color_path])
+    # Combining LiDAR and Color data
+    combined = concatenate([lidar_path, color_path])
 
     # Further processing
-    combined = Dense(64, activation='relu')(concatenated)
-    #combined = Dense(64, activation='relu')(lidar_path)
-    combined = Dense(32, activation='relu')(combined)
-    output = Dense(2)(combined)
+    decision = Dense(64, activation='relu')(combined)
+    decision = Dense(32, activation='relu')(decision)
+    output = Dense(2, activation='softmax')(decision)  # Binary decision: right or left
 
     model = Model(inputs=[lidar_input, color_input], outputs=output)
-    model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
     return model
+
 
 # Create EarlyStopping callback
 early_stopping_callback = EarlyStopping(monitor='val_loss', patience=2)
