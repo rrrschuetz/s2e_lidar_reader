@@ -124,10 +124,8 @@ tensorboard_callback = TensorBoard(log_dir=logdir)
 
 # Input shape for LIDAR data  (number of channels, 1)
 lidar_input_shape = (x_train_lidar.shape[1], 1)
-
-# Input shape for color data is simply (1,)
-color_input_shape = (1,)
-
+# Input shape for COLOR data  (number of channels, 1)
+color_input_shape = (x_train_color.shape[1], 1)
 # Create the model
 model = create_cnn_model(lidar_input_shape, color_input_shape)
 
