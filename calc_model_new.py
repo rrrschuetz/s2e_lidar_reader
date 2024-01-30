@@ -48,8 +48,8 @@ print("Test data shape:", test.shape)
 
 train_lidar = train.iloc[:, 2:1622]
 test_lidar = test.iloc[:, 2:1622]
-train_color = train.iloc[:, :-1280]
-test_color = test.iloc[:, :-1280]
+train_color = train.iloc[:, -1280:]
+test_color = test.iloc[:, -1280:]
 y_train = train.iloc[:, 0:2]
 y_test = test.iloc[:, 0:2]
 
