@@ -71,8 +71,8 @@ x_test_lidar = test_lidar.reshape(test_lidar.shape[0], test_lidar.shape[1], 1)
 # Reshape color data as it's a single channel
 #x_train_color = train_color.values.reshape(train_color.shape[0], 1)
 #x_test_color = test_color.values.reshape(test_color.shape[0], 1)
-x_train_color = train_lidar.reshape(train_color.shape[0], train_color.shape[1], 1)
-x_test_color = test_lidar.reshape(test_color.shape[0], test_color.shape[1], 1)
+x_train_color = train_color.reshape(train_color.shape[0], train_color.shape[1], 1)
+x_test_color = test_color.reshape(test_color.shape[0], test_color.shape[1], 1)
 
 # 2. Define the 1D CNN model
 class WeightedConcatenate(Layer):
