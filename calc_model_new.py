@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input
-from tensorflow.keras.layers import Concatenate, Layer
+from tensorflow.keras.layers import concatenate, Layer
 from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense
 from tensorflow.keras.layers import Dropout, BatchNormalization
 from tensorflow.keras.layers import LSTM  # Import LSTM layer
@@ -99,7 +99,7 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     color_path = Flatten()(color_path)
 
     # Combining LiDAR and Color data
-    combined = Concatenate([lidar_path, color_path])
+    combined = concatenate([lidar_path, color_path])
 
     # Further processing
     decision = Dense(64, activation='relu')(combined)
