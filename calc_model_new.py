@@ -99,7 +99,7 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     color_path = Flatten()(color_path)
 
     # Combining LiDAR and Color data
-    combined = concatenate([lidar_path, color_path])
+    combined = Concatenate([lidar_path, color_path])
 
     # Further processing
     decision = Dense(64, activation='relu')(combined)
