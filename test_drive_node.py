@@ -284,8 +284,8 @@ class testDriveNode(Node):
                 finite_vals = np.isfinite(scan)
                 scan_interpolated = np.interp(x, x[finite_vals], scan[finite_vals])
                 scan_interpolated = [1/value if value != 0 else 0 for value in scan_interpolated]
-
-                color_list = list(self._color1_g) + list(self._color2_g) + list(self._color1_r) + list(self._color2_r)
+                scan_interpolated = list(scan_interpolated)
+                color_data = list(self._color1_g) + list(self._color2_g) + list(self._color1_r) + list(self._color2_r)
                 
 #                # add color data
 #                combined = list(scan_interpolated)  # Convert to list for easier appending
@@ -321,24 +321,27 @@ class testDriveNode(Node):
 
                 lidar_data = np.reshape(scan_interpolated, (1, -1))  # Reshape LIDAR data
                 lidar_data_standardized = self._scaler.transform(lidar_data)
-                if self._RED:
-                    self.get_logger().info('RED plan used')
-                    color_data = np.array([[0]], dtype=np.float32)
-                else:
-                    self.get_logger().info('GREEN plan used')
-                    color_data = np.array([[1]], dtype=np.float32)
+                color_data_standardized = np.reshape(color_data, (1, -1))         # Reshape COLOR data
+            
+#                if self._RED:
+#                    self.get_logger().info('RED plan used')
+#                    color_data = np.array([[0]], dtype=np.float32)
+#                else:
+#                    self.get_logger().info('GREEN plan used')
+#                    color_data = np.array([[1]], dtype=np.float32)
 
                 # Reshape for TFLite model input
                 lidar_data_standardized = np.reshape(lidar_data_standardized, (1, lidar_data_standardized.shape[1], 1)).astype(np.float32)
 
                 # Reshape color_data to (1, 1, 1) to match dimensions
                 #color_data = np.reshape(color_data, (1, 1, 1))
+                color_data_standardized = np.reshape(color_lidar_data_standardized, (1, color_data_standardized.shape[1], 1)).astype(np.float32)
 
                 # Combine LIDAR and color data for the model input (concatenation, as required by your model)
                 #combined_input = np.concatenate([lidar_data_standardized, color_data], axis=1)
                 #combined_input = combined_input.astype(np.float32)
                 self._interpreter.set_tensor(self._input_details[0]['index'], lidar_data_standardized)
-                self._interpreter.set_tensor(self._input_details[1]['index'], color_data)
+                self._interpreter.set_tensor(self._input_details[1]['index'], color_data_standardized)
 
                 # Run inference
                 self._interpreter.invoke()
