@@ -58,14 +58,14 @@ scaler_lidar = StandardScaler().fit(train_lidar.values)
 print("Scaler fitted on x_train")
 train_lidar = scaler_lidar.transform(train_lidar.values).astype(np.float32)
 test_lidar = scaler_lidar.transform(test_lidar.values).astype(np.float32)
-print("After standardization, x_train shape:", train_lidar.shape)
-print("After standardization, x_test shape:", test_lidar.shape)
 
 # Convert to numpy arrays and reshape as needed for LIDAR data
 #x_train_lidar = train_lidar.values.reshape(train_lidar.shape[0], train_lidar.shape[1], 1)
 x_train_lidar = train_lidar.reshape(train_lidar.shape[0], train_lidar.shape[1], 1)
 #x_test_lidar = test_lidar.values.reshape(test_lidar.shape[0], test_lidar.shape[1], 1
 x_test_lidar = test_lidar.reshape(test_lidar.shape[0], test_lidar.shape[1], 1)
+print("After standardization, x_train lidar shape:", x_train_lidar.shape)
+print("After standardization, x_test lidar shape:", x_test_lidar.shape)
 
 train_color = train_color.values.astype(np.float32)
 test_color = test_color.values.astype(np.float32)
@@ -74,6 +74,8 @@ test_color = test_color.values.astype(np.float32)
 x_train_color = train_color.reshape(train_color.shape[0], train_color.shape[1], 1)
 #x_test_color = test_color.values.reshape(test_color.shape[0], 1)
 x_test_color = test_color.reshape(test_color.shape[0], test_color.shape[1], 1)
+print("After standardization, x_train color shape:", x_train_color.shape)
+print("After standardization, x_test color shape:", x_test_color.shape)
 
 # 2. Define the 1D CNN model
 class WeightedConcatenate(Layer):
