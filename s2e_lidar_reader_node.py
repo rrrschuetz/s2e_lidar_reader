@@ -193,11 +193,11 @@ class s2eLidarReaderNode(Node):
             x1 = int(x1)
             x2 = int(x2)
             if color == 1:
-                #self._color1_g[x1:x2] = self.WEIGHT
-                self._color1_g[0:self.HPIX] = self.WEIGHT
+                self._color1_g[x1:x2] = self.WEIGHT
+                #self._color1_g[0:self.HPIX] = self.WEIGHT
             elif color == 2:
-                #self._color1_r[x1:x2] = self.WEIGHT
-                self._color1_r[0:self.HPIX] = self.WEIGHT
+                self._color1_r[x1:x2] = self.WEIGHT
+                #self._color1_r[0:self.HPIX] = self.WEIGHT
 
     def openmv_h7_callback2(self, msg):
         if not self._clockwise: return
@@ -224,11 +224,11 @@ class s2eLidarReaderNode(Node):
             x1 = int(x1)
             x2 = int(x2)
             if color == 1:
-                #self._color2_g[x1:x2] = self.WEIGHT
-                self._color2_g[0:self.HPIX] = self.WEIGHT
+                self._color2_g[x1:x2] = self.WEIGHT
+                #self._color2_g[0:self.HPIX] = self.WEIGHT
             elif color == 2:
-                #self._color2_r[x1:x2] = self.WEIGHT
-                self._color2_r[0:self.HPIX] = self.WEIGHT
+                self._color2_r[x1:x2] = self.WEIGHT
+                #self._color2_r[0:self.HPIX] = self.WEIGHT
 
 #    def speed_monitor_callback(self, msg):
 #        self._speed = eval(msg.data)
