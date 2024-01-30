@@ -110,7 +110,6 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
     return model
 
-
 # Create EarlyStopping callback
 early_stopping_callback = EarlyStopping(monitor='val_loss', patience=2)
 
