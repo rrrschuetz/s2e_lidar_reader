@@ -31,7 +31,7 @@ class s2eLidarReaderNode(Node):
     servo_ctl = int(-(servo_max-servo_min)/2 *1.7)
     motor_ctl = 8
     relay_pin = 17
-    WEIGHT = 10
+    WEIGHT = 1
 
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
