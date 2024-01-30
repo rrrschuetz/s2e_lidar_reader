@@ -48,10 +48,8 @@ print("Test data shape:", test.shape)
 
 train_lidar = train.iloc[:, 2:1622]
 test_lidar = test.iloc[:, 2:1622]
-train_color = train.iloc[:, 1622:1623]
-test_color = test.iloc[:, 1622:1623]
-train_color = (train_color / 10).astype(np.float32)
-test_color = (test_color / 10).astype(np.float32)
+train_color = train.iloc[:, :-1280].astype(np.float32)
+test_color = test.iloc[:, :-1280].astype(np.float32)
 y_train = train.iloc[:, 0:2]
 y_test = test.iloc[:, 0:2]
 
@@ -71,8 +69,10 @@ x_train_lidar = train_lidar.reshape(train_lidar.shape[0], train_lidar.shape[1], 
 x_test_lidar = test_lidar.reshape(test_lidar.shape[0], test_lidar.shape[1], 1)
 
 # Reshape color data as it's a single channel
-x_train_color = train_color.values.reshape(train_color.shape[0], 1)
-x_test_color = test_color.values.reshape(test_color.shape[0], 1)
+#x_train_color = train_color.values.reshape(train_color.shape[0], 1)
+#x_test_color = test_color.values.reshape(test_color.shape[0], 1)
+x_train_color = train_lidar.reshape(train_color.shape[0], train_color.shape[1], 1)
+x_test_color = test_lidar.reshape(test_color.shape[0], test_color.shape[1], 1)
 
 # 2. Define the 1D CNN model
 class WeightedConcatenate(Layer):
@@ -96,17 +96,17 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     # Color data path
     color_input = Input(shape=color_input_shape)
     color_path = Dense(64, activation='relu')(color_input)
-    color_path = Dense(64, activation='relu')(color_path)
+    #color_path = Dense(64, activation='relu')(color_path)
     color_path = Dense(64, activation='relu')(color_path)  # Additional layer
     color_path = Flatten()(color_path)  # Flatten if necessary
 
     # Concatenation
     #concatenated = Concatenate()([lidar_path, color_path])
-    concatenated = WeightedConcatenate(weight_lidar=0.01, weight_color=0.99)([lidar_path, color_path])
+    concatenated = WeightedConcatenate(weight_lidar=0.2, weight_color=0.8)([lidar_path, color_path])
 
     # Further processing
     combined = Dense(64, activation='relu')(concatenated)
-    #combined = Dense(64, activation='relu')(lidar_path)
+    combined = Dense(64, activation='relu')(lidar_path)
     combined = Dense(32, activation='relu')(combined)
     output = Dense(2)(combined)
 
