@@ -509,6 +509,7 @@ class testDriveNode(Node):
                 #self.get_logger().info('RED plan activated')
             #self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
 
+
 class parkingNode(Node):
     num_scan = 1620
     num_scan2 = 810
