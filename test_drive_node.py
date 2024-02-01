@@ -35,7 +35,7 @@ class testDriveNode(Node):
     HPIX = 320
     VPIX = 200
     HFOV = 70.8
-    MIN_DIST = 0.05
+    MIN_DIST = 0.15
     scan_max_dist = 2.8
     num_scan = 1620
     num_scan2 = 810
@@ -262,21 +262,14 @@ class testDriveNode(Node):
                 #scan = np.array(msg.ranges)
                 scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
 
-                # emergency brake assistant
-                num_sections = 36
+                # obstacle passing detector
+                num_sections = 18
                 section_data = np.array_split(scan, num_sections)
                 section_means = [np.mean(section) for section in section_data]
                 min_section_index = np.argmin(section_means)
-                #self.get_logger().info('Min distance: "%s"' % section_means[min_section_index])
+                self.get_logger().info('Min distance: "%s"' % section_means[min_section_index])
                 if section_means[min_section_index] < self.MIN_DIST:
-                    self._tf_control = False
-                    self._processing = False
-                    self._pwm.set_pwm(0, 0, int(self.servo_neutral))
- #                   self._pwm.set_pwm(1, 0, int(self.neutral_pulse))
-                    self._speed_msg.data = "0"
-                    self.speed_publisher_.publish(self._speed_msg)
-                    self.get_logger().info('Emergency brake active: "%s"' % min_section_index)
-                    return
+                    self.get_logger().info('Obstacle passed: "%s"' % min_section_index)
         
                 scan[scan == np.inf] = np.nan
                 scan[scan > self.scan_max_dist] = np.nan
