@@ -35,7 +35,7 @@ class testDriveNode(Node):
     HPIX = 320
     VPIX = 200
     HFOV = 70.8
-    MIN_DIST = 0.15
+    MIN_DIST = 0.40
     scan_max_dist = 2.8
     num_scan = 1620
     num_scan2 = 810
@@ -86,6 +86,7 @@ class testDriveNode(Node):
         self._color2_r = np.zeros(self.HPIX, dtype=int)
 
         self._RED = False
+        self._passed = False
 
         self._speed_msg = String()
         self._speed_msg.data = "0"
@@ -267,10 +268,18 @@ class testDriveNode(Node):
                 section_data = np.array_split(scan, num_sections)
                 section_means = [np.mean(section) for section in section_data]
                 min_section_index = np.argmin(section_means)
-                self.get_logger().info('Min distance: "%s"' % section_means[min_section_index])
                 if section_means[min_section_index] < self.MIN_DIST:
-                    self.get_logger().info('Obstacle passed: "%s"' % min_section_index)
-        
+
+                    #if self._RED: self.get_logger().info("RED in focus");
+                    #else: self.get_logger().info("GREEN in focus");
+
+                    if self._RED and min_section_index <= 2:
+                        self._passed = True
+                        self.get_logger().info("Obstacle to the left #%s in distance %s" % (min_section_index, section_means[min_section_index]))
+                    elif not self._RED and min_section_index >= 15:
+                        self._passed = True
+                        self.get_logger().info("Obstacle to the right #%s in distance %s" % (min_section_index, section_means[min_section_index]))
+
                 scan[scan == np.inf] = np.nan
                 scan[scan > self.scan_max_dist] = np.nan
                 x = np.arange(len(scan))
