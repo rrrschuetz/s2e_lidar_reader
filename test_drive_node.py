@@ -35,7 +35,7 @@ class testDriveNode(Node):
     HPIX = 320
     VPIX = 200
     HFOV = 70.8
-    MIN_DIST = 0.40
+    MIN_DIST = 0.45
     scan_max_dist = 2.8
     num_scan = 1620
     num_scan2 = 810
