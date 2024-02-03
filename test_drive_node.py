@@ -59,7 +59,7 @@ class testDriveNode(Node):
 #    motor_ctl = 36
     
     def __init__(self):
-        super().__init__('s2e_lidar_reader_node')
+        super().__init__('test_drive_node')
         self.publisher_ = self.create_publisher(String, 'main_logger', 10)
         self.speed_publisher_ = self.create_publisher(String, 'set_speed', 10)
 
@@ -528,7 +528,8 @@ class parkingNode(Node):
     REV_SPEED = "7"
     
     def __init__(self):
-        super().__init__('s2e_lidar_reader_node')
+        super().__init__('test_drive_node')
+        self.speed_publisher_ = self.create_publisher(String, 'set_speed', 10)
 
         qos_profile = QoSProfile(
                 depth=1, 
