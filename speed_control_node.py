@@ -45,11 +45,11 @@ class SpeedControlNode(Node):
 
     def set_speed_callback(self, msg):
         try:
-            new_speed = float(msg.data)
-            if new_speed < 0:
+            if new_speed == "STOP":
                 GPIO.output(self.relay_pin, GPIO.LOW)
                 GPIO.cleanup()
             else:
+                new_speed = float(msg.data)
                 self.pid.setpoint = new_speed
                 self.base_pwm = self.neutral_pulse + new_speed * self.motor_ctl
                 self.get_logger().info(f"New desired speed set to: {new_speed}")

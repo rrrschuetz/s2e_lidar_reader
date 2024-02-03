@@ -443,7 +443,7 @@ class testDriveNode(Node):
             self._processing = False
             self._pwm.set_pwm(0, 0, int(self.servo_neutral))
  #          self._pwm.set_pwm(1, 0, int(self.neutral_pulse))
-            self._speed_msg.data = "-1"
+            self._speed_msg.data = "STOP"
             self.speed_publisher_.publish(self._speed_msg)
             ack.data = "Race Mode OFF"
             self.get_logger().info('Stop button pressed!')
