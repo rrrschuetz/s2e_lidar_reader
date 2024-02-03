@@ -517,17 +517,15 @@ class parkingNode(Node):
     num_scan2 = 810
     scan_max_dist = 2.8
 
-    reverse_pulse = 204
-    neutral_pulse = 307
-    forward_pulse = 409
-    
     servo_min = 240  # Min pulse length out of 4096
     servo_max = 375  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 * 1.7)
 
-    motor_ctl = 12
+    motor_ctl = -20
     relay_pin = 17
+    SLOW_SPEED = "7"
+    REV_SPEED = "7"
     
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
@@ -542,13 +540,11 @@ class parkingNode(Node):
         self._tf_control = False
         self._X = 0.0 
         self._Y = 0.0
-        self._speed = 0.0
 
         # Initialize PCA9685
         self._pwm = PCA9685()
         self._pwm.set_pwm_freq(50)  
         self._pwm.set_pwm(0, 0, int(self.servo_neutral))
-        self._pwm.set_pwm(1, 0, self.neutral_pulse)
 
         self.subscription_lidar = self.create_subscription(
             LaserScan,
@@ -569,8 +565,14 @@ class parkingNode(Node):
         self._output_details_p = self._interpreter_p.get_output_details()
         self.get_logger().info('parking prediction model loaded')
 
+        #self._speed_msg.data = self.SLOW_SPEED
+        #self.speed_publisher_.publish(self._speed_msg)
+
     def __del__(self):
         self.get_logger().info('Switch off ESC')
+        self.motor_off()
+
+    def motor_off(self):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.relay_pin, GPIO.OUT)
         GPIO.output(self.relay_pin, GPIO.LOW)
@@ -618,12 +620,17 @@ class parkingNode(Node):
                 self.get_logger().info('Predicted axes: "%s"' % predictions)
 
                 XX = int(self.servo_neutral+self._X+self.servo_ctl)
-                YY = int(self.neutral_pulse+self._Y*self.motor_ctl)
                 #self.get_logger().info('Steering: %s,%s ' % (self._X,XX))
-                #self.get_logger().info('Power: %s,%s ' % (self._Y,YY))
+                #self.get_logger().info('Power: %s ' % self._Y)
 
                 self._pwm.set_pwm(0, 0, XX)
-                self._pwm.set_pwm(1, 0, YY)
+                if abs(self._Y) < 0.05:
+                    self._speed_msg.data = "0"
+                elif self._Y > 0:
+                    self._speed_msg.data = self.SLOW_SPEED
+                elif self._Y < 0:
+                    self._speed_msg.data = self.REV_SPEED
+                self.speed_publisher_.publish(self._speed_msg)
             
             except ValueError as e:
                 self.get_logger().error('Model rendered nan: %s' % str(e))
@@ -639,10 +646,11 @@ def main(args=None):
     
 #    test_drive_node = testDriveNode()
 #    rclpy.spin(test_drive_node)
-#    test_drive_node.destroy_node()
-    
+
     parking_node = parkingNode()
     rclpy.spin(parking_node)
+
+#    test_drive_node.destroy_node()
     parking_node.destroy_node()
     
     rclpy.shutdown()
