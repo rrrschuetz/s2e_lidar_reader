@@ -13,6 +13,7 @@ import RPi.GPIO as GPIO
 class s2eLidarReaderParkingNode(Node):
     num_scan = 1620 # consider only front 18ß degrees
     num_scan2 = 810
+    scan_max_dist = 2.8
     reverse_pulse = 204
     neutral_pulse = 307
     forward_pulse = 409
@@ -82,12 +83,8 @@ class s2eLidarReaderParkingNode(Node):
         # Convert the laser scan data to a string
         scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
 
-        #scan[scan == np.inf] = 0.0
-        #scan[scan > self.scan_max_dist] = 0.0
-        #self._scan_interpolated = scan
-
         scan[scan == np.inf] = np.nan
-        #scan[scan > self.scan_max_dist] = np.nan
+        scan[scan > self.scan_max_dist] = np.nan
         x = np.arange(len(scan))
         finite_vals = np.isfinite(scan)
         self._scan_interpolated = np.interp(x,x[finite_vals],scan[finite_vals])

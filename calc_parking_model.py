@@ -29,27 +29,27 @@ data_raw = pd.read_csv('~/test/file_p.txt')
 make_column_names_unique(data_raw)
 
 # Replace Inf values with NaN so they can be handled uniformly
-data_raw[data_raw > 3] = np.nan
-data_raw[data_raw == np.inf] = np.nan
-data_raw[data_raw == np.nan] = 0.0
+#data_raw[data_raw > 3] = np.nan
+#data_raw[data_raw == np.inf] = np.nan
+#data_raw[data_raw == np.nan] = 0.0
 
 #data_raw.replace([data_raw > 3], np.nan, inplace=True)
 #data_raw.replace([np.inf, -np.inf], np.nan, inplace=True)
 
 # Check for columns that are entirely NaN and decide on an action
-all_nan_columns = data_raw.columns[data_raw.isnull().all()]
+#all_nan_columns = data_raw.columns[data_raw.isnull().all()]
 # For simplicity, let's fill these with 0 (or choose another strategy as needed)
-data_raw[all_nan_columns] = data_raw[all_nan_columns].fillna(0)
+#data_raw[all_nan_columns] = data_raw[all_nan_columns].fillna(0)
 
 # Now, impute NaN values for other columns with their mean
-for column in data_raw.columns:
-    if column not in all_nan_columns:  # Skip already handled all-NaN columns
-        data_raw[column].fillna(data_raw[column].mean(), inplace=True)
+#for column in data_raw.columns:
+#    if column not in all_nan_columns:  # Skip already handled all-NaN columns
+#        data_raw[column].fillna(data_raw[column].mean(), inplace=True)
 
 print("NaN ",data_raw.isnull().values.any())
 print("inf ",np.isinf(data_raw).values.any())
 
-#data_raw = apply_reciprocal_to_scan(data_raw)
+data_raw = apply_reciprocal_to_scan(data_raw)
 print("Raw data columns:", data_raw.columns)
 print("Raw data shape:", data_raw.shape)
 
