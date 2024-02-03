@@ -17,10 +17,17 @@ def make_column_names_unique(df):
     for dup in cols[cols.duplicated()].unique():
         cols[cols[cols == dup].index.values.tolist()] = [dup + '_' + str(i) if i != 0 else dup for i in range(sum(cols == dup))]
     df.columns = cols
+def apply_reciprocal_to_scan(df):
+    scan_cols = df.filter(regex='^SCAN').columns
+    for col in scan_cols:
+        # Apply the reciprocal transformation, avoiding division by zero
+        df[col] = df[col].apply(lambda x: 1/x if x != 0 else 0)
+    return df
 
 # 1. Preprocess data
 data_raw = pd.read_csv('~/test/file_p.txt')
 make_column_names_unique(data_raw)
+data_raw = apply_reciprocal_to_scan(data_raw)
 print(data_raw.columns)
 
 # Split data into train and test sets
@@ -41,6 +48,8 @@ x_test = scaler.transform(x_test)
 # Reshape the data to 3D - (batch_size, steps, 1)
 x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1)
 x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1)
+print("After standardization, x_train shape:", x_train.shape)
+print("After standardization, x_test shape:", x_test.shape)
 
 # 2. Define the 1D CNN model
 def create_cnn_model(input_shape):
