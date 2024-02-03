@@ -541,6 +541,9 @@ class parkingNode(Node):
         self._X = 0.0 
         self._Y = 0.0
 
+        self._speed_msg = String()
+        self._speed_msg.data = "0"
+
         # Initialize PCA9685
         self._pwm = PCA9685()
         self._pwm.set_pwm_freq(50)  
