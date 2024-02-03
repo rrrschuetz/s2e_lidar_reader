@@ -27,18 +27,24 @@ def apply_reciprocal_to_scan(df):
 # 1. Preprocess data
 data_raw = pd.read_csv('~/test/file_p.txt')
 make_column_names_unique(data_raw)
+
+# Check for NaN and Inf values in the data
+print("NaN ",data_raw.isnull().values.any())
+print("inf ",np.isinf(data_raw).values.any())
+
 data_raw = apply_reciprocal_to_scan(data_raw)
-print(data_raw.columns)
+print("Raw data columns:", data_raw.columns)
+print("Raw data shape:", data_raw.shape)
 
 # Split data into train and test sets
 train, test = train_test_split(data_raw, test_size=0.2)
+print("Train data shape:", train.shape)
+print("Test data shape:", test.shape)
 
-# Split the training and testing data into input and target
-cols_to_include = [col for col in train.columns if col not in ['X', 'Y']]
-x_train = train[cols_to_include].values
-y_train = train[['X', 'Y']].values
-x_test = test[cols_to_include].values
-y_test = test[['X', 'Y']].values
+x_train = train.iloc[:, 2:1622]
+x_test = test.iloc[:, 2:1622]
+y_train = train.iloc[:, 0:2]
+y_test = test.iloc[:, 0:2]
 
 # Standardization
 scaler = StandardScaler().fit(x_train)
