@@ -616,7 +616,6 @@ class parkingNode(Node):
                 self._X = predictions[0, 0]
                 self._Y = predictions[0, 1]
                 self.get_logger().info('Predicted axes: "%s"' % predictions)
-                self.get_logger().info('current speed m/s: %s' % self._speed)
 
                 XX = int(self.servo_neutral+self._X+self.servo_ctl)
                 YY = int(self.neutral_pulse+self._Y*self.motor_ctl)
