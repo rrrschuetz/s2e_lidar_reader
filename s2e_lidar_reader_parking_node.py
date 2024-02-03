@@ -91,7 +91,7 @@ class s2eLidarReaderParkingNode(Node):
 
         # Convert the laser scan data to a string
         scan_data = str(self._X)+','+str(self._Y)+','
-        scan_data += ','.join(str(e) for e in self._scan_interpolated)+','
+        scan_data += ','.join(str(e) for e in self._scan_interpolated)
         #scan_data += ','.join(str(e) for e in scan)
 
         # Write the scan data to a file
