@@ -515,7 +515,8 @@ class testDriveNode(Node):
 class parkingNode(Node):
     num_scan = 1620
     num_scan2 = 810
-    
+    scan_max_dist = 2.8
+
     reverse_pulse = 204
     neutral_pulse = 307
     forward_pulse = 409
@@ -576,7 +577,6 @@ class parkingNode(Node):
         GPIO.cleanup()
 
     def lidar_callback(self, msg):
-        if not self._tf_control: return
         if self._processing:
             self.get_logger().info('Scan skipped')
             return
@@ -615,10 +615,10 @@ class parkingNode(Node):
                 
                 self._X = predictions[0, 0]
                 self._Y = predictions[0, 1]
-                #self.get_logger().info('Predicted axes: "%s"' % predictions)
-                #self.get_logger().info('current speed m/s: %s' % self._speed)
+                self.get_logger().info('Predicted axes: "%s"' % predictions)
+                self.get_logger().info('current speed m/s: %s' % self._speed)
 
-                XX = int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl)
+                XX = int(self.servo_neutral+self._X+self.servo_ctl)
                 YY = int(self.neutral_pulse+self._Y*self.motor_ctl)
                 #self.get_logger().info('Steering: %s,%s ' % (self._X,XX))
                 #self.get_logger().info('Power: %s,%s ' % (self._Y,YY))
@@ -638,13 +638,13 @@ class parkingNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     
-    test_drive_node = testDriveNode()
-    rclpy.spin(test_drive_node)
-    test_drive_node.destroy_node()
+#    test_drive_node = testDriveNode()
+#    rclpy.spin(test_drive_node)
+#    test_drive_node.destroy_node()
     
-#    parking_node = parkingNode()
-#    rclpy.spin(parking_node)
-#    parking_node.destroy_node()
+    parking_node = parkingNode()
+    rclpy.spin(parking_node)
+    parking_node.destroy_node()
     
     rclpy.shutdown()
 

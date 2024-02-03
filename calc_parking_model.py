@@ -28,11 +28,28 @@ def apply_reciprocal_to_scan(df):
 data_raw = pd.read_csv('~/test/file_p.txt')
 make_column_names_unique(data_raw)
 
-# Check for NaN and Inf values in the data
+# Replace Inf values with NaN so they can be handled uniformly
+data_raw[data_raw > 3] = np.nan
+data_raw[data_raw == np.inf] = np.nan
+data_raw[data_raw == np.nan] = 0.0
+
+#data_raw.replace([data_raw > 3], np.nan, inplace=True)
+#data_raw.replace([np.inf, -np.inf], np.nan, inplace=True)
+
+# Check for columns that are entirely NaN and decide on an action
+all_nan_columns = data_raw.columns[data_raw.isnull().all()]
+# For simplicity, let's fill these with 0 (or choose another strategy as needed)
+data_raw[all_nan_columns] = data_raw[all_nan_columns].fillna(0)
+
+# Now, impute NaN values for other columns with their mean
+for column in data_raw.columns:
+    if column not in all_nan_columns:  # Skip already handled all-NaN columns
+        data_raw[column].fillna(data_raw[column].mean(), inplace=True)
+
 print("NaN ",data_raw.isnull().values.any())
 print("inf ",np.isinf(data_raw).values.any())
 
-data_raw = apply_reciprocal_to_scan(data_raw)
+#data_raw = apply_reciprocal_to_scan(data_raw)
 print("Raw data columns:", data_raw.columns)
 print("Raw data shape:", data_raw.shape)
 
@@ -41,21 +58,24 @@ train, test = train_test_split(data_raw, test_size=0.2)
 print("Train data shape:", train.shape)
 print("Test data shape:", test.shape)
 
-x_train = train.iloc[:, 2:1622]
-x_test = test.iloc[:, 2:1622]
-y_train = train.iloc[:, 0:2]
-y_test = test.iloc[:, 0:2]
+train_lidar = train.iloc[:, 2:1622]
+test_lidar = test.iloc[:, 2:1622]
+y_train = train.iloc[:, :2]
+y_test = test.iloc[:, :2]
 
 # Standardization
-scaler = StandardScaler().fit(x_train)
-x_train = scaler.transform(x_train)
-x_test = scaler.transform(x_test)
+scaler_lidar = StandardScaler().fit(train_lidar.values)
+print("Scaler fitted on x_train")
+train_lidar = scaler_lidar.transform(train_lidar.values).astype(np.float32)
+test_lidar = scaler_lidar.transform(test_lidar.values).astype(np.float32)
 
-# Reshape the data to 3D - (batch_size, steps, 1)
-x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1)
-x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1)
-print("After standardization, x_train shape:", x_train.shape)
-print("After standardization, x_test shape:", x_test.shape)
+# Convert to numpy arrays and reshape as needed for LIDAR data
+#x_train_lidar = train_lidar.values.reshape(train_lidar.shape[0], train_lidar.shape[1], 1)
+x_train_lidar = train_lidar.reshape(train_lidar.shape[0], train_lidar.shape[1], 1)
+#x_test_lidar = test_lidar.values.reshape(test_lidar.shape[0], test_lidar.shape[1], 1
+x_test_lidar = test_lidar.reshape(test_lidar.shape[0], test_lidar.shape[1], 1)
+print("After standardization, x_train lidar shape:", x_train_lidar.shape)
+print("After standardization, x_test lidar shape:", x_test_lidar.shape)
 
 # 2. Define the 1D CNN model
 def create_cnn_model(input_shape):
@@ -78,23 +98,22 @@ early_stopping_callback = EarlyStopping(monitor='val_loss', patience=3)
 logdir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard_callback = TensorBoard(log_dir=logdir)
 
-input_shape = (x_train.shape[1], 1)
+input_shape = (x_train_lidar.shape[1], 1)
 model = create_cnn_model(input_shape)
 
 # 3. Train the model
 model.summary()
-#history = model.fit(x_train, y_train, epochs=15, validation_split=0.2, batch_size=32)
 # with early stopping
-history = model.fit(x_train, y_train, epochs=45, validation_split=0.2, batch_size=32, callbacks=[early_stopping_callback,tensorboard_callback])
+history = model.fit(x_train_lidar, y_train, epochs=45, validation_split=0.2, batch_size=32, callbacks=[early_stopping_callback,tensorboard_callback])
 
 # 4. Evaluate the model
-loss, acc = model.evaluate(x_test, y_test, verbose=2)
+loss, acc = model.evaluate(x_test_lidar, y_test, verbose=2)
 print(f"Model's accuracy: {100 * acc:.2f}%")
 
 # 5. Save the model and the scaler for standardization
 model.save('/home/rrrschuetz/test/model_p')
 with open('/home/rrrschuetz/test/scaler_p.pkl', 'wb') as f:
-    pickle.dump(scaler, f)
+    pickle.dump(scaler_lidar, f)
 
 # Convert the model.
 converter = tf.lite.TFLiteConverter.from_keras_model(model)
