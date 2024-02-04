@@ -78,8 +78,6 @@ class testDriveNode(Node):
 #        self._speed = 0.0
         self._line_cnt = 0
         self._dt = 0.1
-        self._cx1 = 0
-        self._cx2 = 0
         self._color1_g = np.zeros(self.HPIX, dtype=int)
         self._color1_r = np.zeros(self.HPIX, dtype=int)
         self._color2_g = np.zeros(self.HPIX, dtype=int)
@@ -513,17 +511,19 @@ class testDriveNode(Node):
 
 
 class parkingNode(Node):
+    HPIX = 320
+    VPIX = 200
+    HFOV = 70.8
     num_scan = 1620
     num_scan2 = 810
     scan_max_dist = 2.8
-
     servo_min = 240  # Min pulse length out of 4096
     servo_max = 375  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 * 1.7)
-
     motor_ctl = -20
     relay_pin = 17
+    WEIGHT = 1
     SLOW_SPEED = "7"
     REV_SPEED = "-7"
     
@@ -542,6 +542,9 @@ class parkingNode(Node):
         self._X = 0.0 
         self._Y = 0.0
 
+        self._color1_m = np.zeros(self.HPIX, dtype=int)
+        self._color2_m = np.zeros(self.HPIX, dtype=int)
+
         self._speed_msg = String()
         self._speed_msg.data = "0"
 
@@ -556,7 +559,21 @@ class parkingNode(Node):
             self.lidar_callback,
             qos_profile
         )
-        
+
+        self.subscription_h71 = self.create_subscription(
+            String,
+            'openmv_topic1',
+            self.openmv_h7_callback1,
+            qos_profile
+        )
+
+        self.subscription_h72 = self.create_subscription(
+            String,
+            'openmv_topic2',
+            self.openmv_h7_callback2,
+            qos_profile
+        )
+
         # Load the trained model and the scaler
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
         with open('/home/rrrschuetz/test/scaler_p.pkl', 'rb') as f:
@@ -600,19 +617,19 @@ class parkingNode(Node):
                 finite_vals = np.isfinite(scan)
                 scan_interpolated = np.interp(x, x[finite_vals], scan[finite_vals])
                 scan_interpolated = [1/value if value != 0 else 0 for value in scan_interpolated]
-                combined = list(scan_interpolated)  # Convert to list for easier appending
-                combined = np.reshape(combined, (1, -1))
-                combined_standardized = self._scaler_p.transform(combined)
+                scan_interpolated = list(scan_interpolated)
+                color_data = list(self._color1_m) + list(self._color2_m)\
 
-                # reshape for 1D CNN input
-                combined_standardized = np.reshape(combined_standardized, (combined_standardized.shape[0], combined_standardized.shape[1], 1))
-                combined_standardized = combined_standardized.astype(np.float32)
+                lidar_data = np.reshape(scan_interpolated, (1, -1))  # Reshape LIDAR data
+                lidar_data_standardized = self._scaler.transform(lidar_data)
+                color_data_standardized = np.reshape(color_data, (1, -1))         # Reshape COLOR data
 
-                # Model prediction
-                #predictions = self._model.predict(combined_standardized)
+                lidar_data_standardized = np.reshape(lidar_data_standardized, (1, lidar_data_standardized.shape[1], 1)).astype(np.float32)
+                color_data_standardized = np.reshape(color_data_standardized, (1, color_data_standardized.shape[1], 1)).astype(np.float32)
 
-                # Set the value of the input tensor
-                self._interpreter_p.set_tensor(self._input_details_p[0]['index'], combined_standardized)
+                self._interpreter.set_tensor(self._input_details[0]['index'], lidar_data_standardized)
+                self._interpreter.set_tensor(self._input_details[1]['index'], color_data_standardized)
+
                 # Run inference
                 self._interpreter_p.invoke()
                 # Retrieve the output of the model
@@ -643,17 +660,56 @@ class parkingNode(Node):
 
             self._processing = False
 
+    def openmv_h7_callback1(self, msg):
+        self.get_logger().info('CAM1 msg received: "%s"' % msg)
+        self._color1_m = np.zeros(self.HPIX, dtype=int)
+        data = msg.data.split(',')
+        if not msg.data:
+            self.get_logger().warning("Received empty message!")
+            return
+        if len(data) % 3 != 0:
+            self.get_logger().error("Data length is not divisible by 3!")
+            return
+
+        blobs = ((data[i],data[i+1],data[i+2]) for i in range (0,len(data),3))
+        for blob in blobs:
+            color, x1, x2 = blob
+            color = int(color)
+            x1 = int(x1)
+            x2 = int(x2)
+            if color == 4:
+                self._color1_g[x1:x2] = self.WEIGHT
+
+    def openmv_h7_callback2(self, msg):
+        self.get_logger().info('CAM2 msg received: "%s"' % msg)
+        self._color2_m = np.zeros(self.HPIX, dtype=int)
+        data = msg.data.split(',')
+        if not msg.data:
+            self.get_logger().warning("Received empty message!")
+            return
+        if len(data) % 3 != 0:
+            self.get_logger().error("Data length is not divisible by 3!")
+            return
+
+        blobs = ((data[i],data[i+1],data[i+2]) for i in range (0,len(data),3))
+        for blob in blobs:
+            color, x1, x2 = blob
+            color = int(color)
+            x1 = int(x1)
+            x2 = int(x2)
+            if color == 4:
+                self._color2_m[x1:x2] = self.WEIGHT
+
 
 def main(args=None):
     rclpy.init(args=args)
     
 #    test_drive_node = testDriveNode()
 #    rclpy.spin(test_drive_node)
+#    test_drive_node.destroy_node()
 
     parking_node = parkingNode()
     rclpy.spin(parking_node)
-
-#    test_drive_node.destroy_node()
     parking_node.destroy_node()
     
     rclpy.shutdown()
