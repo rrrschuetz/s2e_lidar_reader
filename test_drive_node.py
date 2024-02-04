@@ -637,7 +637,7 @@ class parkingNode(Node):
                 
                 self._X = predictions[0, 0]
                 self._Y = predictions[0, 1]
-                self.get_logger().info('Predicted axes: "%s"' % predictions)
+                #self.get_logger().info('Predicted axes: "%s"' % predictions)
 
                 XX = int(self.servo_neutral+self._X*self.servo_ctl)
                 #self.get_logger().info('Steering: %s,%s ' % (self._X,XX))
@@ -661,7 +661,7 @@ class parkingNode(Node):
             self._processing = False
 
     def openmv_h7_callback1(self, msg):
-        self.get_logger().info('CAM1 msg received: "%s"' % msg)
+        #self.get_logger().info('CAM1 msg received: "%s"' % msg)
         self._color1_m = np.zeros(self.HPIX, dtype=int)
         data = msg.data.split(',')
         if not msg.data:
@@ -681,7 +681,7 @@ class parkingNode(Node):
                 self._color1_m[x1:x2] = self.WEIGHT
 
     def openmv_h7_callback2(self, msg):
-        self.get_logger().info('CAM2 msg received: "%s"' % msg)
+        #self.get_logger().info('CAM2 msg received: "%s"' % msg)
         self._color2_m = np.zeros(self.HPIX, dtype=int)
         data = msg.data.split(',')
         if not msg.data:
