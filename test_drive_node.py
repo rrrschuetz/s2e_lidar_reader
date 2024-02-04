@@ -627,8 +627,8 @@ class parkingNode(Node):
                 lidar_data_standardized = np.reshape(lidar_data_standardized, (1, lidar_data_standardized.shape[1], 1)).astype(np.float32)
                 color_data_standardized = np.reshape(color_data_standardized, (1, color_data_standardized.shape[1], 1)).astype(np.float32)
 
-                self._interpreter.set_tensor(self._input_details[0]['index'], lidar_data_standardized)
-                self._interpreter.set_tensor(self._input_details[1]['index'], color_data_standardized)
+                self._interpreter_p.set_tensor(self._input_details_p[0]['index'], lidar_data_standardized)
+                self._interpreter_p.set_tensor(self._input_details_p[1]['index'], color_data_standardized)
 
                 # Run inference
                 self._interpreter_p.invoke()
