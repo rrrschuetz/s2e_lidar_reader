@@ -128,7 +128,7 @@ class s2eLidarReaderParkingNode(Node):
             self.get_logger().error('IOError I2C occurred: %s' % str(e))
 
     def openmv_h7_callback1(self, msg):
-        #self.get_logger().info('cam msg received: "%s"' % msg)
+        self.get_logger().info('CAM1 msg received: "%s"' % msg)
         self._color1_m = np.zeros(self.HPIX, dtype=int)
 
         data = msg.data.split(',')
@@ -149,7 +149,7 @@ class s2eLidarReaderParkingNode(Node):
                 self._color1_m[x1:x2] = self.WEIGHT
 
     def openmv_h7_callback2(self, msg):
-        #self.get_logger().info('cam msg received: "%s"' % msg)
+        self.get_logger().info('CAM2 msg received: "%s"' % msg)
         self._color2_m = np.zeros(self.HPIX, dtype=int)
 
         data = msg.data.split(',')
