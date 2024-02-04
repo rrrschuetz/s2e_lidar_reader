@@ -586,8 +586,8 @@ class parkingNode(Node):
         self._output_details_p = self._interpreter_p.get_output_details()
         self.get_logger().info('parking prediction model loaded')
 
-        self._speed_msg.data = self.SLOW_SPEED
-        self.speed_publisher_.publish(self._speed_msg)
+        #self._speed_msg.data = self.SLOW_SPEED
+        #self.speed_publisher_.publish(self._speed_msg)
 
     def __del__(self):
         self.get_logger().info('Switch off ESC')
@@ -646,8 +646,10 @@ class parkingNode(Node):
                 self._pwm.set_pwm(0, 0, XX)
                 if self._Y > 0:
                     self._speed_msg.data = self.REV_SPEED
+                    self.get_logger().info('Reverse: %s ' % self._Y)
                 else:
                     self._speed_msg.data = self.SLOW_SPEED
+                    self.get_logger().info('Forward: %s ' % self._Y)
                 self.speed_publisher_.publish(self._speed_msg)
             
             except ValueError as e:
