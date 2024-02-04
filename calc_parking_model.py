@@ -60,6 +60,8 @@ print("Test data shape:", test.shape)
 
 train_lidar = train.iloc[:, 2:1622]
 test_lidar = test.iloc[:, 2:1622]
+train_color = train.iloc[:, -640:]
+test_color = test.iloc[:, -640:]
 y_train = train.iloc[:, :2]
 y_test = test.iloc[:, :2]
 
@@ -77,6 +79,13 @@ x_test_lidar = test_lidar.reshape(test_lidar.shape[0], test_lidar.shape[1], 1)
 print("After standardization, x_train lidar shape:", x_train_lidar.shape)
 print("After standardization, x_test lidar shape:", x_test_lidar.shape)
 
+train_color = train_color.values.astype(np.float32)
+test_color = test_color.values.astype(np.float32)
+x_train_color = train_color.reshape(train_color.shape[0], train_color.shape[1], 1)
+x_test_color = test_color.reshape(test_color.shape[0], test_color.shape[1], 1)
+print("After standardization, x_train color shape:", x_train_color.shape)
+print("After standardization, x_test color shape:", x_test_color.shape)
+
 # 2. Define the 1D CNN model
 def create_cnn_model(input_shape):
     model = tf.keras.models.Sequential()
@@ -91,6 +100,44 @@ def create_cnn_model(input_shape):
     model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
     return model
 
+# 2. Define the 1D CNN model
+class WeightedConcatenate(Layer):
+    def __init__(self, weight_lidar=0.5, weight_color=0.5, **kwargs):
+         super(WeightedConcatenate, self).__init__(**kwargs)
+         self.weight_lidar = weight_lidar
+         self.weight_color = weight_color
+    def call(self, inputs):
+         lidar, color = inputs
+         return tf.concat([self.weight_lidar * lidar, self.weight_color * color], axis=-1)
+
+def create_cnn_model(lidar_input_shape, color_input_shape):
+    # LIDAR data path
+    lidar_input = Input(shape=lidar_input_shape)
+    lidar_path = Conv1D(64, kernel_size=5, activation='relu')(lidar_input)
+    lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
+    lidar_path = Conv1D(128, kernel_size=5, activation='relu', kernel_regularizer=l2(0.01))(lidar_path)
+    lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
+    lidar_path = Flatten()(lidar_path)
+
+    color_input = Input(shape=color_input_shape)
+    color_path = Dense(64, activation='relu')(color_input)
+    color_path = Dropout(0.3)(color_path)  # Use dropout
+    color_path = Dense(128, activation='relu', kernel_regularizer=l2(0.01))(color_path)  # Regularization
+    color_path = Flatten()(color_path)
+
+    # Concatenation
+    concatenated = WeightedConcatenate(weight_lidar=0.2, weight_color=0.8)([lidar_path, color_path])
+
+    # Further processing
+    combined = Dense(64, activation='relu')(concatenated)
+    combined = Dense(64, activation='relu')(combined)
+    combined = Dense(32, activation='relu')(combined)
+    output = Dense(2)(combined)
+
+    model = Model(inputs=[lidar_input, color_input], outputs=output)
+    model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
+    return model
+
 # Create EarlyStopping callback
 early_stopping_callback = EarlyStopping(monitor='val_loss', patience=3)
 
@@ -98,17 +145,33 @@ early_stopping_callback = EarlyStopping(monitor='val_loss', patience=3)
 logdir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard_callback = TensorBoard(log_dir=logdir)
 
-input_shape = (x_train_lidar.shape[1], 1)
-model = create_cnn_model(input_shape)
+# Input shape for LIDAR data  (number of channels, 1)
+lidar_input_shape = (x_train_lidar.shape[1], 1)
+# Input shape for COLOR data  (number of channels, 1)
+color_input_shape = (x_train_color.shape[1], 1)
+# Create the model
+model = create_cnn_model(lidar_input_shape, color_input_shape)
 
 # 3. Train the model
 model.summary()
-# with early stopping
-history = model.fit(x_train_lidar, y_train, epochs=45, validation_split=0.2, batch_size=32, callbacks=[early_stopping_callback,tensorboard_callback])
+
+history = model.fit(
+    [x_train_lidar, x_train_color],  # Input data
+    y_train,                         # Labels
+    epochs=45,                       # Number of epochs to train for
+    batch_size=32,                   # Batch size
+    validation_split=0.2,  # Percentage of data to use for validation
+    callbacks=[early_stopping_callback,tensorboard_callback]       # Optional callbacks, like EarlyStopping
+)
 
 # 4. Evaluate the model
-loss, acc = model.evaluate(x_test_lidar, y_test, verbose=2)
-print(f"Model's accuracy: {100 * acc:.2f}%")
+
+loss, accuracy = model.evaluate(
+    [x_test_lidar, x_test_color],
+    y_test
+)
+print(f"Test Loss: {loss}")
+print(f"Test Accuracy: {accuracy}")
 
 # 5. Save the model and the scaler for standardization
 model.save('/home/rrrschuetz/test/model_p')
