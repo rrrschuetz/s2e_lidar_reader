@@ -54,7 +54,7 @@ class SpeedControlNode(Node):
                 new_speedf = float(new_speed)
                 self.pid.setpoint = new_speedf
                 self.base_pwm = self.neutral_pulse + new_speedf * self.motor_ctl
-                self.get_logger().info(f"New desired speed set to: {new_speedf}")
+                #self.get_logger().info(f"New desired speed set to: {new_speedf}")
         except ValueError:
             self.get_logger().error("Received invalid speed setting")
 
