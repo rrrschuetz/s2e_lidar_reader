@@ -678,7 +678,7 @@ class parkingNode(Node):
             x1 = int(x1)
             x2 = int(x2)
             if color == 4:
-                self._color1_g[x1:x2] = self.WEIGHT
+                self._color1_m[x1:x2] = self.WEIGHT
 
     def openmv_h7_callback2(self, msg):
         self.get_logger().info('CAM2 msg received: "%s"' % msg)
