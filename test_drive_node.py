@@ -525,7 +525,7 @@ class parkingNode(Node):
     motor_ctl = -20
     relay_pin = 17
     SLOW_SPEED = "7"
-    REV_SPEED = "7"
+    REV_SPEED = "-7"
     
     def __init__(self):
         super().__init__('test_drive_node')
@@ -630,9 +630,9 @@ class parkingNode(Node):
                 self._pwm.set_pwm(0, 0, XX)
                 if abs(self._Y) < 0.05:
                     self._speed_msg.data = "0"
-                elif self._Y > 0:
-                    self._speed_msg.data = self.SLOW_SPEED
                 elif self._Y < 0:
+                    self._speed_msg.data = self.SLOW_SPEED
+                elif self._Y > 0:
                     self._speed_msg.data = self.REV_SPEED
                 self.speed_publisher_.publish(self._speed_msg)
             
