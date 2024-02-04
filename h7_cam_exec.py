@@ -32,7 +32,7 @@ green =  (30, 100, -64, -8, -32, 32)  # generic green
 #red = (40, 74, 23, 84, 13, 62)
 red =  (30, 100, 15, 127, 15, 127)    # generic red
 
-magenta = (0, 57, 40, 68, 0, -128)
+magenta = (0, 59, 40, 68, 127, -128)
 
 thresholds=[green, red, magenta]
 roi = [0,0,320,140]
