@@ -72,6 +72,20 @@ class s2eLidarReaderParkingNode(Node):
             10
         )
 
+        self.subscription_h71 = self.create_subscription(
+            String,
+            'openmv_topic1',
+            self.openmv_h7_callback1,
+            qos_profile
+        )
+
+        self.subscription_h72 = self.create_subscription(
+            String,
+            'openmv_topic2',
+            self.openmv_h7_callback2,
+            qos_profile
+        )
+
     def __del__(self):
         GPIO.output(self.relay_pin, GPIO.LOW)
         GPIO.cleanup()
