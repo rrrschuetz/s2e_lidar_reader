@@ -644,12 +644,10 @@ class parkingNode(Node):
                 #self.get_logger().info('Power: %s ' % self._Y)
 
                 self._pwm.set_pwm(0, 0, XX)
-                if abs(self._Y) < 0.05:
-                    self._speed_msg.data = "0"
-                elif self._Y < 0:
-                    self._speed_msg.data = self.SLOW_SPEED
-                elif self._Y > 0:
+                if self._Y > 0:
                     self._speed_msg.data = self.REV_SPEED
+                else:
+                    self._speed_msg.data = self.SLOW_SPEED
                 self.speed_publisher_.publish(self._speed_msg)
             
             except ValueError as e:
