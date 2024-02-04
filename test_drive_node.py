@@ -599,8 +599,7 @@ class parkingNode(Node):
                 x = np.arange(len(scan))
                 finite_vals = np.isfinite(scan)
                 scan_interpolated = np.interp(x, x[finite_vals], scan[finite_vals])
-
-                # add color data
+                scan_interpolated = [1/value if value != 0 else 0 for value in scan_interpolated]
                 combined = list(scan_interpolated)  # Convert to list for easier appending
                 combined = np.reshape(combined, (1, -1))
                 combined_standardized = self._scaler_p.transform(combined)
