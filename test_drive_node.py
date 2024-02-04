@@ -623,7 +623,7 @@ class parkingNode(Node):
                 self._Y = predictions[0, 1]
                 self.get_logger().info('Predicted axes: "%s"' % predictions)
 
-                XX = int(self.servo_neutral+self._X+self.servo_ctl)
+                XX = int(self.servo_neutral+self._X*self.servo_ctl)
                 #self.get_logger().info('Steering: %s,%s ' % (self._X,XX))
                 #self.get_logger().info('Power: %s ' % self._Y)
 
