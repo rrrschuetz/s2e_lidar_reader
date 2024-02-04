@@ -103,8 +103,6 @@ class s2eLidarReaderNode(Node):
         GPIO.output(self.relay_pin, GPIO.LOW)
         GPIO.cleanup()
 
-    num_colr = HPIX  # Assuming HPIX is defined elsewhere in your code
-    
     scan_labels = [f'SCAN.{i}' for i in range(1, num_scan+1)]
     col1_g_labels = [f'COL1_G.{i}' for i in range(1, HPIX+1)]
     col2_g_labels = [f'COL2_G.{i}' for i in range(1, HPIX+1)]

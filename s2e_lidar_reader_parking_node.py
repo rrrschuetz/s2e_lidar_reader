@@ -11,6 +11,9 @@ from Adafruit_PCA9685 import PCA9685
 import RPi.GPIO as GPIO
 
 class s2eLidarReaderParkingNode(Node):
+    HPIX = 320
+    VPIX = 200
+    HFOV = 70.8
     num_scan = 1620 # consider only front 18ß degrees
     num_scan2 = 810
     scan_max_dist = 2.8
@@ -23,7 +26,8 @@ class s2eLidarReaderParkingNode(Node):
     servo_ctl = int(-(servo_max-servo_min)/2 *1.7)
     motor_ctl = 12
     relay_pin = 17
-    
+    WEIGHT = 1
+
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
         self.publisher_ = self.create_publisher(String, 'main_logger', 10)
@@ -35,6 +39,8 @@ class s2eLidarReaderParkingNode(Node):
             durability=QoSDurabilityPolicy.VOLATILE)
 
         self._scan_interpolated = np.zeros(self.num_scan)
+        self._color1_m = np.zeros(self.HPIX, dtype=int)
+        self._color2_m = np.zeros(self.HPIX, dtype=int)
         self._X = 0.0 
         self._Y = 0.0
 
@@ -71,7 +77,10 @@ class s2eLidarReaderParkingNode(Node):
         GPIO.cleanup()
         
     scan_labels = [f'SCAN.{i}' for i in range(1, num_scan+1)]
-    labels = ['X', 'Y'] + scan_labels 
+    col1_m_labels = [f'COL1_M.{i}' for i in range(1, HPIX+1)]
+    col2_m_labels = [f'COL2_M.{i}' for i in range(1, HPIX+1)]
+
+    labels = ['X', 'Y'] + scan_labels + col1_m_labels + col2_m_labels
     line = ','.join(labels) + '\n'
 
     filepath = '/home/rrrschuetz/test/file_p.txt'
@@ -91,8 +100,12 @@ class s2eLidarReaderParkingNode(Node):
 
         # Convert the laser scan data to a string
         scan_data = str(self._X)+','+str(self._Y)+','
-        scan_data += ','.join(str(e) for e in self._scan_interpolated)
+        scan_data += ','.join(str(e) for e in self._scan_interpolated)+','
         #scan_data += ','.join(str(e) for e in scan)
+
+        # add color data
+        scan_data += ','.join(str(e) for e in self._color1_m)+','
+        scan_data += ','.join(str(e) for e in self._color2_m)
 
         # Write the scan data to a file
         with open('/home/rrrschuetz/test/file_p.txt', 'a') as f:
@@ -113,6 +126,49 @@ class s2eLidarReaderParkingNode(Node):
 
         except IOError as e:
             self.get_logger().error('IOError I2C occurred: %s' % str(e))
+
+    def openmv_h7_callback1(self, msg):
+        #self.get_logger().info('cam msg received: "%s"' % msg)
+        self._color1_m = np.zeros(self.HPIX, dtype=int)
+
+        data = msg.data.split(',')
+        if not msg.data:
+            self.get_logger().warning("Received empty message!")
+            return
+        if len(data) % 3 != 0:
+            self.get_logger().error("Data length is not divisible by 3!")
+            return
+
+        blobs = ((data[i],data[i+1],data[i+2]) for i in range (0,len(data),3))
+        for blob in blobs:
+            color, x1, x2 = blob
+            color = int(color)
+            x1 = int(x1)
+            x2 = int(x2)
+            if color == 4:
+                self._color1_m[x1:x2] = self.WEIGHT
+
+    def openmv_h7_callback2(self, msg):
+        #self.get_logger().info('cam msg received: "%s"' % msg)
+        self._color2_m = np.zeros(self.HPIX, dtype=int)
+
+        data = msg.data.split(',')
+        if not msg.data:
+            self.get_logger().warning("Received empty message!")
+            return
+        if len(data) % 3 != 0:
+            self.get_logger().error("Data length is not divisible by 3!")
+            return
+
+        blobs = ((data[i],data[i+1],data[i+2]) for i in range (0,len(data),3))
+        for blob in blobs:
+            color, x1, x2 = blob
+            color = int(color)
+            x1 = int(x1)
+            x2 = int(x2)
+            if color == 4:
+                self._color2_m[x1:x2] = self.WEIGHT
+
 def main(args=None):
     rclpy.init(args=args)
     lidar_reader_parking_node = s2eLidarReaderParkingNode()
