@@ -50,7 +50,7 @@ while True:
     for blob in blobs:
         (b_x,b_y,b_w,b_h) = blob.rect()
         b_c = blob.code()
-        if b_c == 4 or (b_c in [1,2] and b_h/b_w > 1):
+        if (b_c == 4 and b_h/b_w < 1) or (b_c in [1,2] and b_h/b_w > 1):
             img.draw_rectangle(blob.rect(),color=(0,0,255),thickness=3)
             img.draw_cross(blob.cx(), blob.cy())
             blob_entries.append("{},{},{}".format(b_c, b_x, b_x+b_w))
