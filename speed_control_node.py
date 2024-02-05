@@ -65,6 +65,7 @@ class SpeedControlNode(Node):
         impulse_count = sum(self.impulse_history)
         pid_output = self.pid(impulse_count)
 
+        self.get_logger().info('impulses %s power: %s %s ' % (impulse_count,pid_output,self.reverse))
         # Determine PWM adjustment based on PID output and desired direction.
         if self.reverse:
             # If desired speed is negative, adjust for reverse.
@@ -78,6 +79,7 @@ class SpeedControlNode(Node):
         self.impulse_history.clear()  # Clear history after each measurement
 
         try:
+            self.get_logger().info('y_pwm %s ' % y_pwm)
             self.pwm.set_pwm(1, 0, y_pwm)
         except IOError as e:
             self.get_logger().error('IOError I2C occurred: %s' % str(e))
