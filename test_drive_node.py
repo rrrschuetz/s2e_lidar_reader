@@ -524,8 +524,8 @@ class parkingNode(Node):
     motor_ctl = -20
     relay_pin = 17
     WEIGHT = 1
-    SLOW_SPEED = "7"
-    REV_SPEED = "-7"
+    SLOW_SPEED = "8"
+    REV_SPEED = "-8"
     
     def __init__(self):
         super().__init__('test_drive_node')

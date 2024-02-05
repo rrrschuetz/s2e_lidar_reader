@@ -52,7 +52,7 @@ class SpeedControlNode(Node):
         self.impulse_history.append(1)
 
     def set_speed_callback(self, msg):
-        try:
+        try:            self.brake = True
             new_speed = msg.data  # Assuming speed is passed as a string.
             if new_speed == "STOP":
                 self.pwm.set_pwm(1, 0, self.neutral_pulse)  # Set motor to neutral.
