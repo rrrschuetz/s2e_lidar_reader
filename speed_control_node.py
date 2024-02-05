@@ -32,6 +32,7 @@ class SpeedControlNode(Node):
         self.max_y = 350
         self.min_y = 250
         self.reverse = False
+        self.reverse_p = False
         self.base_pwm = self.neutral_pulse  # Base PWM value for steady motor speed
         self.rolling_avg_size = 100  # Number of measurements for the rolling average
         self.impulse_history = collections.deque(maxlen=self.rolling_avg_size)
@@ -69,14 +70,13 @@ class SpeedControlNode(Node):
         self.lock = True
         impulse_count = sum(self.impulse_history)
 
-        if not self.brake and self.pid.setpoint > 0 and impulse_count == 0:
+        if (self.reverse and not self.reverse_p) or (not self.reverse and self.reverse_p):
             self.brake = True
             self.get_logger().info('brake active ')
             y_pwm = self.neutral_pulse
             self.pid.setpoint = 0
             self.pid(0)
         else:
-            self.brake = False
             pid_output = self.pid(impulse_count)
             #self.get_logger().info('impulses %s power: %s %s ' % (impulse_count,pid_output,self.reverse))
             # Determine PWM adjustment based on PID output and desired direction.
@@ -97,8 +97,10 @@ class SpeedControlNode(Node):
         except IOError as e:
             self.get_logger().error('IOError I2C occurred: %s' % str(e))
 
-        if impulse_count == 0:
+        if self.brake:
+            self.brake = False
             time.sleep(1.0)
+        self.reverse_p = self.reverse
         self.lock = False
 
 def main(args=None):
