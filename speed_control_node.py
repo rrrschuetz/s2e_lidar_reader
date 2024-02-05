@@ -97,7 +97,7 @@ class SpeedControlNode(Node):
         except IOError as e:
             self.get_logger().error('IOError I2C occurred: %s' % str(e))
 
-        if self.brake:
+        if impulse_count == 0:
             time.sleep(0.5)
         self.lock = False
 
