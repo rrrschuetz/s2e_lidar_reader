@@ -1,3 +1,4 @@
+import time
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
@@ -37,6 +38,8 @@ class SpeedControlNode(Node):
         self.desired_speed = 0
         self.pid = PID(0.4, 0.15, 0.00, setpoint=self.desired_speed)
         self.pid.sample_time = 0.1  # Update every 0.2 seconds
+        self.lock = False
+        self.brake = False
 
         GPIO.add_event_detect(self.gpio_pin, GPIO.FALLING, callback=self.impulse_callback)
         self.timer = self.create_timer(0.2, self.timer_callback)
@@ -62,22 +65,28 @@ class SpeedControlNode(Node):
             self.get_logger().error("Received invalid speed setting")
 
     def timer_callback(self):
+        if self.lock: return
+        self.lock = True
         impulse_count = sum(self.impulse_history)
-        pid_output = self.pid(impulse_count)
 
-        if impulse_count == 0 and pid_output > 0.1:
-
-
-        #self.get_logger().info('impulses %s power: %s %s ' % (impulse_count,pid_output,self.reverse))
-        # Determine PWM adjustment based on PID output and desired direction.
-        if self.reverse:
-            # If desired speed is negative, adjust for reverse.
-            y_pwm = self.neutral_pulse - abs(int(pid_output * self.motor_ctl))
-            y_pwm = max(self.min_y, y_pwm)  # Ensure PWM is within reverse range.
+        if not self.brake and self.pid.setpoint > 0 and impulse_count == 0:
+            self.get_logger().info('brake active ')
+            self.brake = True
+            y_pwm = self.neutral_pulse
+            self.pid.setpoint = 0
+            self.pid(0)
         else:
-            # If desired speed is positive or zero, adjust for forward.
-            y_pwm = self.neutral_pulse + int(pid_output * self.motor_ctl)
-            y_pwm = min(self.max_y, y_pwm)  # Ensure PWM is within forward range.
+            pid_output = self.pid(impulse_count)
+            #self.get_logger().info('impulses %s power: %s %s ' % (impulse_count,pid_output,self.reverse))
+            # Determine PWM adjustment based on PID output and desired direction.
+            if self.reverse:
+                # If desired speed is negative, adjust for reverse.
+                y_pwm = self.neutral_pulse - abs(int(pid_output * self.motor_ctl))
+                y_pwm = max(self.min_y, y_pwm)  # Ensure PWM is within reverse range.
+            else:
+                # If desired speed is positive or zero, adjust for forward.
+                y_pwm = self.neutral_pulse + int(pid_output * self.motor_ctl)
+                y_pwm = min(self.max_y, y_pwm)  # Ensure PWM is within forward range.
 
         self.impulse_history.clear()  # Clear history after each measurement
 
@@ -86,6 +95,11 @@ class SpeedControlNode(Node):
             self.pwm.set_pwm(1, 0, y_pwm)
         except IOError as e:
             self.get_logger().error('IOError I2C occurred: %s' % str(e))
+
+        if self.brake:
+            self.brake = False
+            time.sleep(0.5)
+        self.lock = False
 
 def main(args=None):
     relay_pin = 17
