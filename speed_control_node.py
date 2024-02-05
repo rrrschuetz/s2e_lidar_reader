@@ -70,12 +70,13 @@ class SpeedControlNode(Node):
         impulse_count = sum(self.impulse_history)
 
         if not self.brake and self.pid.setpoint > 0 and impulse_count == 0:
-            self.get_logger().info('brake active ')
             self.brake = True
+            self.get_logger().info('brake active ')
             y_pwm = self.neutral_pulse
             self.pid.setpoint = 0
             self.pid(0)
         else:
+            self.brake = False
             pid_output = self.pid(impulse_count)
             #self.get_logger().info('impulses %s power: %s %s ' % (impulse_count,pid_output,self.reverse))
             # Determine PWM adjustment based on PID output and desired direction.
@@ -97,7 +98,6 @@ class SpeedControlNode(Node):
             self.get_logger().error('IOError I2C occurred: %s' % str(e))
 
         if self.brake:
-            self.brake = False
             time.sleep(0.5)
         self.lock = False
 
