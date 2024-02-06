@@ -574,6 +574,13 @@ class parkingNode(Node):
             qos_profile
         )
 
+        self.subscription_distance = self.create_subscription(
+            Float32,
+            'distance_sensor',
+            self.distance_sensor_callback,
+            qos_profile
+        )
+
         # Load the trained model and the scaler
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
         with open('/home/rrrschuetz/test/scaler_p.pkl', 'rb') as f:
@@ -700,6 +707,8 @@ class parkingNode(Node):
             if color == 4:
                 self._color2_m[x1:x2] = self.WEIGHT
 
+    def distance_sensor_callback(self, msg):
+        self.get_logger().info('Distance msg received: "%s"' % msg)
 
 def main(args=None):
     rclpy.init(args=args)
