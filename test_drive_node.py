@@ -646,10 +646,10 @@ class parkingNode(Node):
                 self._pwm.set_pwm(0, 0, XX)
                 if self._Y > 0:
                     self._speed_msg.data = self.REV_SPEED
-                    self.get_logger().info('Reverse: %s / %s ' % (self._Y,self._speed_msg.data))
+                    #self.get_logger().info('Reverse: %s / %s ' % (self._Y,self._speed_msg.data))
                 else:
                     self._speed_msg.data = self.FWD_SPEED
-                    self.get_logger().info('Forward: %s / %s ' % (self._Y,self._speed_msg.data))
+                    #self.get_logger().info('Forward: %s / %s ' % (self._Y,self._speed_msg.data))
                 self.speed_publisher_.publish(self._speed_msg)
             
             except ValueError as e:
