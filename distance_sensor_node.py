@@ -13,8 +13,8 @@ class DistanceSensorNode(Node):  # Corrected class name
         self.tof = VL53L1X.VL53L1X(i2c_bus=1, i2c_address=0x29)  # Default I2C address is 0x29
         # Open and start ranging
         self.tof.open()
-        self.tof.start_ranging(VL53L1X.VL53L1X_LONG_RANGE_MODE)  # Choose ranging mode
-
+        #self.tof.start_ranging(VL53L1X.VL53L1X_LONG_RANGE_MODE)  # Choose ranging mode
+        self.tof.start_ranging(1)  # Choose ranging mode
         self.timer = self.create_timer(0.1, self.timer_callback)  # Check every 0.1 second
 
     def __del__(self):
