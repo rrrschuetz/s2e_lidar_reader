@@ -70,14 +70,18 @@ class SpeedControlNode(Node):
         self.lock = True
         impulse_count = sum(self.impulse_history)
 
-        #if impulse_count == 0 and self.reverse != self.reverse_p:
-        if self.reverse != self.reverse_p:
-            self.brake = True
+        if self.brake or self.reverse != self.reverse_p:
+            self.get_logger().info('brake active ... ')
             self.reverse_p = self.reverse
-            self.get_logger().info('brake active ')
-            #y_pwm = self.neutral_pulse
-            if self.reverse: y_pwm = self.min_y
-            else: y_pwm = self.max_y
+            if impulse_count > 0: 
+                self.brake = True
+                y_pwm = self.min_y if self.reverse else self.max_y
+            else: 
+                self.brake = False
+                y_pwm = self.neutral_pulse
+                self.pid.setpoint = 0
+                self.pid(0)
+            wait_time = 1.0            
         else:
             pid_output = self.pid(impulse_count)
             #self.get_logger().info('impulses %s power: %s %s ' % (impulse_count,pid_output,self.reverse))
@@ -90,26 +94,14 @@ class SpeedControlNode(Node):
                 # If desired speed is positive or zero, adjust for forward.
                 y_pwm = self.neutral_pulse + int(pid_output * self.motor_ctl)
                 y_pwm = min(self.max_y, y_pwm)  # Ensure PWM is within forward range.
-
+            wait_time = 0.0
+            
         self.impulse_history.clear()  # Clear history after each measurement
 
         try:
-            #self.get_logger().info('y_pwm %s ' % y_pwm)
+            self.get_logger().info('y_pwm %s ' % y_pwm)
             self.pwm.set_pwm(1, 0, y_pwm)
-            if self.brake:
-                self.brake = False
-                if impulse_count > 0:
-                    time.sleep(1.0)
-                
-                            self.pwm.set_pwm(1, 0, y_pwm)
-
-                self.brake = False
-                time.sleep(0.5)
-                self.pwm.set_pwm(1, 0, self.neutral_pulse)
-                time.sleep(0.5)
-                self.pid.setpoint = 0
-                self.pid(0)
-            
+            time.sleep(wait_time)            
         except IOError as e:
             self.get_logger().error('IOError I2C occurred: %s' % str(e))
         
