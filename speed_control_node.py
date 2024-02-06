@@ -99,7 +99,7 @@ class SpeedControlNode(Node):
         self.impulse_history.clear()  # Clear history after each measurement
 
         try:
-            self.get_logger().info('y_pwm %s ' % y_pwm)
+            #self.get_logger().info('y_pwm %s ' % y_pwm)
             self.pwm.set_pwm(1, 0, y_pwm)
             time.sleep(wait_time)            
         except IOError as e:
