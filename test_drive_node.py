@@ -7,6 +7,7 @@ from sensor_msgs.msg import LaserScan
 from sensor_msgs.msg import Joy
 from std_msgs.msg import String
 from std_msgs.msg import Bool
+from std_msgs.msg import Float32
 import numpy as np
 import tensorflow as tf
 import pickle
