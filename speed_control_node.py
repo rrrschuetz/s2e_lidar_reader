@@ -75,8 +75,6 @@ class SpeedControlNode(Node):
             self.reverse_p = self.reverse
             self.get_logger().info('brake active ')
             y_pwm = self.neutral_pulse
-            self.pid.setpoint = 0
-            self.pid(0)
         else:
             pid_output = self.pid(impulse_count)
             #self.get_logger().info('impulses %s power: %s %s ' % (impulse_count,pid_output,self.reverse))
@@ -101,6 +99,8 @@ class SpeedControlNode(Node):
         if self.brake:
             self.brake = False
             time.sleep(0.5)
+            self.pid.setpoint = 0
+            self.pid(0)
         self.lock = False
 
 def main(args=None):

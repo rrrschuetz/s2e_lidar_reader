@@ -524,8 +524,8 @@ class parkingNode(Node):
     motor_ctl = -20
     relay_pin = 17
     WEIGHT = 1
-    SLOW_SPEED = "8"
-    REV_SPEED = "-8"
+    FWD_SPEED = "10"
+    REV_SPEED = "-10"
     
     def __init__(self):
         super().__init__('test_drive_node')
@@ -586,7 +586,7 @@ class parkingNode(Node):
         self._output_details_p = self._interpreter_p.get_output_details()
         self.get_logger().info('parking prediction model loaded')
 
-        #self._speed_msg.data = self.SLOW_SPEED
+        #self._speed_msg.data = self.FWD_SPEED
         #self.speed_publisher_.publish(self._speed_msg)
 
     def __del__(self):
@@ -648,7 +648,7 @@ class parkingNode(Node):
                     self._speed_msg.data = self.REV_SPEED
                     self.get_logger().info('Reverse: %s / %s ' % (self._Y,self._speed_msg.data))
                 else:
-                    self._speed_msg.data = self.SLOW_SPEED
+                    self._speed_msg.data = self.FWD_SPEED
                     self.get_logger().info('Forward: %s / %s ' % (self._Y,self._speed_msg.data))
                 self.speed_publisher_.publish(self._speed_msg)
             
