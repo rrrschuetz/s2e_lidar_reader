@@ -517,6 +517,7 @@ class parkingNode(Node):
     HFOV = 70.8
     num_scan = 1620
     num_scan2 = 810
+    num_scan3 = 405
     scan_max_dist = 2.8
     servo_min = 240  # Min pulse length out of 4096
     servo_max = 375  # Max pulse length out of 4096
@@ -617,7 +618,7 @@ class parkingNode(Node):
             try:
                 # raw data
                 #scan = np.array(msg.ranges)
-                scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
+                scan = np.array(msg.ranges[self.num_scan+self.num_scan3:]+msg.ranges[:self.num_scan2+self.num_scan3])
         
                 scan[scan == np.inf] = np.nan
                 scan[scan > self.scan_max_dist] = np.nan

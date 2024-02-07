@@ -61,8 +61,8 @@ train, test = train_test_split(data_raw, test_size=0.2)
 print("Train data shape:", train.shape)
 print("Test data shape:", test.shape)
 
-train_lidar = train.iloc[:, 2:1622]
-test_lidar = test.iloc[:, 2:1622]
+train_lidar = train.iloc[:, 2:2432]
+test_lidar = test.iloc[:, 2:2432]
 train_color = train.iloc[:, -640:]
 test_color = test.iloc[:, -640:]
 y_train = train.iloc[:, :2]
