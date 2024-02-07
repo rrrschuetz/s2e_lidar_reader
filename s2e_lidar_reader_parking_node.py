@@ -15,7 +15,8 @@ class s2eLidarReaderParkingNode(Node):
     VPIX = 200
     HFOV = 70.8
     num_scan = 1620 # consider only front 270 degrees
-    num_scan2 = 405
+    num_scan2 = 810
+    num_scan3 = 405
     scan_max_dist = 2.8
     reverse_pulse = 204
     neutral_pulse = 307
@@ -90,7 +91,7 @@ class s2eLidarReaderParkingNode(Node):
         GPIO.output(self.relay_pin, GPIO.LOW)
         GPIO.cleanup()
         
-    scan_labels = [f'SCAN.{i}' for i in range(1, num_scan+1)]
+    scan_labels = [f'SCAN.{i}' for i in range(1, num_scan+num_scan2+1)]
     col1_m_labels = [f'COL1_M.{i}' for i in range(1, HPIX+1)]
     col2_m_labels = [f'COL2_M.{i}' for i in range(1, HPIX+1)]
 
@@ -104,7 +105,7 @@ class s2eLidarReaderParkingNode(Node):
 
     def lidar_callback(self, msg):
         # Convert the laser scan data to a string
-        scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
+        scan = np.array(msg.ranges[self.num_scan+self.num_scan3:]+msg.ranges[:self.num_scan2+self.num_scan3])
 
         scan[scan == np.inf] = np.nan
         scan[scan > self.scan_max_dist] = np.nan
