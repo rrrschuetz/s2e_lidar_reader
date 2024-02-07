@@ -14,8 +14,8 @@ class s2eLidarReaderParkingNode(Node):
     HPIX = 320
     VPIX = 200
     HFOV = 70.8
-    num_scan = 1620 # consider only front 18ß degrees
-    num_scan2 = 810
+    num_scan = 1620 # consider only front 270 degrees
+    num_scan2 = 405
     scan_max_dist = 2.8
     reverse_pulse = 204
     neutral_pulse = 307
