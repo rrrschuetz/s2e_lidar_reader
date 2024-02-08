@@ -653,7 +653,7 @@ class parkingNode(Node):
                 #self.get_logger().info('Power: %s ' % self._Y)
 
                 self._pwm.set_pwm(0, 0, XX)
-                if self._Y > 0:
+                if self._Y >= 0:
                     self._speed_msg.data = self.REV_SPEED
                     #self.get_logger().info('Reverse: %s / %s ' % (self._Y,self._speed_msg.data))
                 else:
