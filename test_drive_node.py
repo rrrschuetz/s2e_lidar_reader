@@ -715,13 +715,13 @@ class parkingNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     
-#    test_drive_node = testDriveNode()
-#    rclpy.spin(test_drive_node)
-#    test_drive_node.destroy_node()
+    test_drive_node = testDriveNode()
+    rclpy.spin(test_drive_node)
+    test_drive_node.destroy_node()
 
-    parking_node = parkingNode()
-    rclpy.spin(parking_node)
-    parking_node.destroy_node()
+#    parking_node = parkingNode()
+#    rclpy.spin(parking_node)
+#    parking_node.destroy_node()
     
     rclpy.shutdown()
 
