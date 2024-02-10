@@ -36,11 +36,9 @@ class SpeedControlNode(Node):
         self.base_pwm = self.neutral_pulse  # Base PWM value for steady motor speed
         self.rolling_avg_size = 100  # Number of measurements for the rolling average
         self.impulse_history = collections.deque(maxlen=self.rolling_avg_size)
-        self.desired_speed = 0
-        self.pid = PID(0.4, 0.15, 0.00, setpoint=self.desired_speed)
-        self.pid.sample_time = 0.1  # Update every 0.2 seconds
         self.lock = False
         self.brake = False
+        self.reset_pid()
 
         GPIO.add_event_detect(self.gpio_pin, GPIO.FALLING, callback=self.impulse_callback)
         self.timer = self.create_timer(0.2, self.timer_callback)
@@ -48,6 +46,11 @@ class SpeedControlNode(Node):
     def __del__(self):
         GPIO.output(self.relay_pin, GPIO.LOW)
         GPIO.cleanup()
+
+    def reset_pid(self):
+        self.desired_speed = 0
+        self.pid = PID(0.4, 0.15, 0.00, setpoint=self.desired_speed)
+        self.pid.sample_time = 0.1  # Update every 0.2 seconds
 
     def impulse_callback(self, channel):
         self.impulse_history.append(1)
@@ -80,10 +83,8 @@ class SpeedControlNode(Node):
             else: 
                 self.brake = False
                 y_pwm = self.neutral_pulse
-                self.pid.setpoint = 0
-                self.pid(0)
-            #wait_time = 1.0
-            wait_time = 0.0
+                self.reset_pid()
+            wait_time = 0.5
         else:
             pid_output = self.pid(impulse_count)
             #self.get_logger().info('impulses %s power: %s %s ' % (impulse_count,pid_output,self.reverse))
