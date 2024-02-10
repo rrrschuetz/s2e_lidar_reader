@@ -43,6 +43,7 @@ class s2eLidarReaderParkingNode(Node):
         self._scan_interpolated = np.zeros(self.num_scan)
         self._color1_m = np.zeros(self.HPIX, dtype=int)
         self._color2_m = np.zeros(self.HPIX, dtype=int)
+        self._cam_online = False
         self._X = 0.0 
         self._Y = 0.0
 
@@ -105,6 +106,8 @@ class s2eLidarReaderParkingNode(Node):
         if not labels: f.write(line)
 
     def lidar_callback(self, msg):
+        if not self._cam_online: return
+
         # Convert the laser scan data to a string
         scan = np.array(msg.ranges[self.num_scan+self.num_scan3:]+msg.ranges[:self.num_scan2+self.num_scan3])
 
@@ -156,6 +159,8 @@ class s2eLidarReaderParkingNode(Node):
             self.get_logger().error("Data length is not divisible by 3!")
             return
 
+        self._cam_online = True
+
         blobs = ((data[i],data[i+1],data[i+2]) for i in range (0,len(data),3))
         for blob in blobs:
             color, x1, x2 = blob
@@ -176,6 +181,8 @@ class s2eLidarReaderParkingNode(Node):
         if len(data) % 3 != 0:
             self.get_logger().error("Data length is not divisible by 3!")
             return
+
+        self._cam_online = True
 
         blobs = ((data[i],data[i+1],data[i+2]) for i in range (0,len(data),3))
         for blob in blobs:
