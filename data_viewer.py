@@ -22,21 +22,19 @@ def plot_radar_chart(data):
         # Extend the data to wrap around the plot
         extended_angles = np.concatenate((angles, [angles[0]]))
         extended_line_data = np.concatenate((line_data, [line_data[0]]))
+        ax.set_theta_zero_location("N")  # Zero pointing East
+        ax.set_theta_direction(-1)  # Counterclockwise
 
         # Plot points using scatter
         ax.scatter(extended_angles, extended_line_data)
 
     # Each value represents a fraction of the 180-degree range
-    angles = np.linspace(-np.pi/2, np.pi/2, len(data[0]), endpoint=False)
+    angles = np.linspace(-np.pi*3/4, np.pi*3/4, len(data[0]), endpoint=False)
 
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
     fig.canvas.mpl_connect('button_press_event', update_chart)
 
     plot_data(data[current_line_index])
-
-    ax.set_theta_zero_location("N")  # Zero pointing East
-    ax.set_theta_direction(1)  # Counterclockwise
-
     plt.show()
 
 
@@ -48,9 +46,9 @@ def read_data(filename):
     color_data = []
 
     for line in lines:
-        scan_values = line.strip().split(',')[2:1622]
+        scan_values = line.strip().split(',')[2:2432]
         scan_data.append(np.array(scan_values, dtype=float))
-        color_values = line.strip().split(',')[-1280:]
+        color_values = line.strip().split(',')[-640:]
         color_data.append(np.array(color_values, dtype=int))
 
     return scan_data,color_data
@@ -85,7 +83,7 @@ def plot_color_data(color_data, chunk_size=1000):
     plt.show()
 
 # File reading and plotting
-filename = '/home/rrrschuetz/test/file.txt'
+filename = '/home/rrrschuetz/test/file_p.txt'
 scan_data, color_data = read_data(filename)
 plot_radar_chart(scan_data)
 plot_color_data(color_data)

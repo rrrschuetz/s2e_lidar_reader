@@ -28,7 +28,7 @@ class SpeedControlNode(Node):
         self.pwm.set_pwm(1, 0, self.neutral_pulse)
         GPIO.output(self.relay_pin, GPIO.HIGH)
 
-        self.motor_ctl = 0.5
+        self.motor_ctl = 1.0
         self.max_y = 350
         self.min_y = 250
         self.reverse = False
