@@ -135,7 +135,7 @@ class s2eLidarReaderParkingNode(Node):
             self._Y = msg.axes[1]
 
         try:
-            motor_ctl = -self._motor_ctl_fwd if self._Y < 0 else self._motor_ctl_rev
+            motor_ctl = -self.motor_ctl_fwd if self._Y < 0 else self.motor_ctl_rev
             #self.get_logger().info('Steering: "%s" ' % str(self.servo_neutral+self._X*self.servo_ctl))
             #self.get_logger().info('Power: "%s" ' % str(self.neutral_pulse-self._Y*self.motor_ctl))
             self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
