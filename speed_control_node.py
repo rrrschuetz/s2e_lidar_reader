@@ -83,6 +83,7 @@ class SpeedControlNode(Node):
                 self.pid.setpoint = 0
                 self.pid(0)
             #wait_time = 1.0
+            wait_time = 0.0
         else:
             pid_output = self.pid(impulse_count)
             #self.get_logger().info('impulses %s power: %s %s ' % (impulse_count,pid_output,self.reverse))
