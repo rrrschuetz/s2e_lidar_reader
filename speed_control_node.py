@@ -75,13 +75,14 @@ class SpeedControlNode(Node):
             self.reverse_p = self.reverse
             if impulse_count > 0: 
                 self.brake = True
-                y_pwm = self.min_y if self.reverse else self.max_y
+                #y_pwm = self.min_y if self.reverse else self.max_y
+                self.y_pwm = self.neutral_pulse
             else: 
                 self.brake = False
                 y_pwm = self.neutral_pulse
                 self.pid.setpoint = 0
                 self.pid(0)
-            wait_time = 1.0            
+            #wait_time = 1.0
         else:
             pid_output = self.pid(impulse_count)
             #self.get_logger().info('impulses %s power: %s %s ' % (impulse_count,pid_output,self.reverse))

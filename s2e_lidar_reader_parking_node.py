@@ -25,8 +25,8 @@ class s2eLidarReaderParkingNode(Node):
     servo_max = 385  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 *1.7)
-    motor_ctl_fwd = 16
-    motor_ctl_rev = 20
+    motor_ctl_fwd = 14
+    motor_ctl_rev = 14
     relay_pin = 17
     WEIGHT = 1
 
