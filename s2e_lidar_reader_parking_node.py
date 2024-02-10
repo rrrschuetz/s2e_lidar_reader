@@ -25,7 +25,8 @@ class s2eLidarReaderParkingNode(Node):
     servo_max = 385  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 *1.7)
-    motor_ctl = 16
+    motor_ctl_fwd = 16
+    motor_ctl_rev = 20
     relay_pin = 17
     WEIGHT = 1
 
@@ -134,10 +135,11 @@ class s2eLidarReaderParkingNode(Node):
             self._Y = msg.axes[1]
 
         try:
+            if motor_ctl = -self._motor_ctl_fwd if self._Y < 0 else self._motor_ctl_rev
             #self.get_logger().info('Steering: "%s" ' % str(self.servo_neutral+self._X*self.servo_ctl))
             #self.get_logger().info('Power: "%s" ' % str(self.neutral_pulse-self._Y*self.motor_ctl))
             self._pwm.set_pwm(0, 0, int(self.servo_neutral+self._X*self.servo_ctl))
-            self._pwm.set_pwm(1, 0, int(self.neutral_pulse-self._Y*self.motor_ctl))
+            self._pwm.set_pwm(1, 0, int(self.neutral_pulse+self._Y*motor_ctl))
 
         except IOError as e:
             self.get_logger().error('IOError I2C occurred: %s' % str(e))
