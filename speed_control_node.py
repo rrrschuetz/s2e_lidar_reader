@@ -76,7 +76,7 @@ class SpeedControlNode(Node):
             if impulse_count > 0: 
                 self.brake = True
                 #y_pwm = self.min_y if self.reverse else self.max_y
-                self.y_pwm = self.neutral_pulse
+                y_pwm = self.neutral_pulse
             else: 
                 self.brake = False
                 y_pwm = self.neutral_pulse
