@@ -28,7 +28,8 @@ class SpeedControlNode(Node):
         self.pwm.set_pwm(1, 0, self.neutral_pulse)
         GPIO.output(self.relay_pin, GPIO.HIGH)
 
-        self.motor_ctl = 1.0
+        self.motor_ctl = 1.2
+        self.y_pwm = 0
         self.max_y = 350
         self.min_y = 250
         self.reverse = False
@@ -36,8 +37,6 @@ class SpeedControlNode(Node):
         self.base_pwm = self.neutral_pulse  # Base PWM value for steady motor speed
         self.rolling_avg_size = 100  # Number of measurements for the rolling average
         self.impulse_history = collections.deque(maxlen=self.rolling_avg_size)
-        self.lock = False
-        self.brake = False
         self.reset_pid()
 
         GPIO.add_event_detect(self.gpio_pin, GPIO.FALLING, callback=self.impulse_callback)
@@ -69,46 +68,37 @@ class SpeedControlNode(Node):
             self.get_logger().error("Received invalid speed setting")
 
     def timer_callback(self):
-        if self.lock: return
-        self.lock = True
         impulse_count = sum(self.impulse_history)
 
-        if self.brake or self.reverse != self.reverse_p:
-            self.get_logger().info('brake active ... ')
+        if self.reverse != self.reverse_p:
             self.reverse_p = self.reverse
-            if impulse_count > 0: 
-                self.brake = True
-                #y_pwm = self.min_y if self.reverse else self.max_y
-                y_pwm = self.neutral_pulse
-            else: 
-                self.brake = False
-                y_pwm = self.neutral_pulse
-                self.reset_pid()
-            wait_time = 0.5
+            self.reset_pid()
+            self.y_pwm = self.neutral_pulse
         else:
             pid_output = self.pid(impulse_count)
             #self.get_logger().info('impulses %s power: %s %s ' % (impulse_count,pid_output,self.reverse))
             # Determine PWM adjustment based on PID output and desired direction.
             if self.reverse:
                 # If desired speed is negative, adjust for reverse.
-                y_pwm = self.neutral_pulse - abs(int(pid_output * self.motor_ctl))
-                y_pwm = max(self.min_y, y_pwm)  # Ensure PWM is within reverse range.
+                self.y_pwm = self.neutral_pulse - abs(int(pid_output * self.motor_ctl))
+                self.y_pwm = max(self.min_y, y_pwm)  # Ensure PWM is within reverse range.
             else:
                 # If desired speed is positive or zero, adjust for forward.
-                y_pwm = self.neutral_pulse + int(pid_output * self.motor_ctl)
-                y_pwm = min(self.max_y, y_pwm)  # Ensure PWM is within forward range.
-            wait_time = 0.0
+                self.y_pwm = self.neutral_pulse + int(pid_output * self.motor_ctl)
+                self.y_pwm = min(self.max_y, y_pwm)  # Ensure PWM is within forward range.
             
         self.impulse_history.clear()  # Clear history after each measurement
 
+        if abs(pid_output) > 10 and impulse_count == 0:
+            self.get_logger().error("Track blocked: %s" % pid_output)
+            self.reset_pid()
+            self.y_pwm = self.neutral_pulse
+
         try:
             #self.get_logger().info('y_pwm %s ' % y_pwm)
-            self.pwm.set_pwm(1, 0, y_pwm)
-            time.sleep(wait_time)            
+            self.self.pwm.set_pwm(1, 0, y_pwm)
         except IOError as e:
-            self.get_logger().error('IOError I2C occurred: %s' % str(e))
-        
-        self.lock = False
+            self.get_logger().error("IOError I2C occurred: %s" % str(e))
 
 def main(args=None):
     relay_pin = 17
