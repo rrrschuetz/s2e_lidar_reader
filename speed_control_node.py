@@ -96,7 +96,7 @@ class SpeedControlNode(Node):
 
         try:
             #self.get_logger().info('y_pwm %s ' % y_pwm)
-            self.self.pwm.set_pwm(1, 0, y_pwm)
+            self.self.pwm.set_pwm(1, 0, self.y_pwm)
         except IOError as e:
             self.get_logger().error("IOError I2C occurred: %s" % str(e))
 
