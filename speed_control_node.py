@@ -97,7 +97,7 @@ class SpeedControlNode(Node):
             self.reset_pid()
             self.y_pwm = self.neutral_pulse
             self._msg.data = "COLLISION"
-            self.speed_publisher_.publish(self._msg)
+            self.publisher_.publish(self._msg)
 
         try:
             #self.get_logger().info('y_pwm %s ' % y_pwm)
