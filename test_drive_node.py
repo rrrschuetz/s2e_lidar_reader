@@ -579,7 +579,7 @@ class parkingNode(Node):
 
         self.subscription_lidar = self.create_subscription(
             String,
-            'collision,
+            'collision',
             self.collision_callback,
             qos_profile
         )
@@ -591,13 +591,6 @@ class parkingNode(Node):
             qos_profile
         )
 
-        self.subscription_lidar = self.create_subscription(
-            String,
-            'collision,
-            self.collision_callback,
-            qos_profile
-        )
-        
         # Load the trained model and the scaler
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
         with open('/home/rrrschuetz/test/scaler_p.pkl', 'rb') as f:
