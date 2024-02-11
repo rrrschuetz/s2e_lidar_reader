@@ -665,16 +665,16 @@ class parkingNode(Node):
                     self.get_logger().info('Collision: STOP ')
                     self._collision = False
                     self._tf_control = False
-                    self._processing = False
-                    return
-
-                self._pwm.set_pwm(0, 0, XX)
-                if self._Y >= 0:
-                    self._speed_msg.data = self.REV_SPEED
-                    #self.get_logger().info('Reverse: %s / %s ' % (self._Y,self._speed_msg.data))
+                    self._speed_msg.data = "STOP"
                 else:
-                    self._speed_msg.data = self.FWD_SPEED
-                    #self.get_logger().info('Forward: %s / %s ' % (self._Y,self._speed_msg.data))
+                    self._pwm.set_pwm(0, 0, XX)
+                    if self._Y >= 0:
+                        self._speed_msg.data = self.REV_SPEED
+                        #self.get_logger().info('Reverse: %s / %s ' % (self._Y,self._speed_msg.data))
+                    else:
+                        self._speed_msg.data = self.FWD_SPEED
+                        #self.get_logger().info('Forward: %s / %s ' % (self._Y,self._speed_msg.data))
+
                 self.speed_publisher_.publish(self._speed_msg)
             
             except ValueError as e:
