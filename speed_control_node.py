@@ -18,6 +18,7 @@ class SpeedControlNode(Node):
         super().__init__('speed_control')
         self.subscriber_ = self.create_subscription(String, 'set_speed', self.set_speed_callback, 10)
         self.publisher_ = self.create_publisher(String, 'collision', 10)
+        self._msg = String()
 
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.relay_pin, GPIO.OUT)
@@ -95,8 +96,8 @@ class SpeedControlNode(Node):
             self.get_logger().error("Track blocked: %s" % pid_output)
             self.reset_pid()
             self.y_pwm = self.neutral_pulse
-            self._speed_msg.data = "COLLISION"
-            self.speed_publisher_.publish(self._speed_msg)
+            self._msg.data = "COLLISION"
+            self.speed_publisher_.publish(self._msg)
 
         try:
             #self.get_logger().info('y_pwm %s ' % y_pwm)
