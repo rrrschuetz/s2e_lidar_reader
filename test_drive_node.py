@@ -540,7 +540,7 @@ class parkingNode(Node):
                 durability=QoSDurabilityPolicy.VOLATILE)
             
         self._processing = False
-        self._tf_control = False
+        self._tf_control = True
         self._collision = False
         self._X = 0.0 
         self._Y = 0.0
@@ -617,6 +617,7 @@ class parkingNode(Node):
         GPIO.cleanup()
 
     def lidar_callback(self, msg):
+        if not self._tf_control: return
         if self._processing:
             self.get_logger().info('Scan skipped')
             return
@@ -661,10 +662,12 @@ class parkingNode(Node):
                 #self.get_logger().info('Power: %s ' % self._Y)
 
                 if self._collision:
-                    self.get_logger().info('Collision: flip ')
+                    self.get_logger().info('Collision: STOP ')
                     self._collision = False
-                    self._Y *= -1
-                    
+                    self._tf_control = False
+                    self._processing = False
+                    return
+
                 self._pwm.set_pwm(0, 0, XX)
                 if self._Y >= 0:
                     self._speed_msg.data = self.REV_SPEED
