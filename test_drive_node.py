@@ -519,8 +519,8 @@ class parkingNode(Node):
     num_scan2 = 810
     num_scan3 = 405
     scan_max_dist = 2.8
-    servo_min = 240  # Min pulse length out of 4096
-    servo_max = 375  # Max pulse length out of 4096
+    servo_min = 210  # Min pulse length out of 4096
+    servo_max = 400  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 * 1.7)
     motor_ctl = -20
