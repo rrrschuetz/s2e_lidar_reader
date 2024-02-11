@@ -81,11 +81,11 @@ class SpeedControlNode(Node):
             if self.reverse:
                 # If desired speed is negative, adjust for reverse.
                 self.y_pwm = self.neutral_pulse - abs(int(pid_output * self.motor_ctl))
-                self.y_pwm = max(self.min_y, y_pwm)  # Ensure PWM is within reverse range.
+                self.y_pwm = max(self.min_y, self.y_pwm)  # Ensure PWM is within reverse range.
             else:
                 # If desired speed is positive or zero, adjust for forward.
                 self.y_pwm = self.neutral_pulse + int(pid_output * self.motor_ctl)
-                self.y_pwm = min(self.max_y, y_pwm)  # Ensure PWM is within forward range.
+                self.y_pwm = min(self.max_y, self.y_pwm)  # Ensure PWM is within forward range.
             
         self.impulse_history.clear()  # Clear history after each measurement
 
