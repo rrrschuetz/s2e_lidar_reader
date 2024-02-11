@@ -16,11 +16,12 @@ class SpeedControlNode(Node):
 
     def __init__(self):
         super().__init__('speed_control')
-        GPIO.setmode(GPIO.BCM)
+        self.subscriber_ = self.create_subscription(String, 'set_speed', self.set_speed_callback, 10)
+        self.publisher_ = self.create_publisher(String, 'collision', 10)
 
+        GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.relay_pin, GPIO.OUT)
         GPIO.setup(self.gpio_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        self.subscriber = self.create_subscription(String, 'set_speed', self.set_speed_callback, 10)
 
         self.get_logger().info('calibrating ESC')
         self.pwm = PCA9685()
@@ -93,6 +94,8 @@ class SpeedControlNode(Node):
             self.get_logger().error("Track blocked: %s" % pid_output)
             self.reset_pid()
             self.y_pwm = self.neutral_pulse
+            self._speed_msg.data = "COLLISION"
+            self.speed_publisher_.publish(self._speed_msg)
 
         try:
             #self.get_logger().info('y_pwm %s ' % y_pwm)
@@ -100,6 +103,7 @@ class SpeedControlNode(Node):
         except IOError as e:
             self.get_logger().error("IOError I2C occurred: %s" % str(e))
 
+        
 def main(args=None):
     relay_pin = 17
     rclpy.init(args=args)
