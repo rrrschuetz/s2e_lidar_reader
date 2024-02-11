@@ -661,6 +661,7 @@ class parkingNode(Node):
                 #self.get_logger().info('Power: %s ' % self._Y)
 
                 if self._collision:
+                    self.get_logger().info('Collision: flip ')
                     self._collision = False
                     self._Y *= -1
                     
@@ -726,7 +727,7 @@ class parkingNode(Node):
         return
 
     def collision_callback(self, msg):
-        self.get_logger().info('Collision msg received:')
+        self.get_logger().info('Collision msg received')
         self._collision = True
         return
 

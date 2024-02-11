@@ -36,6 +36,7 @@ class SpeedControlNode(Node):
         self.min_y = 250
         self.reverse = False
         self.reverse_p = False
+        self.pid_output_max = 15
         self.base_pwm = self.neutral_pulse  # Base PWM value for steady motor speed
         self.rolling_avg_size = 100  # Number of measurements for the rolling average
         self.impulse_history = collections.deque(maxlen=self.rolling_avg_size)
@@ -92,7 +93,7 @@ class SpeedControlNode(Node):
             
         self.impulse_history.clear()  # Clear history after each measurement
 
-        if abs(pid_output) > 10 and impulse_count == 0:
+        if abs(pid_output) > self.pid_output_max and impulse_count == 0:
             self.get_logger().error("Track blocked: %s" % pid_output)
             self.reset_pid()
             self.y_pwm = self.neutral_pulse
