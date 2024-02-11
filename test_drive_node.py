@@ -541,6 +541,7 @@ class parkingNode(Node):
             
         self._processing = False
         self._tf_control = False
+        self._collision = False
         self._X = 0.0 
         self._Y = 0.0
 
@@ -576,6 +577,13 @@ class parkingNode(Node):
             qos_profile
         )
 
+        self.subscription_lidar = self.create_subscription(
+            String,
+            'collision,
+            self.collision_callback,
+            qos_profile
+        )
+
         self.subscription_distance = self.create_subscription(
             Float32,
             'distance_sensor',
@@ -583,6 +591,13 @@ class parkingNode(Node):
             qos_profile
         )
 
+        self.subscription_lidar = self.create_subscription(
+            String,
+            'collision,
+            self.collision_callback,
+            qos_profile
+        )
+        
         # Load the trained model and the scaler
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
         with open('/home/rrrschuetz/test/scaler_p.pkl', 'rb') as f:
@@ -652,6 +667,10 @@ class parkingNode(Node):
                 #self.get_logger().info('Steering: %s,%s ' % (self._X,XX))
                 #self.get_logger().info('Power: %s ' % self._Y)
 
+                if self._collision:
+                    self._collision = False
+                    self._Y *= -1
+                    
                 self._pwm.set_pwm(0, 0, XX)
                 if self._Y >= 0:
                     self._speed_msg.data = self.REV_SPEED
@@ -710,7 +729,12 @@ class parkingNode(Node):
                 self._color2_m[x1:x2] = self.WEIGHT
 
     def distance_sensor_callback(self, msg):
-        #elf.get_logger().info('Distance msg received: "%s"' % msg)
+        #self.get_logger().info('Distance msg received: "%s"' % msg)
+        return
+
+    def collision_callback(self, msg):
+        self.get_logger().info('Collision msg received:')
+        self._collision = True
         return
 
 def main(args=None):
