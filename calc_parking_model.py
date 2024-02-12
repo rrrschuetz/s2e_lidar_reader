@@ -15,7 +15,7 @@ from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.callbacks import TensorBoard
 import pickle  # For saving the scaler
 
-filepath = '~/test/file_p.txt'
+filepath = '/home/rrrschuetz/test/file_p.txt'
 
 def make_column_names_unique(df):
     cols = pd.Series(df.columns)
@@ -60,9 +60,10 @@ def read_and_pad_sequences(filepath):
 
     # Determine the max sequence length
     max_length = max(len(seq) for seq in sequences)
+    num_features = len(sequences[0][0]) if sequences else 0
 
     # Initialize a numpy array for padded sequences
-    padded_sequences = np.zeros((len(sequences), max_length, len(sequences[0][0])))  # Adjust the last dimension based on number of features
+    padded_sequences = np.zeros((len(sequences), max_length, num_features))  # Adjust the last dimension based on number of features
 
     # Pad each sequence
     for i, seq in enumerate(sequences):
