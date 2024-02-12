@@ -15,6 +15,8 @@ from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.callbacks import TensorBoard
 import pickle  # For saving the scaler
 
+filepath = '~/test/file_p.txt'
+
 def make_column_names_unique(df):
     cols = pd.Series(df.columns)
     for dup in cols[cols.duplicated()].unique():
@@ -28,26 +30,53 @@ def apply_reciprocal_to_scan(df):
     return df
 
 # 1. Preprocess data
-data_raw = pd.read_csv('~/test/file_p.txt')
-make_column_names_unique(data_raw)
+#data_raw = pd.read_csv('~/test/file_p.txt')
+#make_column_names_unique(data_raw)
 
-# Replace Inf values with NaN so they can be handled uniformly
-#data_raw[data_raw > 3] = np.nan
-#data_raw[data_raw == np.inf] = np.nan
-#data_raw[data_raw == np.nan] = 0.0
+def read_and_pad_sequences(filepath):
+    sequences = []  # List to hold all sequences
 
-#data_raw.replace([data_raw > 3], np.nan, inplace=True)
-#data_raw.replace([np.inf, -np.inf], np.nan, inplace=True)
+    with open(filepath, 'r') as file:
+        # Skip the initial header
+        #next(file)
 
-# Check for columns that are entirely NaN and decide on an action
-#all_nan_columns = data_raw.columns[data_raw.isnull().all()]
-# For simplicity, let's fill these with 0 (or choose another strategy as needed)
-#data_raw[all_nan_columns] = data_raw[all_nan_columns].fillna(0)
+        sequence = []  # Initialize a list to collect sequence data
+        for line in file:
+            # Check if the line is a header line (assuming headers can be identified)
+            if line.startswith('X,Y'):  # Assuming each header starts with 'X,Y', adjust as needed
+                # If we encounter a header, skip after processing the current sequence
+                if sequence:  # If there's data in the current sequence
+                    sequences.append(sequence)
+                    sequence = []  # Reset for the next sequence
+                continue  # Skip the header line
 
-# Now, impute NaN values for other columns with their mean
-#for column in data_raw.columns:
-#    if column not in all_nan_columns:  # Skip already handled all-NaN columns
-#        data_raw[column].fillna(data_raw[column].mean(), inplace=True)
+            # Process non-header lines
+            line_data = [float(x) if x != 'nan' else 0.0 for x in line.strip().split(',')[2:]]  # Convert to floats, replace 'nan'
+            sequence.append(line_data)
+
+        # Don't forget to add the last sequence if the file doesn't end with a header
+        if sequence:
+            sequences.append(sequence)
+
+    # Determine the max sequence length
+    max_length = max(len(seq) for seq in sequences)
+
+    # Initialize a numpy array for padded sequences
+    padded_sequences = np.zeros((len(sequences), max_length, len(sequences[0][0])))  # Adjust the last dimension based on number of features
+
+    # Pad each sequence
+    for i, seq in enumerate(sequences):
+        for j, step in enumerate(seq):
+            padded_sequences[i, j, :len(step)] = step
+
+    print(f"Number of sequences: {len(sequences)}")
+    print(f"Max sequence length: {max_length}")
+    print(f"Number of features: {num_features}")
+
+    return padded_sequences
+
+
+padded_sequences = read_and_pad_sequences(filepath)
 
 print("NaN ",data_raw.isnull().values.any())
 print("inf ",np.isinf(data_raw).values.any())

@@ -131,7 +131,7 @@ class s2eLidarReaderParkingNode(Node):
 
         self._sequence_count += 1
         # Write the scan data to a file
-        with open(filepath, 'a') as f:
+        with open(self.filepath, 'a') as f:
             f.write(scan_data + '\n')
 
     def joy_callback(self, msg):
