@@ -7,7 +7,7 @@ from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input
 from tensorflow.keras.layers import Concatenate, Layer
-from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense
+from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense, LSTM
 from tensorflow.keras.layers import Dropout, BatchNormalization
 from tensorflow.keras.layers import LSTM  # Import LSTM layer
 from tensorflow.keras.regularizers import l2
@@ -17,11 +17,6 @@ import pickle  # For saving the scaler
 
 filepath = '/home/rrrschuetz/test/file_p.txt'
 
-def make_column_names_unique(df):
-    cols = pd.Series(df.columns)
-    for dup in cols[cols.duplicated()].unique():
-        cols[cols[cols == dup].index.values.tolist()] = [dup + '_' + str(i) if i != 0 else dup for i in range(sum(cols == dup))]
-    df.columns = cols
 def apply_reciprocal_to_scan(df):
     scan_cols = df.filter(regex='^SCAN').columns
     for col in scan_cols:
@@ -29,58 +24,58 @@ def apply_reciprocal_to_scan(df):
         df[col] = df[col].apply(lambda x: 1/x if x != 0 else 0)
     return df
 
-# 1. Preprocess data
-#data_raw = pd.read_csv('~/test/file_p.txt')
-#make_column_names_unique(data_raw)
+def parse_header(header_line):
+    headers = header_line.strip().split(',')
+    lidar_indices = [i for i, h in enumerate(headers) if h.startswith('SCAN')]
+    color_indices = [i for i, h in enumerate(headers) if h.startswith('COL')]
+    return lidar_indices, color_indices
 
-def read_and_pad_sequences(filepath):
-    sequences = []  # List to hold all sequences
-
+def read_sequences_and_separate_data(filepath):
     with open(filepath, 'r') as file:
-        # Skip the initial header
-        #next(file)
+        header_line = next(file).strip()  # Read the first line to get the headers
+        lidar_indices, color_indices = parse_header(header_line)
 
-        sequence = []  # Initialize a list to collect sequence data
+        sequences = []  # To store sequence-wise data
+        consolidated_lidar = []  # To store all LIDAR data across sequences
+        consolidated_color = []  # To store all color data across sequences
+
+        current_sequence = {'lidar': [], 'color': []}  # Temp storage for the current sequence
+
         for line in file:
-            # Check if the line is a header line (assuming headers can be identified)
-            if line.startswith('X,Y'):  # Assuming each header starts with 'X,Y', adjust as needed
-                # If we encounter a header, skip after processing the current sequence
-                if sequence:  # If there's data in the current sequence
-                    sequences.append(sequence)
-                    sequence = []  # Reset for the next sequence
+            if line.startswith('X,Y'):  # Start of a new sequence
+                if current_sequence['lidar']:  # If there's data in the current sequence
+                    sequences.append(current_sequence)  # Save the sequence
+                    current_sequence = {'lidar': [], 'color': []}  # Start a new sequence
                 continue  # Skip the header line
 
-            # Process non-header lines
-            line_data = [float(x) if x != 'nan' else 0.0 for x in line.strip().split(',')[2:]]  # Convert to floats, replace 'nan'
-            sequence.append(line_data)
+            parts = line.strip().split(',')
+            lidar_row = [float(parts[i]) if parts[i] != 'nan' else 0.0 for i in lidar_indices]
+            color_row = [float(parts[i]) if parts[i] != 'nan' else 0.0 for i in color_indices]
 
-        # Don't forget to add the last sequence if the file doesn't end with a header
-        if sequence:
-            sequences.append(sequence)
+            # Add data to the current sequence
+            current_sequence['lidar'].append(lidar_row)
+            current_sequence['color'].append(color_row)
 
-    # Determine the max sequence length
-    max_length = max(len(seq) for seq in sequences)
-    num_features = len(sequences[0][0]) if sequences else 0
+            # Also add data to the consolidated arrays
+            consolidated_lidar.append(lidar_row)
+            consolidated_color.append(color_row)
 
-    # Initialize a numpy array for padded sequences
-    padded_sequences = np.zeros((len(sequences), max_length, num_features))  # Adjust the last dimension based on number of features
+        # Add the last sequence if not empty
+        if current_sequence['lidar']:
+            sequences.append(current_sequence)
 
-    # Pad each sequence
-    for i, seq in enumerate(sequences):
-        for j, step in enumerate(seq):
-            padded_sequences[i, j, :len(step)] = step
+    # Convert everything to numpy arrays for easier handling in TensorFlow/Keras
+    sequences = [{'lidar': np.array(seq['lidar']), 'color': np.array(seq['color'])} for seq in sequences]
+    consolidated_lidar = np.array(consolidated_lidar)
+    consolidated_color = np.array(consolidated_color)
 
-    print(f"Number of sequences: {len(sequences)}")
-    print(f"Max sequence length: {max_length}")
-    print(f"Number of features: {num_features}")
+    return sequences, consolidated_lidar, consolidated_color
 
-    return padded_sequences
+sequences, consolidated_lidar, consolidated_color = read_sequences_and_separate_data(filepath)
 
-
-padded_sequences = read_and_pad_sequences(filepath)
-
-print("NaN ",data_raw.isnull().values.any())
-print("inf ",np.isinf(data_raw).values.any())
+X_train_seq, X_test_seq, X_train_lidar, X_test_lidar, X_train_color, X_test_color, y_train, y_test = train_test_split(
+    padded_sequences, lidar_data, color_data, labels, test_size=0.2, random_state=42
+)
 
 data_raw = apply_reciprocal_to_scan(data_raw)
 print("Raw data columns:", data_raw.columns)
@@ -120,20 +115,6 @@ print("After standardization, x_train color shape:", x_train_color.shape)
 print("After standardization, x_test color shape:", x_test_color.shape)
 
 # 2. Define the 1D CNN model
-def create_cnn_model(input_shape):
-    model = tf.keras.models.Sequential()
-    model.add(Conv1D(64, kernel_size=5, activation='relu', input_shape=input_shape))
-    model.add(MaxPooling1D(pool_size=2))
-    model.add(Conv1D(128, kernel_size=5, activation='relu', kernel_regularizer=l2(0.01)))  # Add L2 Regularization
-    model.add(MaxPooling1D(pool_size=2))
-    model.add(Flatten())
-    model.add(Dense(64, activation='relu'))
-    model.add(Dense(32, activation='relu'))
-    model.add(Dense(2))
-    model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
-    return model
-
-# 2. Define the 1D CNN model
 class WeightedConcatenate(Layer):
     def __init__(self, weight_lidar=0.5, weight_color=0.5, **kwargs):
          super(WeightedConcatenate, self).__init__(**kwargs)
@@ -144,6 +125,7 @@ class WeightedConcatenate(Layer):
          return tf.concat([self.weight_lidar * lidar, self.weight_color * color], axis=-1)
 
 def create_cnn_model(lidar_input_shape, color_input_shape):
+
     # LIDAR data path
     lidar_input = Input(shape=lidar_input_shape)
     lidar_path = Conv1D(64, kernel_size=5, activation='relu')(lidar_input)
@@ -152,6 +134,7 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
     lidar_path = Flatten()(lidar_path)
 
+    # COLOR data path
     color_input = Input(shape=color_input_shape)
     color_path = Dense(64, activation='relu')(color_input)
     color_path = Dropout(0.3)(color_path)  # Use dropout
@@ -171,6 +154,42 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
     return model
 
+def create_regression_model(sequence_shape, lidar_shape, color_shape):
+    # Sequence Input for LSTM
+    sequence_input = Input(shape=sequence_shape, name="sequence_input")
+    lstm_out = LSTM(32)(sequence_input)
+
+    # LIDAR Input for CNN
+    lidar_input = Input(shape=lidar_shape, name="lidar_input")
+    lidar_conv1 = Conv1D(filters=64, kernel_size=3, activation='relu')(lidar_input)
+    lidar_pool1 = MaxPooling1D(pool_size=2)(lidar_conv1)
+    lidar_flat = Flatten()(lidar_pool1)
+
+    # Color Input for CNN
+    color_input = Input(shape=color_shape, name="color_input")
+    color_conv1 = Conv1D(filters=32, kernel_size=3, activation='relu')(color_input)
+    color_pool1 = MaxPooling1D(pool_size=2)(color_conv1)
+    color_flat = Flatten()(color_pool1)
+
+    # Combine all outputs
+    combined = concatenate([lstm_out, lidar_flat, color_flat])
+
+    # Fully connected layers
+    dense1 = Dense(64, activation='relu')(combined)
+    output = Dense(2, activation='linear')(dense1)  # Output layer for regression
+
+    model = Model(inputs=[sequence_input, lidar_input, color_input], outputs=output)
+
+    model.compile(optimizer='adam', loss='mean_squared_error', metrics=['mae'])  # Compile for regression
+
+    return model
+
+# Assuming shapes from your data prep
+sequence_shape = (None, 20)  # Update according to your data
+lidar_shape = (None, 1)  # Update according to your data
+color_shape = (None, 1)  # Update according to your data
+model = create_regression_model(sequence_shape, lidar_shape, color_shape)
+
 # Create EarlyStopping callback
 early_stopping_callback = EarlyStopping(monitor='val_loss', patience=3)
 
@@ -178,33 +197,21 @@ early_stopping_callback = EarlyStopping(monitor='val_loss', patience=3)
 logdir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard_callback = TensorBoard(log_dir=logdir)
 
-# Input shape for LIDAR data  (number of channels, 1)
-lidar_input_shape = (x_train_lidar.shape[1], 1)
-# Input shape for COLOR data  (number of channels, 1)
-color_input_shape = (x_train_color.shape[1], 1)
-# Create the model
-model = create_cnn_model(lidar_input_shape, color_input_shape)
-
 # 3. Train the model
 model.summary()
 
 history = model.fit(
-    [x_train_lidar, x_train_color],  # Input data
-    y_train,                         # Labels
-    epochs=45,                       # Number of epochs to train for
-    batch_size=32,                   # Batch size
-    validation_split=0.2,  # Percentage of data to use for validation
-    callbacks=[early_stopping_callback,tensorboard_callback]       # Optional callbacks, like EarlyStopping
+    [X_train_seq, X_train_lidar, X_train_color],  # input data
+    y_train,  # target data (heading and power)
+    epochs=10,  # adjust based on convergence
+    batch_size=32,  # adjust based on your dataset size and memory capacity
+    validation_data=([X_test_seq, X_test_lidar, X_test_color], y_test),  # data for evaluation
+    callbacks=[EarlyStopping(monitor='val_loss', patience=3)]  # early stopping
 )
 
 # 4. Evaluate the model
-
-loss, accuracy = model.evaluate(
-    [x_test_lidar, x_test_color],
-    y_test
-)
-print(f"Test Loss: {loss}")
-print(f"Test Accuracy: {accuracy}")
+scores = model.evaluate([X_test_seq, X_test_lidar, X_test_color], y_test, verbose=1)
+print(f"Test MSE: {scores[0]}, Test MAE: {scores[1]}")
 
 # 5. Save the model and the scaler for standardization
 model.save('/home/rrrschuetz/test/model_p')
