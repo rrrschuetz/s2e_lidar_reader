@@ -36,6 +36,8 @@ class SpeedControlNode(Node):
         self.min_y = 250
         self.reverse = False
         self.reverse_p = False
+        self.impulse_count = 0
+        self.impulse_count_p = 0
         self.pid_output_max = 15
         self.base_pwm = self.neutral_pulse  # Base PWM value for steady motor speed
         self.rolling_avg_size = 100  # Number of measurements for the rolling average
@@ -72,14 +74,15 @@ class SpeedControlNode(Node):
 
     def timer_callback(self):
         pid_output = 0
-        impulse_count = sum(self.impulse_history)
+        self.impulse_count_p = self.impulse_count
+        self.impulse_count = sum(self.impulse_history)
 
         if self.reverse != self.reverse_p:
             self.reverse_p = self.reverse
             self.reset_pid()
             self.y_pwm = self.neutral_pulse
         else:
-            pid_output = self.pid(impulse_count)
+            pid_output = self.pid(self.impulse_count)
             #self.get_logger().info('impulses %s power: %s %s ' % (impulse_count,pid_output,self.reverse))
             # Determine PWM adjustment based on PID output and desired direction.
             if self.reverse:
@@ -93,7 +96,7 @@ class SpeedControlNode(Node):
             
         self.impulse_history.clear()  # Clear history after each measurement
 
-        if abs(pid_output) > self.pid_output_max and impulse_count == 0:
+        if abs(pid_output) > self.pid_output_max and self.impulse_count_p > 0 and self. impulse_count == 0:
             self.get_logger().error("Track blocked: %s" % pid_output)
             self.reset_pid()
             self.y_pwm = self.neutral_pulse

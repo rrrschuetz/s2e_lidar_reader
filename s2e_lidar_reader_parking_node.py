@@ -32,6 +32,15 @@ class s2eLidarReaderParkingNode(Node):
     relay_pin = 17
     WEIGHT = 1
 
+    filepath = '/home/rrrschuetz/test/file_p.txt'
+
+    scan_labels = [f'SCAN.{i}' for i in range(1, num_scan+num_scan2+1)]
+    col1_m_labels = [f'COL1_M.{i}' for i in range(1, HPIX+1)]
+    col2_m_labels = [f'COL2_M.{i}' for i in range(1, HPIX+1)]
+
+    labels = ['X', 'Y'] + scan_labels + col1_m_labels + col2_m_labels
+    labels = ','.join(labels) + '\n'
+
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
         self.publisher_ = self.create_publisher(String, 'main_logger', 10)
@@ -41,6 +50,9 @@ class s2eLidarReaderParkingNode(Node):
             history=QoSHistoryPolicy.KEEP_LAST,
             reliability=QoSReliabilityPolicy.BEST_EFFORT,
             durability=QoSDurabilityPolicy.VOLATILE)
+
+        self._capture = False
+        self._sequence_count = 0
 
         self._scan_interpolated = np.zeros(self.num_scan)
         self._color1_m = np.zeros(self.HPIX, dtype=int)
@@ -94,21 +106,10 @@ class s2eLidarReaderParkingNode(Node):
     def __del__(self):
         GPIO.output(self.relay_pin, GPIO.LOW)
         GPIO.cleanup()
-        
-    scan_labels = [f'SCAN.{i}' for i in range(1, num_scan+num_scan2+1)]
-    col1_m_labels = [f'COL1_M.{i}' for i in range(1, HPIX+1)]
-    col2_m_labels = [f'COL2_M.{i}' for i in range(1, HPIX+1)]
-
-    labels = ['X', 'Y'] + scan_labels + col1_m_labels + col2_m_labels
-    line = ','.join(labels) + '\n'
-
-    filepath = '/home/rrrschuetz/test/file_p.txt'
-    labels = os.path.exists(filepath)
-    with open(filepath, 'a') as f:
-        if not labels: f.write(line)
 
     def lidar_callback(self, msg):
         if not self._cam_online: return
+        if not self._capture: return
 
         # Convert the laser scan data to a string
         scan = np.array(msg.ranges[self.num_scan+self.num_scan3:]+msg.ranges[:self.num_scan2+self.num_scan3])
@@ -128,14 +129,31 @@ class s2eLidarReaderParkingNode(Node):
         scan_data += ','.join(str(e) for e in self._color1_m)+','
         scan_data += ','.join(str(e) for e in self._color2_m)
 
+        self._sequence_count += 1
         # Write the scan data to a file
-        with open('/home/rrrschuetz/test/file_p.txt', 'a') as f:
+        with open(filepath, 'a') as f:
             f.write(scan_data + '\n')
 
     def joy_callback(self, msg):
         #self.get_logger().info('Buttons: "%s"' % msg.buttons)
         #self.get_logger().info('Axes: "%s"' % msg.axes)
-        if hasattr(msg, 'axes') and len(msg.axes) > 2:
+
+        if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
+
+            # Check if 'A' button is pressed - switch on AI steering
+            if msg.buttons[0] == 1:
+                self.get_logger().info('data capture started')
+                with open(self.filepath, 'a') as f:
+                    f.write(self.labels)
+                self._capture = True
+                self._sequence_count = 0
+
+            # Check if 'B' button is pressed - switch off AI steering
+            elif msg.buttons[1] == 1:
+                self.get_logger().info('data capture stopped, %s lines' % self._sequence_count)
+                self._capture = False
+
+        elif hasattr(msg, 'axes') and len(msg.axes) > 5:
             self._X = msg.axes[2]
             self._Y = msg.axes[1]
 
