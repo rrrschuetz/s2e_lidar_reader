@@ -29,7 +29,6 @@ def parse_header(header_line):
     lidar_indices = [i for i, h in enumerate(headers) if h.startswith('SCAN')]
     color_indices = [i for i, h in enumerate(headers) if h.startswith('COL')]
     return lidar_indices, color_indices
-
 def read_sequences_targets_and_separate_data(filepath):
     sequences = []  # To store sequence-wise lidar and color data
     targets = []  # To store corresponding 'X' and 'Y' values for each sequence
@@ -43,32 +42,39 @@ def read_sequences_targets_and_separate_data(filepath):
         for line in file:
             if line.startswith('X,Y'):  # New sequence
                 parts = line.strip().split(',')
-                # Assuming 'X' and 'Y' are the first two values in the line
-                x_value = float(parts[0])  # Convert 'X' value to float
-                y_value = float(parts[1])  # Convert 'Y' value to float
-                targets.append([x_value, y_value])  # Add target values to the list
-                sequences.append({'lidar': [], 'color': []})  # Initialize new sequence
+                # Check if 'X' and 'Y' are available in this line and initialize a new sequence if so
+                if len(parts) >= 2:
+                    try:
+                        x_value = float(parts[0])  # Convert 'X' value to float
+                        y_value = float(parts[1])  # Convert 'Y' value to float
+                        targets.append([x_value, y_value])  # Add target values to the list
+                        sequences.append({'lidar': [], 'color': []})  # Initialize new sequence
+                    except ValueError:
+                        # Handle case where conversion to float fails
+                        print("Error converting 'X,Y' to floats. Line skipped:", line)
                 continue
 
-            parts = line.strip().split(',')
-            lidar_row = [float(parts[i]) if parts[i] != 'nan' else 0.0 for i in lidar_indices]
-            color_row = [float(parts[i]) if parts[i] != 'nan' else 0.0 for i in color_indices]
+            # Make sure there's at least one sequence initialized before trying to append data
+            if sequences:
+                parts = line.strip().split(',')
+                lidar_row = [float(parts[i]) if parts[i] != 'nan' else 0.0 for i in lidar_indices]
+                color_row = [float(parts[i]) if parts[i] != 'nan' else 0.0 for i in color_indices]
 
-            sequences[-1]['lidar'].append(lidar_row)  # Add to the latest sequence
-            sequences[-1]['color'].append(color_row)
+                sequences[-1]['lidar'].append(lidar_row)  # Add to the latest sequence
+                sequences[-1]['color'].append(color_row)
 
-            consolidated_lidar.append(lidar_row)
-            consolidated_color.append(color_row)
+                consolidated_lidar.append(lidar_row)
+                consolidated_color.append(color_row)
+            else:
+                print("No sequence initialized. Line skipped:", line)
 
-    # Convert to numpy arrays
+    # Convert to numpy arrays for TensorFlow/Keras processing
     sequences = [{'lidar': np.array(seq['lidar']), 'color': np.array(seq['color'])} for seq in sequences]
     targets = np.array(targets)
     consolidated_lidar = np.array(consolidated_lidar)
     consolidated_color = np.array(consolidated_color)
 
     return sequences, targets, consolidated_lidar, consolidated_color
-
-sequences, targets, consolidated_lidar, consolidated_color = read_sequences_targets_and_separate_data(filepath)
 
 # Example split (ensure it aligns with your model's requirements)
 X_seq = np.array([seq['lidar'] for seq in sequences])  # Assuming you want to use lidar data for LSTM
