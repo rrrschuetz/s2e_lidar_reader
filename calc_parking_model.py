@@ -83,18 +83,18 @@ X_train_lidar, X_test_lidar, X_train_color, X_test_color, y_train, y_test = trai
 # Assuming a simple split for sequences for demonstration; adjust as needed for your temporal data
 X_train_seq, X_test_seq = train_test_split(X_seq, test_size=0.2, random_state=42)
 
-data_raw = apply_reciprocal_to_scan(data_raw)
-print("Raw data columns:", data_raw.columns)
-print("Raw data shape:", data_raw.shape)
+#data_raw = apply_reciprocal_to_scan(data_raw)
+#print("Raw data columns:", data_raw.columns)
+#print("Raw data shape:", data_raw.shape)
 
 print("Train data shape:", X_train_lidar.shape)
 print("Test data shape:", X_test_lidar.shape)
 
 # Standardization
-scaler_lidar = StandardScaler().fit(train_lidar.values)
-print("Scaler fitted on x_train")
-train_lidar = scaler_lidar.transform(train_lidar.values).astype(np.float32)
-test_lidar = scaler_lidar.transform(test_lidar.values).astype(np.float32)
+#scaler_lidar = StandardScaler().fit(train_lidar.values)
+#print("Scaler fitted on x_train")
+#train_lidar = scaler_lidar.transform(train_lidar.values).astype(np.float32)
+#test_lidar = scaler_lidar.transform(test_lidar.values).astype(np.float32)
 
 # 2. Define the 1D CNN model
 class WeightedConcatenate(Layer):
