@@ -29,6 +29,7 @@ def parse_header(header_line):
     lidar_indices = [i for i, h in enumerate(headers) if h.startswith('SCAN')]
     color_indices = [i for i, h in enumerate(headers) if h.startswith('COL')]
     return lidar_indices, color_indices
+
 def read_sequences_targets_and_separate_data(filepath):
     sequences = []  # To store sequence-wise lidar and color data
     targets = []  # To store corresponding 'X' and 'Y' values for each sequence
@@ -36,39 +37,43 @@ def read_sequences_targets_and_separate_data(filepath):
     consolidated_color = []  # To store all color data across sequences
 
     with open(filepath, 'r') as file:
-        header_line = next(file).strip()
+        header_line = next(file).strip()  # Read and parse the header line once
         lidar_indices, color_indices = parse_header(header_line)
 
+        # Initialize a flag to indicate whether we are ready for data lines
+        ready_for_data = False
+
         for line in file:
-            if line.startswith('X,Y'):  # New sequence
-                parts = line.strip().split(',')
-                # Check if 'X' and 'Y' are available in this line and initialize a new sequence if so
-                if len(parts) >= 2:
+            line = line.strip()
+            if line.startswith('X,Y'):  # Sequence header found, prepare for new sequence
+                # Extract 'X,Y' values if present in this header line; initialize new sequence
+                parts = line.split(',')
+                if len(parts) >= 3:  # Checking for a valid header with 'X,Y'
                     try:
-                        x_value = float(parts[0])  # Convert 'X' value to float
-                        y_value = float(parts[1])  # Convert 'Y' value to float
-                        targets.append([x_value, y_value])  # Add target values to the list
-                        sequences.append({'lidar': [], 'color': []})  # Initialize new sequence
+                        x_value = float(parts[1])  # Assuming 'X,Y' follow after 'X,Y' labels
+                        y_value = float(parts[2])
+                        targets.append([x_value, y_value])
+                        ready_for_data = True  # Now ready to read data lines
                     except ValueError:
-                        # Handle case where conversion to float fails
-                        print("Error converting 'X,Y' to floats. Line skipped:", line)
+                        print(f"Error converting 'X,Y' to floats in line: {line}")
+                sequences.append({'lidar': [], 'color': []})
                 continue
 
-            # Make sure there's at least one sequence initialized before trying to append data
-            if sequences:
-                parts = line.strip().split(',')
+            if ready_for_data:
+                parts = line.split(',')
                 lidar_row = [float(parts[i]) if parts[i] != 'nan' else 0.0 for i in lidar_indices]
                 color_row = [float(parts[i]) if parts[i] != 'nan' else 0.0 for i in color_indices]
 
-                sequences[-1]['lidar'].append(lidar_row)  # Add to the latest sequence
-                sequences[-1]['color'].append(color_row)
+                if sequences:  # Check if there's at least one initialized sequence
+                    sequences[-1]['lidar'].append(lidar_row)
+                    sequences[-1]['color'].append(color_row)
 
-                consolidated_lidar.append(lidar_row)
-                consolidated_color.append(color_row)
-            else:
-                print("No sequence initialized. Line skipped:", line)
+                    consolidated_lidar.append(lidar_row)
+                    consolidated_color.append(color_row)
+                else:
+                    print(f"No sequence initialized. Line skipped: {line}")
 
-    # Convert to numpy arrays for TensorFlow/Keras processing
+    # Convert lists to numpy arrays for TensorFlow/Keras processing
     sequences = [{'lidar': np.array(seq['lidar']), 'color': np.array(seq['color'])} for seq in sequences]
     targets = np.array(targets)
     consolidated_lidar = np.array(consolidated_lidar)
