@@ -76,6 +76,8 @@ def read_sequences_targets_and_separate_data(filepath):
 
     return sequences, targets, consolidated_lidar, consolidated_color
 
+sequences, targets, consolidated_lidar, consolidated_color = read_sequences_targets_and_separate_data(filepath)
+
 # Example split (ensure it aligns with your model's requirements)
 X_seq = np.array([seq['lidar'] for seq in sequences])  # Assuming you want to use lidar data for LSTM
 X_lidar = consolidated_lidar
