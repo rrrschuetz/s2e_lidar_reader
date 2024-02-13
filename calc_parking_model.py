@@ -13,6 +13,8 @@ from tensorflow.keras.layers import LSTM  # Import LSTM layer
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.callbacks import TensorBoard
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+
 import pickle  # For saving the scaler
 
 filepath = '/home/rrrschuetz/test/file_p.txt'
@@ -24,64 +26,74 @@ def apply_reciprocal_to_scan(df):
         df[col] = df[col].apply(lambda x: 1/x if x != 0 else 0)
     return df
 
-def parse_header(header_line):
-    headers = header_line.strip().split(',')
-    lidar_indices = [i for i, h in enumerate(headers) if h.startswith('SCAN')]
-    color_indices = [i for i, h in enumerate(headers) if h.startswith('COL')]
-    return lidar_indices, color_indices
+import numpy as np
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-def read_sequences_targets_and_separate_data(filepath):
-    sequences = []  # To store sequence-wise lidar and color data
-    targets = []  # To store corresponding 'X' and 'Y' values for each sequence
-    consolidated_lidar = []  # To store all LIDAR data across sequences
-    consolidated_color = []  # To store all color data across sequences
-
+def read_and_prepare_data(filepath):
     with open(filepath, 'r') as file:
-        header_line = next(file).strip()  # Read and parse the header line once
-        lidar_indices, color_indices = parse_header(header_line)
+        sequences = []
+        all_lidar_data = []
+        all_color_data = []
+        targets = []
 
-        # Initialize a flag to indicate whether we are ready for data lines
-        ready_for_data = False
+        current_sequence_lidar = []
+        current_sequence_color = []
 
         for line in file:
-            line = line.strip()
-            if line.startswith('X,Y'):  # Sequence header found, prepare for new sequence
-                # Extract 'X,Y' values if present in this header line; initialize new sequence
-                parts = line.split(',')
-                if len(parts) >= 3:  # Checking for a valid header with 'X,Y'
-                    try:
-                        x_value = float(parts[1])  # Assuming 'X,Y' follow after 'X,Y' labels
-                        y_value = float(parts[2])
-                        targets.append([x_value, y_value])
-                        ready_for_data = True  # Now ready to read data lines
-                    except ValueError:
-                        print(f"Error converting 'X,Y' to floats in line: {line}")
-                sequences.append({'lidar': [], 'color': []})
-                continue
+            parts = line.strip().split(',')
 
-            if ready_for_data:
-                parts = line.split(',')
-                lidar_row = [float(parts[i]) if parts[i] != 'nan' else 0.0 for i in lidar_indices]
-                color_row = [float(parts[i]) if parts[i] != 'nan' else 0.0 for i in color_indices]
+            # Check if it's a header or sequence start line
+            if 'X' in parts[0] and 'Y' in parts[1]:  # Assuming 'X,Y' are present in sequence start
+                if current_sequence_lidar and current_sequence_color:  # Save previous sequence if exists
+                    sequences.append({
+                        'lidar': np.array(current_sequence_lidar, dtype=np.float32),
+                        'color': np.array(current_sequence_color, dtype=np.float32)
+                    })
+                current_sequence_lidar = []
+                current_sequence_color = []
 
-                if sequences:  # Check if there's at least one initialized sequence
-                    sequences[-1]['lidar'].append(lidar_row)
-                    sequences[-1]['color'].append(color_row)
+            targets.append([float(parts[0]), float(parts[1])])
+            # Process lidar and color data for the current sequence
+            lidar_data = np.array(parts[2:2432], dtype=np.float32)  # Adjust indices as needed
+            color_data = np.array(parts[2432:], dtype=np.float32)  # Adjust indices as needed
+            current_sequence_lidar.append(lidar_data)
+            current_sequence_color.append(color_data)
 
-                    consolidated_lidar.append(lidar_row)
-                    consolidated_color.append(color_row)
-                else:
-                    print(f"No sequence initialized. Line skipped: {line}")
+            # Add to consolidated data
+            all_lidar_data.extend(lidar_data)
+            all_color_data.extend(color_data)
 
-    # Convert lists to numpy arrays for TensorFlow/Keras processing
-    sequences = [{'lidar': np.array(seq['lidar']), 'color': np.array(seq['color'])} for seq in sequences]
-    targets = np.array(targets)
-    consolidated_lidar = np.array(consolidated_lidar)
-    consolidated_color = np.array(consolidated_color)
+        # Don't forget the last sequence
+        if current_sequence_lidar and current_sequence_color:
+            sequences.append({
+                'lidar': np.array(current_sequence_lidar, dtype=np.float32),
+                'color': np.array(current_sequence_color, dtype=np.float32)
+            })
 
-    return sequences, targets, consolidated_lidar, consolidated_color
+    # Determine max sequence length for padding
+    max_len = max(max(len(seq['lidar']), len(seq['color'])) for seq in sequences)
 
-sequences, targets, consolidated_lidar, consolidated_color = read_sequences_targets_and_separate_data(filepath)
+    # Pad sequences
+    for seq in sequences:
+        seq['lidar'] = pad_sequences(seq['lidar'], maxlen=max_len, padding='post')
+        seq['color'] = pad_sequences(seq['color'], maxlen=max_len, padding='post')
+
+    # Prepare LSTM inputs as 3D array and targets
+    lstm_inputs = np.array([np.hstack((seq['lidar'], seq['color'])) for seq in sequences])
+    targets = np.array(targets, dtype=np.float32)
+
+    # Prepare consolidated data for CNN inputs
+    all_lidar_data = np.array(all_lidar_data, dtype=np.float32).reshape(-1, 1)
+    all_color_data = np.array(all_color_data, dtype=np.float32).reshape(-1, 1)
+
+    return lstm_inputs, targets, all_lidar_data, all_color_data
+
+lstm_inputs, targets, all_lidar_data, all_color_data = read_and_prepare_data(filepath)
+
+print("LSTM Input shape:", sequences.shape)
+print("Consolidated Lidar shape:", all_lidar.shape)
+print("Consolidated Color shape:", all_color.shape)
+print("Targets shape:", targets.shape)
 
 # Example split (ensure it aligns with your model's requirements)
 X_seq = np.array([seq['lidar'] for seq in sequences])  # Assuming you want to use lidar data for LSTM
@@ -152,7 +164,7 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
 def create_regression_model(sequence_shape, lidar_shape, color_shape):
     # Sequence Input for LSTM
     sequence_input = Input(shape=sequence_shape, name="sequence_input")
-    lstm_out = LSTM(32)(sequence_input)
+    lstm_out = LSTM(32,return_sequences=False)(sequence_input)
 
     # LIDAR Input for CNN
     lidar_input = Input(shape=lidar_shape, name="lidar_input")
@@ -167,7 +179,7 @@ def create_regression_model(sequence_shape, lidar_shape, color_shape):
     color_flat = Flatten()(color_pool1)
 
     # Combine all outputs
-    combined = concatenate([lstm_out, lidar_flat, color_flat])
+    combined = Concatenate()([lstm_out, lidar_flat, color_flat])
 
     # Fully connected layers
     dense1 = Dense(64, activation='relu')(combined)
@@ -179,15 +191,16 @@ def create_regression_model(sequence_shape, lidar_shape, color_shape):
 
     return model
 
-# Assuming shapes from your data prep
-sequence_shape = (None, 20)  # Update according to your data
-lidar_shape = (None, 1)  # Update according to your data
-color_shape = (None, 1)  # Update according to your data
-model = create_regression_model(sequence_shape, lidar_shape, color_shape)
-
 # Define the Keras TensorBoard callback
 logdir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard_callback = TensorBoard(log_dir=logdir)
+
+max_sequence_length = max([seq['lidar'].shape[0] for seq in sequences])
+print("max_sequence_length ",max_sequence_length)
+sequence_shape = (None, max_sequence_length,X_train_lidar.shape[1])
+lidar_shape = (X_train_lidar.shape[1], 1)
+color_shape = (X_train_color.shape[1], 1)
+model = create_regression_model(sequence_shape, lidar_shape, color_shape)
 
 # 3. Train the model
 model.summary()
