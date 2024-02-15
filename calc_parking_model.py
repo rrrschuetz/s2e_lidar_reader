@@ -19,17 +19,6 @@ import pickle  # For saving the scaler
 
 filepath = '/home/rrrschuetz/test/file_p.txt'
 
-def apply_reciprocal_to_scan(df):
-    scan_cols = df.filter(regex='^SCAN').columns
-    for col in scan_cols:
-        # Apply the reciprocal transformation, avoiding division by zero
-        df[col] = df[col].apply(lambda x: 1/x if x != 0 else 0)
-    return df
-
-
-import numpy as np
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-
 def read_and_prepare_data(filepath):
     sequences = []  # Temporarily store data for each sequence
     targets = []
@@ -59,8 +48,9 @@ def read_and_prepare_data(filepath):
 
             # Extract LIDAR and color data, and concatenate them for each timestep
             target_data = np.array(parts[:2], dtype=np.float32)
-            lidar_data = np.array(parts[2:2432], dtype=np.float32)
-            color_data = np.array(parts[2432:3072], dtype=np.float32)  # Adjust index as per your data structure
+            # Apply reciprocal transformation to LIDAR data, avoiding division by zero
+            lidar_data = np.array([1/float(x) if float(x) != 0 else 0 for x in parts[2:2432]], dtype=np.float32)
+            color_data = np.array(parts[2432:3072], dtype=np.float32)
             combined_data = np.concatenate([lidar_data, color_data])
             current_sequence.append(combined_data)
             current_targets.append(target_data)
