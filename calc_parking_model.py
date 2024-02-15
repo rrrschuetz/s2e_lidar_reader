@@ -26,91 +26,75 @@ def apply_reciprocal_to_scan(df):
         df[col] = df[col].apply(lambda x: 1/x if x != 0 else 0)
     return df
 
+
 import numpy as np
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 def read_and_prepare_data(filepath):
-    with open(filepath, 'r') as file:
-        sequences = []
-        all_lidar_data = []
-        all_color_data = []
-        targets = []
+    sequences = []  # Temporarily store data for each sequence
+    targets = []
+    all_lidar_data =[]
+    all_color_data = []
 
-        current_sequence_lidar = []
-        current_sequence_color = []
+    with open(filepath, 'r') as file:
+        current_sequence = []  # Accumulate data for the current sequence
+        current_targets = []
+        current_lidar = []
+        current_color = []
 
         for line in file:
             parts = line.strip().split(',')
+            if 'X' in parts[0]:  # Indicates the start of a new sequence
+                print('new sequence starting')
+                if current_sequence:  # If the current sequence is not empty
+                    sequences.append(current_sequence)  # Save the current sequence
+                    targets.append(current_targets)
+                    all_lidar_data.extend(current_lidar)
+                    all_color_data.extend(current_color)
+                    current_sequence = []  # Start a new sequence
+                    current_targets = []
+                    current_lidar = []
+                    current_color = []
+                continue  # Skip the 'Sequence Start' line
 
-            # Check if it's a header or sequence start line
-            if 'X' in parts[0] and 'Y' in parts[1]:  # Assuming 'X,Y' are present in sequence start
-                if current_sequence_lidar and current_sequence_color:  # Save previous sequence if exists
-                    sequences.append({
-                        'lidar': np.array(current_sequence_lidar, dtype=np.float32),
-                        'color': np.array(current_sequence_color, dtype=np.float32)
-                    })
-                current_sequence_lidar = []
-                current_sequence_color = []
+            # Extract LIDAR and color data, and concatenate them for each timestep
+            target_data = np.array(parts[:2], dtype=np.float32)
+            lidar_data = np.array(parts[2:2432], dtype=np.float32)
+            color_data = np.array(parts[2432:3072], dtype=np.float32)  # Adjust index as per your data structure
+            combined_data = np.concatenate([lidar_data, color_data])
+            current_sequence.append(combined_data)
+            current_targets.append(target_data)
+            current_lidar.extend(lidar_data)  # Flatten and collect lidar data
+            current_color.extend(color_data)  # Flatten and collect color data
 
-            targets.append([float(parts[0]), float(parts[1])])
-            # Process lidar and color data for the current sequence
-            lidar_data = np.array(parts[2:2432], dtype=np.float32)  # Adjust indices as needed
-            color_data = np.array(parts[2432:], dtype=np.float32)  # Adjust indices as needed
-            current_sequence_lidar.append(lidar_data)
-            current_sequence_color.append(color_data)
+        # Don't forget to append the last sequence if it exists
+        if current_sequence:
+            sequences.append(current_sequence)
+            targets.append(current_targets)
+            all_lidar_data.extend(current_lidar)
+            all_color_data.extend(current_color)
 
-            # Add to consolidated data
-            all_lidar_data.extend(lidar_data)
-            all_color_data.extend(color_data)
+    # Pad the sequences to ensure they have uniform length
+    # Determine the maximum sequence length
+    max_len = max(len(seq) for seq in sequences)
+    # Pad sequences and convert to numpy array for LSTM input
+    lstm_inputs = np.array([pad_sequences([seq], maxlen=max_len, dtype='float32', padding='post')[0] for seq in sequences])
+    lstm_targets = np.array([pad_sequences([seq], maxlen=max_len, dtype='float32', padding='post')[0] for seq in targets])
+    lidar_cnn_inputs = np.array(all_lidar_data).reshape(-1, 2430)  # Reshape for CNN input
+    color_cnn_inputs = np.array(all_color_data).reshape(-1, 640)  # Reshape for CNN input
 
-        # Don't forget the last sequence
-        if current_sequence_lidar and current_sequence_color:
-            sequences.append({
-                'lidar': np.array(current_sequence_lidar, dtype=np.float32),
-                'color': np.array(current_sequence_color, dtype=np.float32)
-            })
+    return lstm_inputs, lstm_targets, lidar_cnn_inputs, color_cnn_inputs
 
-    # Determine max sequence length for padding
-    max_len = max(max(len(seq['lidar']), len(seq['color'])) for seq in sequences)
+lstm_inputs, lstm_targets, lidar_cnn_inputs, color_cnn_inputs = read_and_prepare_data(filepath)
+print(f"LSTM Input shape: {lstm_inputs.shape}")
+print(f"LSTM Target shape: {lstm_targets.shape}")
+print(f"CNN Lidar shape: {lidar_cnn_inputs.shape}")
+print(f"CNN Color shape: {color_cnn_inputs.shape}")
 
-    # Pad sequences
-    for seq in sequences:
-        seq['lidar'] = pad_sequences(seq['lidar'], maxlen=max_len, padding='post')
-        seq['color'] = pad_sequences(seq['color'], maxlen=max_len, padding='post')
-
-    # Prepare LSTM inputs as 3D array and targets
-    lstm_inputs = np.array([np.hstack((seq['lidar'], seq['color'])) for seq in sequences])
-    targets = np.array(targets, dtype=np.float32)
-
-    # Prepare consolidated data for CNN inputs
-    all_lidar_data = np.array(all_lidar_data, dtype=np.float32).reshape(-1, 1)
-    all_color_data = np.array(all_color_data, dtype=np.float32).reshape(-1, 1)
-
-    return lstm_inputs, targets, all_lidar_data, all_color_data
-
-lstm_inputs, targets, all_lidar_data, all_color_data = read_and_prepare_data(filepath)
-
-print("LSTM Input shape:", sequences.shape)
-print("Consolidated Lidar shape:", all_lidar.shape)
-print("Consolidated Color shape:", all_color.shape)
-print("Targets shape:", targets.shape)
-
-# Example split (ensure it aligns with your model's requirements)
-X_seq = np.array([seq['lidar'] for seq in sequences])  # Assuming you want to use lidar data for LSTM
-X_lidar = consolidated_lidar
-X_color = consolidated_color
-Y = targets
 
 # Splitting the consolidated data
-X_train_lidar, X_test_lidar, X_train_color, X_test_color, y_train, y_test = train_test_split(
-    X_lidar, X_color, Y, test_size=0.2, random_state=42)
-
-# Assuming a simple split for sequences for demonstration; adjust as needed for your temporal data
-X_train_seq, X_test_seq = train_test_split(X_seq, test_size=0.2, random_state=42)
-
-#data_raw = apply_reciprocal_to_scan(data_raw)
-#print("Raw data columns:", data_raw.columns)
-#print("Raw data shape:", data_raw.shape)
+X_train_seq, X_test_seq, X_train_lidar, X_test_lidar, X_train_color, X_test_color, y_train, y_test = train_test_split(
+    lstm_inputs, lidar_cnn_inputs, color_cnn_inputs, lstm_targets, test_size=0.2, random_state=42)
 
 print("Train data shape:", X_train_lidar.shape)
 print("Test data shape:", X_test_lidar.shape)
