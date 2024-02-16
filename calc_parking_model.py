@@ -108,7 +108,7 @@ print("CNN test data shape:", X_test_lidar.shape)
 #train_lidar = scaler_lidar.transform(train_lidar.values).astype(np.float32)
 #test_lidar = scaler_lidar.transform(test_lidar.values).astype(np.float32)
 
-# 2. Define the 1D CNN model
+# Define the 1D CNN model
 class WeightedConcatenate(Layer):
     def __init__(self, weight_lidar=0.5, weight_color=0.5, **kwargs):
          super(WeightedConcatenate, self).__init__(**kwargs)
@@ -148,33 +148,30 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
     return model
 
-def create_regression_model(sequence_shape, lidar_shape, color_shape):
-    # Sequence Input for LSTM
+def create_multi_output_model(sequence_shape, lidar_shape, color_shape):
+    # LSTM Part
     sequence_input = Input(shape=sequence_shape, name="sequence_input")
-    lstm_out = LSTM(32, return_sequences=False)(sequence_input)
+    lstm_layer = LSTM(32, return_sequences=False)(sequence_input)
+    lstm_output = Dense(2, activation='linear', name='lstm_output')(lstm_layer)  # Adjust the units based on your target
 
-    # LIDAR Input for CNN
+    # CNN Part for LIDAR data
     lidar_input = Input(shape=lidar_shape, name="lidar_input")
-    lidar_conv1 = Conv1D(filters=64, kernel_size=3, activation='relu')(lidar_input)
-    lidar_pool1 = MaxPooling1D(pool_size=2)(lidar_conv1)
-    lidar_flat = Flatten()(lidar_pool1)
+    lidar_conv = Conv1D(filters=64, kernel_size=3, activation='relu')(lidar_input)
+    lidar_flat = Flatten()(lidar_conv)
 
-    # Color Input for CNN
+    # CNN Part for Color data
     color_input = Input(shape=color_shape, name="color_input")
-    color_conv1 = Conv1D(filters=32, kernel_size=3, activation='relu')(color_input)
-    color_pool1 = MaxPooling1D(pool_size=2)(color_conv1)
-    color_flat = Flatten()(color_pool1)
+    color_conv = Conv1D(filters=32, kernel_size=3, activation='relu')(color_input)
+    color_flat = Flatten()(color_conv)
 
-    # Combining all parts
-    combined = concatenate([lstm_out, lidar_flat, color_flat], axis=-1)
+    # Combining CNN parts
+    cnn_combined = concatenate([lidar_flat, color_flat], axis=-1)
+    cnn_output = Dense(2, activation='linear', name='cnn_output')(cnn_combined)  # Adjust the units based on your target
 
-    # Dense layers for regression
-    dense1 = Dense(64, activation='relu')(combined)
-    dense2 = Dense(32, activation='relu')(dense1)
-    output = Dense(2, activation='linear')(dense2)  # Assuming 2 regression targets
-
-    model = Model(inputs=[sequence_input, lidar_input, color_input], outputs=output)
-    model.compile(optimizer='adam', loss='mean_squared_error', metrics=['mae'])
+    model = Model(inputs=[sequence_input, lidar_input, color_input], outputs=[lstm_output, cnn_output])
+    model.compile(optimizer='adam',
+                  loss={'lstm_output': 'mean_squared_error', 'cnn_output': 'mean_squared_error'},
+                  metrics={'lstm_output': ['mae'], 'cnn_output': ['mae']})
 
     return model
 
@@ -182,25 +179,23 @@ def create_regression_model(sequence_shape, lidar_shape, color_shape):
 logdir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard_callback = TensorBoard(log_dir=logdir)
 
-sequence_shape = Xtrain_seq.shape
+sequence_shape = (X_train_seq.shape[1],X_train_seq.shape[2])
 lidar_shape = (X_train_lidar.shape[1], 1)
 color_shape = (X_train_color.shape[1], 1)
 model = create_regression_model(sequence_shape, lidar_shape, color_shape)
 
-# Training the model
 history = model.fit(
-    [X_train_seq, X_train_lidar, X_train_color],  # Matching the order of inputs in the model
-    y_train,  # Targets
+    [X_train_seq, X_train_lidar, X_train_color],  # Input data
+    {'lstm_output': y_train, 'cnn_output': y_train_cnn},  # Target data
     epochs=10,
     batch_size=32,
-    validation_data=([X_test_seq, X_test_lidar, X_test_color], y_test),
+    validation_data=([X_test_seq, X_test_lidar, X_test_color], {'lstm_output': y_test, 'cnn_output': y_test_cnn}),
     callbacks=[EarlyStopping(monitor='val_loss', patience=3)]
 )
 
-# 4. Evaluating the model
-scores = model.evaluate([X_test_seq, X_test_lidar, X_test_color], y_test, verbose=1)
-print(f"Test Loss: {scores[0]}, Test MAE: {scores[1]}")
-
+# Evaluating the model
+scores = model.evaluate([X_test_seq, X_test_lidar, X_test_color], {'lstm_output': y_test, 'cnn_output': y_test_cnn}, verbose=1)
+print(f"Test Scores: {scores}")
 
 # 5. Save the model and the scaler for standardization
 model.save('/home/rrrschuetz/test/model_p')
