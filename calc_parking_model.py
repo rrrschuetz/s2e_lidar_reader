@@ -24,12 +24,14 @@ def read_and_prepare_data(filepath):
     targets = []
     all_lidar_data =[]
     all_color_data = []
+    all_targets = []
 
     with open(filepath, 'r') as file:
         current_sequence = []  # Accumulate data for the current sequence
-        current_targets = []
+        current_targets_lstm = []
         current_lidar = []
         current_color = []
+        current_targets_cnn = []
 
         for line in file:
             parts = line.strip().split(',')
@@ -37,13 +39,15 @@ def read_and_prepare_data(filepath):
                 print('new sequence starting')
                 if current_sequence:  # If the current sequence is not empty
                     sequences.append(current_sequence)  # Save the current sequence
-                    targets.append(current_targets)
+                    targets.append(current_targets_lstm)
                     all_lidar_data.extend(current_lidar)
                     all_color_data.extend(current_color)
+                    all_targets.extend(current_targets_cnn)
                     current_sequence = []  # Start a new sequence
-                    current_targets = []
+                    current_targets_lstm = []
                     current_lidar = []
                     current_color = []
+                    current_targets_cnn = []
                 continue  # Skip the 'Sequence Start' line
 
             # Extract LIDAR and color data, and concatenate them for each timestep
@@ -53,16 +57,18 @@ def read_and_prepare_data(filepath):
             color_data = np.array(parts[2432:3072], dtype=np.float32)
             combined_data = np.concatenate([lidar_data, color_data])
             current_sequence.append(combined_data)
-            current_targets.append(target_data)
+            current_targets_lstm.append(target_data)
             current_lidar.extend(lidar_data)  # Flatten and collect lidar data
             current_color.extend(color_data)  # Flatten and collect color data
+            current_targets_cnn.extend(target_data)
 
         # Don't forget to append the last sequence if it exists
         if current_sequence:
             sequences.append(current_sequence)
-            targets.append(current_targets)
+            targets.append(current_targets_lstm)
             all_lidar_data.extend(current_lidar)
             all_color_data.extend(current_color)
+            all_targets.extend(current_targets_cnn)
 
     # Pad the sequences to ensure they have uniform length
     # Determine the maximum sequence length
@@ -72,22 +78,32 @@ def read_and_prepare_data(filepath):
     lstm_targets = np.array([pad_sequences([seq], maxlen=max_len, dtype='float32', padding='post')[0] for seq in targets])
     lidar_cnn_inputs = np.array(all_lidar_data).reshape(-1, 2430)  # Reshape for CNN input
     color_cnn_inputs = np.array(all_color_data).reshape(-1, 640)  # Reshape for CNN input
+    cnn_targets = np.array(all_targets).reshape(-1,2)
 
-    return lstm_inputs, lstm_targets, lidar_cnn_inputs, color_cnn_inputs
+    return lstm_inputs, lstm_targets, lidar_cnn_inputs, color_cnn_inputs, cnn_targets
 
-lstm_inputs, lstm_targets, lidar_cnn_inputs, color_cnn_inputs = read_and_prepare_data(filepath)
+lstm_inputs, lstm_targets, lidar_cnn_inputs, color_cnn_inputs, cnn_targets = read_and_prepare_data(filepath)
 print(f"LSTM Input shape: {lstm_inputs.shape}")
 print(f"LSTM Target shape: {lstm_targets.shape}")
 print(f"CNN Lidar shape: {lidar_cnn_inputs.shape}")
 print(f"CNN Color shape: {color_cnn_inputs.shape}")
-
+print(f"CNN Target shape: {cnn_targets.shape}")
 
 # Splitting the consolidated data
-X_train_seq, X_test_seq, X_train_lidar, X_test_lidar, X_train_color, X_test_color, y_train, y_test = train_test_split(
-    lstm_inputs, lidar_cnn_inputs, color_cnn_inputs, lstm_targets, test_size=0.2, random_state=42)
+#X_train_seq, X_test_seq, X_train_lidar, X_test_lidar, X_train_color, X_test_color, y_train, y_test = train_test_split(
+#    lstm_inputs, lidar_cnn_inputs, color_cnn_inputs, lstm_targets, test_size=0.2, random_state=42)
 
-print("Train data shape:", X_train_lidar.shape)
-print("Test data shape:", X_test_lidar.shape)
+X_train_seq, X_test_seq, y_train, y_test = train_test_split(
+    lstm_inputs, lstm_targets, test_size=0.2, random_state=42)
+
+X_train_lidar, X_test_lidar, X_train_color, X_test_color, y_train_cnn, y_test_cnn = train_test_split(
+    lidar_cnn_inputs, color_cnn_inputs, cnn_targets, test_size=0.2, random_state=42)
+
+print("LSTM train data shape:", X_train_seq.shape)
+print("LSTM test data shape:", X_test_seq.shape)
+
+print("CNN train data shape:", X_train_lidar.shape)
+print("CNN test data shape:", X_test_lidar.shape)
 
 # Standardization
 #scaler_lidar = StandardScaler().fit(train_lidar.values)
