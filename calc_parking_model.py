@@ -15,76 +15,68 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 import pickle  # For saving the scaler
 
 filepath = '/home/rrrschuetz/test/file_p.txt'
-
 def read_and_prepare_data(filepath):
-    sequences = []  # Temporarily store data for each sequence
-    targets = []
-    all_lidar_data =[]
+    sequences = []
+    lstm_targets = []
+    all_lidar_data = []
     all_color_data = []
-    all_targets = []
+    cnn_targets = []
 
     with open(filepath, 'r') as file:
-        current_sequence = []  # Accumulate data for the current sequence
-        current_targets_lstm = []
+        current_sequence = []
+        current_targets = []
         current_lidar = []
         current_color = []
-        current_targets_cnn = []
 
         for line in file:
             parts = line.strip().split(',')
-            if 'X' in parts[0]:  # Indicates the start of a new sequence
-                print('new sequence starting')
-                if current_sequence:  # If the current sequence is not empty
-                    sequences.append(current_sequence)  # Save the current sequence
-                    targets.append(current_targets_lstm)
-                    all_lidar_data.extend(current_lidar)
-                    all_color_data.extend(current_color)
-                    all_targets.extend(current_targets_cnn)
-                    current_sequence = []  # Start a new sequence
-                    current_targets_lstm = []
+            if 'X' in parts[0]:  # New sequence indicator
+                if current_sequence:  # If there's an existing sequence
+                    sequences.append(current_sequence)
+                    lstm_targets.append(current_targets)  # LSTM targets
+                    all_lidar_data.append(current_lidar)
+                    all_color_data.append(current_color)
+                    cnn_targets.append(current_targets)  # CNN targets, assuming one target set per sequence
+                    # Reset for the next sequence
+                    current_sequence = []
+                    current_targets = []
                     current_lidar = []
                     current_color = []
-                    current_targets_cnn = []
-                continue  # Skip the 'Sequence Start' line
+                continue
 
-            # Extract LIDAR and color data, and concatenate them for each timestep
+            # Processing sequence data
             target_data = np.array(parts[:2], dtype=np.float32)
-            # Apply reciprocal transformation to LIDAR data, avoiding division by zero
             lidar_data = np.array([1/float(x) if float(x) != 0 else 0 for x in parts[2:2432]], dtype=np.float32)
             color_data = np.array(parts[2432:3072], dtype=np.float32)
-            combined_data = np.concatenate([lidar_data, color_data])
-            current_sequence.append(combined_data)
-            current_targets_lstm.append(target_data)
-            current_lidar.extend(lidar_data)  # Flatten and collect lidar data
-            current_color.extend(color_data)  # Flatten and collect color data
-            current_targets_cnn.extend(target_data)
+            current_sequence.append(np.concatenate([lidar_data, color_data]))
+            current_targets.append(target_data)
+            current_lidar.append(lidar_data)
+            current_color.append(color_data)
 
-        # Don't forget to append the last sequence if it exists
+        # Save the last sequence
         if current_sequence:
             sequences.append(current_sequence)
-            targets.append(current_targets_lstm)
-            all_lidar_data.extend(current_lidar)
-            all_color_data.extend(current_color)
-            all_targets.extend(current_targets_cnn)
+            lstm_targets.append(current_targets)
+            all_lidar_data.append(current_lidar)
+            all_color_data.append(current_color)
+            cnn_targets.append(current_targets)
 
-    # Pad the sequences to ensure they have uniform length
-    # Determine the maximum sequence length
+    # Preparing LSTM inputs and targets
     max_len = max(len(seq) for seq in sequences)
-    # Pad sequences and convert to numpy array for LSTM input
     lstm_inputs = np.array([pad_sequences([seq], maxlen=max_len, dtype='float32', padding='post')[0] for seq in sequences])
-    lstm_targets = np.array([pad_sequences([seq], maxlen=max_len, dtype='float32', padding='post')[0] for seq in targets])
-    lidar_cnn_inputs = np.array(all_lidar_data).reshape(-1, 2430)  # Reshape for CNN input
-    color_cnn_inputs = np.array(all_color_data).reshape(-1, 640)  # Reshape for CNN input
-    cnn_targets = np.array(all_targets).reshape(-1,2)
+    lstm_targets_padded = np.array([pad_sequences([targ], maxlen=max_len, dtype='float32', padding='post')[0] for targ in lstm_targets])
 
-    return lstm_inputs, lstm_targets, lidar_cnn_inputs, color_cnn_inputs, cnn_targets
+    # Preparing CNN inputs; flattening sequences
+    lidar_cnn_inputs = np.concatenate([np.array(seq).flatten() for seq in all_lidar_data]).reshape(-1, 2430)
+    color_cnn_inputs = np.concatenate([np.array(seq).flatten() for seq in all_color_data]).reshape(-1, 640)
 
+    # Preparing CNN targets; ensuring uniform structure
+    cnn_targets_flat = np.concatenate(cnn_targets).reshape(-1, 2)
+
+    return lstm_inputs, lstm_targets_padded, lidar_cnn_inputs, color_cnn_inputs, cnn_targets_flat
+
+# Assuming 'filepath' is defined and points to your data file
 lstm_inputs, lstm_targets, lidar_cnn_inputs, color_cnn_inputs, cnn_targets = read_and_prepare_data(filepath)
-print(f"LSTM Input shape: {lstm_inputs.shape}")
-print(f"LSTM Target shape: {lstm_targets.shape}")
-print(f"CNN Lidar shape: {lidar_cnn_inputs.shape}")
-print(f"CNN Color shape: {color_cnn_inputs.shape}")
-print(f"CNN Target shape: {cnn_targets.shape}")
 
 # Splitting the consolidated data
 #X_train_seq, X_test_seq, X_train_lidar, X_test_lidar, X_train_color, X_test_color, y_train, y_test = train_test_split(
@@ -95,12 +87,6 @@ X_train_seq, X_test_seq, y_train, y_test = train_test_split(
 
 X_train_lidar, X_test_lidar, X_train_color, X_test_color, y_train_cnn, y_test_cnn = train_test_split(
     lidar_cnn_inputs, color_cnn_inputs, cnn_targets, test_size=0.2, random_state=42)
-
-print("LSTM train data shape:", X_train_seq.shape)
-print("LSTM test data shape:", X_test_seq.shape)
-
-print("CNN train data shape:", X_train_lidar.shape)
-print("CNN test data shape:", X_test_lidar.shape)
 
 # Standardization
 #scaler_lidar = StandardScaler().fit(train_lidar.values)
@@ -148,7 +134,7 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
     return model
 
-def create_multi_output_model(sequence_shape, lidar_shape, color_shape):
+def create_regression_model(sequence_shape, lidar_shape, color_shape):
     # LSTM Part
     sequence_input = Input(shape=sequence_shape, name="sequence_input")
     lstm_layer = LSTM(32, return_sequences=False)(sequence_input)
@@ -179,6 +165,12 @@ def create_multi_output_model(sequence_shape, lidar_shape, color_shape):
 logdir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard_callback = TensorBoard(log_dir=logdir)
 
+print("X_train_seq shape:", X_train_seq.shape)  # LSTM input
+print("X_train_lidar shape:", X_train_lidar.shape)  # CNN input for LIDAR
+print("X_train_color shape:", X_train_color.shape)  # CNN input for Color
+print("y_train shape:", y_train.shape)  # LSTM targets
+print("y_train_cnn shape:", y_train_cnn.shape)  # CNN targets
+
 sequence_shape = (X_train_seq.shape[1],X_train_seq.shape[2])
 lidar_shape = (X_train_lidar.shape[1], 1)
 color_shape = (X_train_color.shape[1], 1)
@@ -189,7 +181,8 @@ history = model.fit(
     {'lstm_output': y_train, 'cnn_output': y_train_cnn},  # Target data
     epochs=10,
     batch_size=32,
-    validation_data=([X_test_seq, X_test_lidar, X_test_color], {'lstm_output': y_test, 'cnn_output': y_test_cnn}),
+    validation_data=([X_test_seq, X_test_lidar, X_test_color],
+    {'lstm_output': y_test, 'cnn_output': y_test_cnn}),
     callbacks=[EarlyStopping(monitor='val_loss', patience=3)]
 )
 
