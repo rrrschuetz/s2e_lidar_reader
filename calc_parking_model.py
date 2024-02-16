@@ -182,28 +182,25 @@ def create_regression_model(sequence_shape, lidar_shape, color_shape):
 logdir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard_callback = TensorBoard(log_dir=logdir)
 
-max_sequence_length = max([seq['lidar'].shape[0] for seq in sequences])
-print("max_sequence_length ",max_sequence_length)
-sequence_shape = (None, max_sequence_length,X_train_lidar.shape[1])
+sequence_shape = Xtrain_seq.shape
 lidar_shape = (X_train_lidar.shape[1], 1)
 color_shape = (X_train_color.shape[1], 1)
 model = create_regression_model(sequence_shape, lidar_shape, color_shape)
 
-# 3. Train the model
-model.summary()
-
+# Training the model
 history = model.fit(
-    [X_train_seq, X_train_lidar, X_train_color],  # input data
-    y_train,  # target data (heading and power)
-    epochs=10,  # adjust based on convergence
-    batch_size=32,  # adjust based on your dataset size and memory capacity
-    validation_data=([X_test_seq, X_test_lidar, X_test_color], y_test),  # data for evaluation
-    callbacks=[EarlyStopping(monitor='val_loss', patience=3)]  # early stopping
+    [X_train_seq, X_train_lidar, X_train_color],  # Matching the order of inputs in the model
+    y_train,  # Targets
+    epochs=10,
+    batch_size=32,
+    validation_data=([X_test_seq, X_test_lidar, X_test_color], y_test),
+    callbacks=[EarlyStopping(monitor='val_loss', patience=3)]
 )
 
-# 4. Evaluate the model
+# 4. Evaluating the model
 scores = model.evaluate([X_test_seq, X_test_lidar, X_test_color], y_test, verbose=1)
-print(f"Test MSE: {scores[0]}, Test MAE: {scores[1]}")
+print(f"Test Loss: {scores[0]}, Test MAE: {scores[1]}")
+
 
 # 5. Save the model and the scaler for standardization
 model.save('/home/rrrschuetz/test/model_p')
