@@ -5,16 +5,13 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input
-from tensorflow.keras.layers import Concatenate, Layer
+from tensorflow.keras.layers import Concatenate, concatenate, Input, Layer
 from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense, LSTM
 from tensorflow.keras.layers import Dropout, BatchNormalization
-from tensorflow.keras.layers import LSTM  # Import LSTM layer
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.callbacks import TensorBoard
 from tensorflow.keras.preprocessing.sequence import pad_sequences
-
 import pickle  # For saving the scaler
 
 filepath = '/home/rrrschuetz/test/file_p.txt'
@@ -154,7 +151,7 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
 def create_regression_model(sequence_shape, lidar_shape, color_shape):
     # Sequence Input for LSTM
     sequence_input = Input(shape=sequence_shape, name="sequence_input")
-    lstm_out = LSTM(32,return_sequences=False)(sequence_input)
+    lstm_out = LSTM(32, return_sequences=False)(sequence_input)
 
     # LIDAR Input for CNN
     lidar_input = Input(shape=lidar_shape, name="lidar_input")
@@ -168,16 +165,16 @@ def create_regression_model(sequence_shape, lidar_shape, color_shape):
     color_pool1 = MaxPooling1D(pool_size=2)(color_conv1)
     color_flat = Flatten()(color_pool1)
 
-    # Combine all outputs
-    combined = Concatenate()([lstm_out, lidar_flat, color_flat])
+    # Combining all parts
+    combined = concatenate([lstm_out, lidar_flat, color_flat], axis=-1)
 
-    # Fully connected layers
+    # Dense layers for regression
     dense1 = Dense(64, activation='relu')(combined)
-    output = Dense(2, activation='linear')(dense1)  # Output layer for regression
+    dense2 = Dense(32, activation='relu')(dense1)
+    output = Dense(2, activation='linear')(dense2)  # Assuming 2 regression targets
 
     model = Model(inputs=[sequence_input, lidar_input, color_input], outputs=output)
-
-    model.compile(optimizer='adam', loss='mean_squared_error', metrics=['mae'])  # Compile for regression
+    model.compile(optimizer='adam', loss='mean_squared_error', metrics=['mae'])
 
     return model
 
