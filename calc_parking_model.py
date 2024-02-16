@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Concatenate, concatenate, Input, Layer
-from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense, LSTM
+from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense, LSTM, RepeatVector,TimeDistributed
 from tensorflow.keras.layers import Dropout, BatchNormalization
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.callbacks import EarlyStopping
@@ -79,12 +79,6 @@ lstm_inputs, lstm_targets, lidar_cnn_inputs, color_cnn_inputs = read_and_prepare
 X_train_seq, X_test_seq, X_train_lidar, X_test_lidar, X_train_color, X_test_color, y_train, y_test = train_test_split(
     lstm_inputs, lidar_cnn_inputs, color_cnn_inputs, lstm_targets, test_size=0.2, random_state=42)
 
-#X_train_seq, X_test_seq, y_train, y_test = train_test_split(
-#    lstm_inputs, lstm_targets, test_size=0.2, random_state=42)
-
-#X_train_lidar, X_test_lidar, X_train_color, X_test_color, y_train_cnn, y_test_cnn = train_test_split(
-#    lidar_cnn_inputs, color_cnn_inputs, cnn_targets, test_size=0.2, random_state=42)
-
 # Standardization
 #scaler_lidar = StandardScaler().fit(train_lidar.values)
 #print("Scaler fitted on x_train")
@@ -138,14 +132,14 @@ def create_regression_model(lstm_input_shape, cnn_lidar_shape, cnn_color_shape):
     lstm_dense = Dense(64, activation='relu')(lstm_output)
 
     # CNN Model Component for LIDAR/Color data
-    cnn_lidar_input = Input(shape=cnn_lidar_shape, name='cnn_input')  # e.g., (timesteps, lidar_features + color_features)
+    cnn_lidar_input = Input(shape=cnn_lidar_shape, name='cnn_lidar_input')  # e.g., (timesteps, lidar_features + color_features)
     cnn_lidar_conv = Conv1D(filters=64, kernel_size=3, activation='relu')(cnn_lidar_input)
     cnn_lidar_pool = MaxPooling1D(pool_size=2)(cnn_lidar_conv)
     cnn_lidar_flat = Flatten()(cnn_lidar_pool)
     cnn_lidar_dense = Dense(64, activation='relu')(cnn_lidar_flat)
 
     # CNN Model Component for LIDAR/Color data
-    cnn_color_input = Input(shape=cnn_color_shape, name='cnn_input')  # e.g., (timesteps, lidar_features + color_features)
+    cnn_color_input = Input(shape=cnn_color_shape, name='cnn_color_input')  # e.g., (timesteps, lidar_features + color_features)
     cnn_color_conv = Conv1D(filters=64, kernel_size=3, activation='relu')(cnn_color_input)
     cnn_color_pool = MaxPooling1D(pool_size=2)(cnn_color_conv)
     cnn_color_flat = Flatten()(cnn_color_pool)
@@ -154,12 +148,47 @@ def create_regression_model(lstm_input_shape, cnn_lidar_shape, cnn_color_shape):
     # Combining LSTM and CNN components
     combined = concatenate([lstm_dense, cnn_lidar_dense, cnn_color_dense])
     combined_dense = Dense(64, activation='relu')(combined)
-    output = Dense(2, activation='linear')(combined_dense)  # Assuming 2 output values
+    output = Dense(2, activation='linear', name='output_layer')(combined_dense)
 
     model = Model(inputs=[lstm_input, cnn_lidar_input, cnn_color_input], outputs=output)
     model.compile(optimizer='adam', loss='mean_squared_error', metrics=['mae'])
 
     return model
+
+def create_regression_model(lstm_input_shape, cnn_lidar_shape, cnn_color_shape, num_output_features, sequence_length):
+    # LSTM Model Component for sequence data
+    lstm_input = Input(shape=lstm_input_shape, name='lstm_input')
+    lstm_output = LSTM(32, return_sequences=True)(lstm_input)
+
+    # CNN Model Component for LIDAR data
+    cnn_lidar_input = Input(shape=cnn_lidar_shape, name='cnn_lidar_input')
+    cnn_lidar_conv = Conv1D(filters=64, kernel_size=3, activation='relu')(cnn_lidar_input)
+    cnn_lidar_pool = MaxPooling1D(pool_size=2)(cnn_lidar_conv)
+    cnn_lidar_flat = Flatten()(cnn_lidar_pool)
+    cnn_lidar_dense = Dense(64, activation='relu')(cnn_lidar_flat)
+
+    # CNN Model Component for Color data
+    cnn_color_input = Input(shape=cnn_color_shape, name='cnn_color_input')
+    cnn_color_conv = Conv1D(filters=64, kernel_size=3, activation='relu')(cnn_color_input)
+    cnn_color_pool = MaxPooling1D(pool_size=2)(cnn_color_conv)
+    cnn_color_flat = Flatten()(cnn_color_pool)
+    cnn_color_dense = Dense(64, activation='relu')(cnn_color_flat)
+
+    # RepeatVector to match LSTM output's 3D shape for CNN outputs
+    repeated_cnn_lidar = RepeatVector(sequence_length)(cnn_lidar_dense)
+    repeated_cnn_color = RepeatVector(sequence_length)(cnn_color_dense)
+
+    # Combining all components
+    combined = concatenate([lstm_output, repeated_cnn_lidar, repeated_cnn_color], axis=-1)
+
+    # TimeDistributed layer to apply Dense operation at each time step
+    combined_time_dist = TimeDistributed(Dense(num_output_features))(combined)
+
+    model = Model(inputs=[lstm_input, cnn_lidar_input, cnn_color_input], outputs=combined_time_dist)
+    model.compile(optimizer='adam', loss='mean_squared_error', metrics=['mae'])
+
+    return model
+
 
 # Define the Keras TensorBoard callback
 logdir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -171,28 +200,31 @@ print("X_train_color shape:", X_train_color.shape)  # CNN input for Color
 print("y_train shape:", y_train.shape)  # LSTM targets
 
 sequence_shape = (X_train_seq.shape[1],X_train_seq.shape[2])
-lidar_shape = (X_train_lidar.shape[1], 1)
-color_shape = (X_train_color.shape[1], 1)
-model = create_regression_model(sequence_shape, lidar_shape, color_shape)
+lidar_shape = (X_train_lidar.shape[1], X_train_lidar.shape[2])
+color_shape = (X_train_color.shape[1], X_train_color.shape[2])
+sequence_length = X_train_seq.shape[1]
+num_output_features = y_train.shape[2]
+model = create_regression_model(sequence_shape, lidar_shape, color_shape, num_output_features, sequence_length )
+
+model.summary()
 
 history = model.fit(
-    [X_train_seq, X_train_lidar, X_train_color],  # Input data
-    {'lstm_output': y_train},  # Target data
-    epochs=10,
-    batch_size=32,
-    validation_data=([X_test_seq, X_test_lidar, X_test_color],
-    {'lstm_output': y_test}),
+    [X_train_seq, X_train_lidar, X_train_color], y_train,
+    validation_data=([X_test_seq, X_test_lidar, X_test_color], y_test),
+    epochs=10,  # Adjust based on your needs
+    batch_size=32,  # Adjust based on your needs
     callbacks=[EarlyStopping(monitor='val_loss', patience=3)]
 )
 
+
 # Evaluating the model
-scores = model.evaluate([X_test_seq, X_test_lidar, X_test_color], {'lstm_output': y_test, 'cnn_output': y_test_cnn}, verbose=1)
+scores = model.evaluate([X_test_seq, X_test_lidar, X_test_color], y_test, verbose=1)
 print(f"Test Scores: {scores}")
 
 # 5. Save the model and the scaler for standardization
 model.save('/home/rrrschuetz/test/model_p')
-with open('/home/rrrschuetz/test/scaler_p.pkl', 'wb') as f:
-    pickle.dump(scaler_lidar, f)
+#with open('/home/rrrschuetz/test/scaler_p.pkl', 'wb') as f:
+#    pickle.dump(scaler_lidar, f)
 
 # Convert the model.
 converter = tf.lite.TFLiteConverter.from_keras_model(model)
