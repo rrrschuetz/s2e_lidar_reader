@@ -67,26 +67,23 @@ def read_and_prepare_data(filepath):
     lstm_targets_padded = np.array([pad_sequences([targ], maxlen=max_len, dtype='float32', padding='post')[0] for targ in lstm_targets])
 
     # Preparing CNN inputs; flattening sequences
-    lidar_cnn_inputs = np.concatenate([np.array(seq).flatten() for seq in all_lidar_data]).reshape(-1, 2430)
-    color_cnn_inputs = np.concatenate([np.array(seq).flatten() for seq in all_color_data]).reshape(-1, 640)
+    lidar_cnn_inputs = np.array([pad_sequences([seq], maxlen=max_len, dtype='float32', padding='post')[0] for seq in all_lidar_data])
+    color_cnn_inputs = np.array([pad_sequences([seq], maxlen=max_len, dtype='float32', padding='post')[0] for seq in all_color_data])
 
-    # Preparing CNN targets; ensuring uniform structure
-    cnn_targets_flat = np.concatenate(cnn_targets).reshape(-1, 2)
-
-    return lstm_inputs, lstm_targets_padded, lidar_cnn_inputs, color_cnn_inputs, cnn_targets_flat
+    return lstm_inputs, lstm_targets_padded, lidar_cnn_inputs, color_cnn_inputs
 
 # Assuming 'filepath' is defined and points to your data file
-lstm_inputs, lstm_targets, lidar_cnn_inputs, color_cnn_inputs, cnn_targets = read_and_prepare_data(filepath)
+lstm_inputs, lstm_targets, lidar_cnn_inputs, color_cnn_inputs = read_and_prepare_data(filepath)
 
 # Splitting the consolidated data
-#X_train_seq, X_test_seq, X_train_lidar, X_test_lidar, X_train_color, X_test_color, y_train, y_test = train_test_split(
-#    lstm_inputs, lidar_cnn_inputs, color_cnn_inputs, lstm_targets, test_size=0.2, random_state=42)
+X_train_seq, X_test_seq, X_train_lidar, X_test_lidar, X_train_color, X_test_color, y_train, y_test = train_test_split(
+    lstm_inputs, lidar_cnn_inputs, color_cnn_inputs, lstm_targets, test_size=0.2, random_state=42)
 
-X_train_seq, X_test_seq, y_train, y_test = train_test_split(
-    lstm_inputs, lstm_targets, test_size=0.2, random_state=42)
+#X_train_seq, X_test_seq, y_train, y_test = train_test_split(
+#    lstm_inputs, lstm_targets, test_size=0.2, random_state=42)
 
-X_train_lidar, X_test_lidar, X_train_color, X_test_color, y_train_cnn, y_test_cnn = train_test_split(
-    lidar_cnn_inputs, color_cnn_inputs, cnn_targets, test_size=0.2, random_state=42)
+#X_train_lidar, X_test_lidar, X_train_color, X_test_color, y_train_cnn, y_test_cnn = train_test_split(
+#    lidar_cnn_inputs, color_cnn_inputs, cnn_targets, test_size=0.2, random_state=42)
 
 # Standardization
 #scaler_lidar = StandardScaler().fit(train_lidar.values)
@@ -134,30 +131,33 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
     return model
 
-def create_regression_model(sequence_shape, lidar_shape, color_shape):
-    # LSTM Part
-    sequence_input = Input(shape=sequence_shape, name="sequence_input")
-    lstm_layer = LSTM(32, return_sequences=False)(sequence_input)
-    lstm_output = Dense(2, activation='linear', name='lstm_output')(lstm_layer)  # Adjust the units based on your target
+def create_regression_model(lstm_input_shape, cnn_lidar_shape, cnn_color_shape):
+    # LSTM Model Component
+    lstm_input = Input(shape=lstm_input_shape, name='lstm_input')  # e.g., (timesteps, features)
+    lstm_output = LSTM(32, return_sequences=False)(lstm_input)
+    lstm_dense = Dense(64, activation='relu')(lstm_output)
 
-    # CNN Part for LIDAR data
-    lidar_input = Input(shape=lidar_shape, name="lidar_input")
-    lidar_conv = Conv1D(filters=64, kernel_size=3, activation='relu')(lidar_input)
-    lidar_flat = Flatten()(lidar_conv)
+    # CNN Model Component for LIDAR/Color data
+    cnn_lidar_input = Input(shape=cnn_lidar_shape, name='cnn_input')  # e.g., (timesteps, lidar_features + color_features)
+    cnn_lidar_conv = Conv1D(filters=64, kernel_size=3, activation='relu')(cnn_lidar_input)
+    cnn_lidar_pool = MaxPooling1D(pool_size=2)(cnn_lidar_conv)
+    cnn_lidar_flat = Flatten()(cnn_lidar_pool)
+    cnn_lidar_dense = Dense(64, activation='relu')(cnn_lidar_flat)
 
-    # CNN Part for Color data
-    color_input = Input(shape=color_shape, name="color_input")
-    color_conv = Conv1D(filters=32, kernel_size=3, activation='relu')(color_input)
-    color_flat = Flatten()(color_conv)
+    # CNN Model Component for LIDAR/Color data
+    cnn_color_input = Input(shape=cnn_color_shape, name='cnn_input')  # e.g., (timesteps, lidar_features + color_features)
+    cnn_color_conv = Conv1D(filters=64, kernel_size=3, activation='relu')(cnn_color_input)
+    cnn_color_pool = MaxPooling1D(pool_size=2)(cnn_color_conv)
+    cnn_color_flat = Flatten()(cnn_color_pool)
+    cnn_color_dense = Dense(64, activation='relu')(cnn_color_flat)
 
-    # Combining CNN parts
-    cnn_combined = concatenate([lidar_flat, color_flat], axis=-1)
-    cnn_output = Dense(2, activation='linear', name='cnn_output')(cnn_combined)  # Adjust the units based on your target
+    # Combining LSTM and CNN components
+    combined = concatenate([lstm_dense, cnn_lidar_dense, cnn_color_dense])
+    combined_dense = Dense(64, activation='relu')(combined)
+    output = Dense(2, activation='linear')(combined_dense)  # Assuming 2 output values
 
-    model = Model(inputs=[sequence_input, lidar_input, color_input], outputs=[lstm_output, cnn_output])
-    model.compile(optimizer='adam',
-                  loss={'lstm_output': 'mean_squared_error', 'cnn_output': 'mean_squared_error'},
-                  metrics={'lstm_output': ['mae'], 'cnn_output': ['mae']})
+    model = Model(inputs=[lstm_input, cnn_lidar_input, cnn_color_input], outputs=output)
+    model.compile(optimizer='adam', loss='mean_squared_error', metrics=['mae'])
 
     return model
 
@@ -169,7 +169,6 @@ print("X_train_seq shape:", X_train_seq.shape)  # LSTM input
 print("X_train_lidar shape:", X_train_lidar.shape)  # CNN input for LIDAR
 print("X_train_color shape:", X_train_color.shape)  # CNN input for Color
 print("y_train shape:", y_train.shape)  # LSTM targets
-print("y_train_cnn shape:", y_train_cnn.shape)  # CNN targets
 
 sequence_shape = (X_train_seq.shape[1],X_train_seq.shape[2])
 lidar_shape = (X_train_lidar.shape[1], 1)
@@ -178,11 +177,11 @@ model = create_regression_model(sequence_shape, lidar_shape, color_shape)
 
 history = model.fit(
     [X_train_seq, X_train_lidar, X_train_color],  # Input data
-    {'lstm_output': y_train, 'cnn_output': y_train_cnn},  # Target data
+    {'lstm_output': y_train},  # Target data
     epochs=10,
     batch_size=32,
     validation_data=([X_test_seq, X_test_lidar, X_test_color],
-    {'lstm_output': y_test, 'cnn_output': y_test_cnn}),
+    {'lstm_output': y_test}),
     callbacks=[EarlyStopping(monitor='val_loss', patience=3)]
 )
 
