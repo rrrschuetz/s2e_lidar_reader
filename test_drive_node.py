@@ -474,6 +474,7 @@ class parkingNode(Node):
     
     def __init__(self):
         super().__init__('test_drive_node')
+        self.publisher_ = self.create_publisher(String, 'main_logger', 10)
         self.speed_publisher_ = self.create_publisher(String, 'set_speed', 10)
 
         qos_profile = QoSProfile(
@@ -555,6 +556,10 @@ class parkingNode(Node):
 
         #self._speed_msg.data = self.FWD_SPEED
         #self.speed_publisher_.publish(self._speed_msg)
+
+        msg = String()
+        msg.data = "Ready!"
+        self.publisher_.publish(msg)
 
     def __del__(self):
         self.get_logger().info('Switch off ESC')
