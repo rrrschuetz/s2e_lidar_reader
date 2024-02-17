@@ -688,8 +688,7 @@ class parkingNode(Node):
             # Check if 'A' button is pressed - switch on AI steering, counterclockwise
             if msg.buttons[0] == 1:
                 self._tf_control = True
-                self._Y = 1.0
-                self._speed_msg.data = self.SPEED
+                self._speed_msg.data = self.FWD_SPEED
                 self.speed_publisher_.publish(self._speed_msg)
 
             # Check if 'B' button is pressed - switch off AI steering
@@ -698,10 +697,16 @@ class parkingNode(Node):
                 self._tf_control = False
                 self._processing = False
                 self._pwm.set_pwm(0, 0, int(self.servo_neutral))
- #              self._pwm.set_pwm(1, 0, int(self.neutral_pulse))
                 self._speed_msg.data = "0"
                 self.speed_publisher_.publish(self._speed_msg)
-                self.motor_off()
+                #self.motor_off()
+
+            # Check if 'X' button is pressed - test move
+            elif msg.buttons[2] == 1:
+                self._speed_msg.data = "F5"
+                self.speed_publisher_.publish(self._speed_msg)
+                self._speed_msg.data = "R5"
+                self.speed_publisher_.publish(self._speed_msg)
 
     def distance_sensor_callback(self, msg):
         #self.get_logger().info('Distance msg received: "%s"' % msg)

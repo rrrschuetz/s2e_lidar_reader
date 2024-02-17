@@ -30,6 +30,7 @@ class SpeedControlNode(Node):
         self.pwm.set_pwm(1, 0, self.neutral_pulse)
         GPIO.output(self.relay_pin, GPIO.HIGH)
 
+        self.pid_steering = False
         self.motor_ctl = 1.2
         self.y_pwm = 0
         self.max_y = 350
@@ -56,6 +57,22 @@ class SpeedControlNode(Node):
         self.pid = PID(0.4, 0.15, 0.00, setpoint=self.desired_speed)
         self.pid.sample_time = 0.1  # Update every 0.2 seconds
 
+    def move_to_impulse(self, impulse_goal):
+        power = -14 if impulse_goal < 0 else 14
+        self.impulse_history.clear()
+        self.impulse_count = 0
+        self.y_pwm = self.neutral_pulse + power
+        self.pwm.set_pwm(1, 0, self.y_pwm)
+
+        while self.impulse_count < abs(impulse_goal):
+            self.impulse_count += sum(self.impulse_history)
+            self.impulse_history.clear()
+            time.sleep(0.1)
+
+        self.y_pwm = self.neutral_pulse
+        self.pwm.set_pwm(1, 0, self.y_pwm)
+        return
+
     def impulse_callback(self, channel):
         self.impulse_history.append(1)
 
@@ -63,9 +80,19 @@ class SpeedControlNode(Node):
         try:
             new_speed = msg.data  # Assuming speed is passed as a string.
             if new_speed == "STOP":
+                self.pid_steering = False
                 self.pwm.set_pwm(1, 0, self.neutral_pulse)  # Set motor to neutral.
                 GPIO.output(self.relay_pin, GPIO.LOW)
+            elif new_speed.startswith('F'):
+                self.pid_steering = False
+                self.get_logger().info("Received move forward command")
+                self.move_to_impulse(int(new_speed[1:]))
+            elif new_speed.startswith('R'):
+                self.pid_steering = False
+                self.get_logger().info("Received move backward command")
+                self.move_to_impulse(-int(new_speed[1:]))
             else:
+                self.pid_steering = True
                 new_speedf = float(new_speed)
                 self.pid.setpoint = abs(new_speedf)  # Set PID setpoint to desired speed, including direction.
                 self.reverse = (new_speedf < 0)
@@ -73,6 +100,7 @@ class SpeedControlNode(Node):
             self.get_logger().error("Received invalid speed setting")
 
     def timer_callback(self):
+        if not self.pid_steering: return
         pid_output = 0
         self.impulse_count_p = self.impulse_count
         self.impulse_count = sum(self.impulse_history)
