@@ -58,7 +58,7 @@ class SpeedControlNode(Node):
         self.pid.sample_time = 0.1
 
     def move_to_impulse(self, impulse_goal):
-        power = -14 if impulse_goal < 0 else 20
+        power = -13 if impulse_goal < 0 else 18
         self.impulse_history.clear()
         self.impulse_count = 0
 
@@ -67,10 +67,10 @@ class SpeedControlNode(Node):
             self.impulse_history.clear()
             self.y_pwm = self.neutral_pulse + power
             self.pwm.set_pwm(1, 0, self.y_pwm)
-            time.sleep(0.05)
+            time.sleep(0.07)
             self.y_pwm = self.neutral_pulse
             self.pwm.set_pwm(1, 0, self.y_pwm)
-            time.sleep(0.05)
+            time.sleep(0.07)
 
         return
 
@@ -114,7 +114,7 @@ class SpeedControlNode(Node):
             self.y_pwm = self.neutral_pulse
         else:
             pid_output = self.pid(self.impulse_count)
-            self.get_logger().info('impulses %s power: %s %s' % (self.impulse_count,pid_output,self.reverse))
+            #self.get_logger().info('impulses %s power: %s %s' % (self.impulse_count,pid_output,self.reverse))
             # Determine PWM adjustment based on PID output and desired direction.
             if self.reverse:
                 # If desired speed is negative, adjust for reverse.
