@@ -592,6 +592,7 @@ class parkingNode(Node):
                     # Retrieve the output of the model
                     predictions = self._interpreter_p.get_tensor(self._output_details_p[0]['index'])
                     self._X = predictions[0, 0]
+                    self._Y = predictions[0, 1]
 
                     XX = int(self.servo_neutral+self._X*self.servo_ctl)
                     #self.get_logger().info('Steering: %s,%s ' % (self._X,XX))
