@@ -551,7 +551,7 @@ class parkingNode(Node):
                     self.speed_publisher_.publish(self._speed_msg)
                     time.sleep(1)
 
-                    self._X = -1.2 # left
+                    self._X = -1.2  # left
                     XX = int(self.servo_neutral+self._X*self.servo_ctl)
                     self._pwm.set_pwm(0, 0, XX)
                     time.sleep(1)
