@@ -112,7 +112,7 @@ class SpeedControlNode(Node):
             self.y_pwm = self.neutral_pulse
         else:
             pid_output = self.pid(self.impulse_count)
-            #self.get_logger().info('impulses %s power: %s %s ' % (impulse_count,pid_output,self.reverse))
+            self.get_logger().info('impulses %s power: %s %s' % (impulse_count,pid_output,self.reverse))
             # Determine PWM adjustment based on PID output and desired direction.
             if self.reverse:
                 # If desired speed is negative, adjust for reverse.
@@ -140,7 +140,6 @@ class SpeedControlNode(Node):
 
         
 def main(args=None):
-    relay_pin = 17
     rclpy.init(args=args)
     speed_control = SpeedControlNode()
     rclpy.spin(speed_control)

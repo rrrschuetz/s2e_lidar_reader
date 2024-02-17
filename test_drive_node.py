@@ -421,7 +421,7 @@ class parkingNode(Node):
     motor_ctl = -20
     relay_pin = 17
     WEIGHT = 1
-    FWD_SPEED = "10"
+    FWD_SPEED = "8"
     REV_SPEED = "-6"
     
     def __init__(self):
@@ -594,10 +594,7 @@ class parkingNode(Node):
                     self._interpreter_p.invoke()
                     # Retrieve the output of the model
                     predictions = self._interpreter_p.get_tensor(self._output_details_p[0]['index'])
-                
                     self._X = predictions[0, 0]
-                    self._Y = predictions[0, 1]
-                    #self.get_logger().info('Predicted axes: "%s"' % predictions)
 
                     XX = int(self.servo_neutral+self._X*self.servo_ctl)
                     #self.get_logger().info('Steering: %s,%s ' % (self._X,XX))
@@ -612,10 +609,10 @@ class parkingNode(Node):
                         self._pwm.set_pwm(0, 0, XX)
                         if self._Y >= 0:
                             self._speed_msg.data = self.REV_SPEED
-                            #self.get_logger().info('Reverse: %s / %s ' % (self._Y,self._speed_msg.data))
+                            self.get_logger().info('Reverse: %s / %s ' % (self._Y,self._speed_msg.data))
                         else:
                             self._speed_msg.data = self.FWD_SPEED
-                            #self.get_logger().info('Forward: %s / %s ' % (self._Y,self._speed_msg.data))
+                            self.get_logger().info('Forward: %s / %s ' % (self._Y,self._speed_msg.data))
 
                     self.speed_publisher_.publish(self._speed_msg)
             
