@@ -438,6 +438,7 @@ class parkingNode(Node):
         self._processing = False
         self._tf_control = False
         self._tf_parking = False
+        self._dist_sensor = False
         self._collision = False
         self._X = 0.0 
         self._Y = 0.0
@@ -674,6 +675,7 @@ class parkingNode(Node):
                 self._speed_msg.data = self.FWD_SPEED
                 self.speed_publisher_.publish(self._speed_msg)
                 self._tf_control = True
+                self._dist_sensor = True
 
             # Check if 'B' button is pressed - switch off all steering
             elif msg.buttons[1] == 1:
@@ -682,15 +684,15 @@ class parkingNode(Node):
                 self._tf_parking = False
                 self._processing = False
                 self._pwm.set_pwm(0, 0, int(self.servo_neutral))
-                self._speed_msg.data = "0"
-                self.speed_publisher_.publish(self._speed_msg)
-                #self.motor_off()
+                self.motor_off()
 
             # Check if 'X' button is pressed - test move
             elif msg.buttons[2] == 1:
                 self._tf_parking = True
+                self._dist_sensor = False
 
     def distance_sensor_callback(self, msg):
+        if not self._dist_sensor: return
         #self.get_logger().info('Distance msg received: "%s"' % msg)
         if float(msg.data) < 0.09:
             self.get_logger().info('Parking mode switched')
@@ -698,6 +700,7 @@ class parkingNode(Node):
             self._speed_msg.data = "0"
             self.speed_publisher_.publish(self._speed_msg)
             self._tf_parking = True
+            self._dist_sensor = False
         return
 
     def collision_callback(self, msg):
