@@ -18,21 +18,6 @@ from Adafruit_PCA9685 import PCA9685
 from sense_hat import SenseHat
 import RPi.GPIO as GPIO
 
-#class PIDController:
-#    def __init__(self, kp, ki, kd):
-#        self.kp = kp
-#        self.ki = ki
-#        self.kd = kd
-#        self._previous_error = 0
-#        self._integral = 0
-#    def update(self, setpoint, measured_value):
-#        error = setpoint - measured_value
-#        self._integral += error
-#        derivative = error - self._previous_error
-#        output = self.kp * error + self.ki * self._integral + self.kd * derivative
-#        self._previous_error = error
-#        return output
-
 class testDriveNode(Node):
     HPIX = 320
     VPIX = 200
@@ -45,21 +30,11 @@ class testDriveNode(Node):
     SPEED = "10"
     WEIGHT = 1
 
-#    reverse_pulse = 204
-#    neutral_pulse = 307
-#    forward_pulse = 409
-    
     servo_min = 230  # Min pulse length out of 4096
     servo_max = 385  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 * 1.7)
 
-#    speed_min = 0.1
-#    speed_max = 2.0
-#    speed_target = 0.7
-#    Ymax = 0.2
-#    motor_ctl = 36
-    
     def __init__(self):
         super().__init__('test_drive_node')
         self.publisher_ = self.create_publisher(String, 'main_logger', 10)
@@ -75,9 +50,8 @@ class testDriveNode(Node):
         self._tf_control = False
         self._clockwise = False
         self._X = 0.0 
-#        self._Y = 0.0
+        self._Y = 0.0
         self._Xtrim = 0.0
-#        self._speed = 0.0
         self._line_cnt = 0
         self._dt = 0.1
         self._color1_g = np.zeros(self.HPIX, dtype=int)
@@ -90,9 +64,6 @@ class testDriveNode(Node):
 
         self._speed_msg = String()
         self._speed_msg.data = "0"
-
- #       #self.pid_controller = PIDController(kp=0.1, ki=0.01, kd=0.05)  # Tune these parameters
- #       self.pid_controller = PIDController(kp=16, ki=0.5, kd=0.0)  # Tune these parameters
 
         # Initialize compass
         self._sense = SenseHat()
@@ -146,13 +117,6 @@ class testDriveNode(Node):
             self.openmv_h7_callback2,
             qos_profile
         )
-
-#        self.subscription_speed = self.create_subscription(
-#            String,
-#            'speed_monitor',
-#            self.speed_monitor_callback,
-#            qos_profile
-#        )
 
         self.subscription_speed = self.create_subscription(
             Bool,
@@ -295,25 +259,12 @@ class testDriveNode(Node):
                 predictions = self._interpreter.get_tensor(self._output_details[0]['index'])
 
                 self._X = predictions[0, 0]
-                #self._Y = predictions[0, 1]
+                self._Y = predictions[0, 1]
                 #self.get_logger().info('Predicted axes: "%s"' % predictions)
 
-#                #self.get_logger().info('current speed m/s: %s' % self._speed)
-
-#                if self._speed > self.speed_max:
-#                    self._Y = 0
-#                    self.get_logger().info('emergency brake, max speed exceeded')
-#                else:
-#                    self._Y = max(0,min(self.Ymax,self.pid_controller.update(self.speed_target, self._speed)))  # max() for safety!
-
                 XX = int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl)
-#                YY = int(self.neutral_pulse+self._Y*self.motor_ctl)
-                #self.get_logger().info('Steering: %s,%s ' % (self._X,self._Xtrim))
-#                #self.get_logger().info('Power: %s,%s,%s ' % (self._Y,YY,self._dt))
-
                 self._pwm.set_pwm(0, 0, XX)
-#                self._pwm.set_pwm(1, 0, YY)
-            
+
             except ValueError as e:
                 self.get_logger().error('Model rendered nan: %s' % str(e))
 
@@ -470,7 +421,7 @@ class parkingNode(Node):
     motor_ctl = -20
     relay_pin = 17
     WEIGHT = 1
-    FWD_SPEED = "8"
+    FWD_SPEED = "10"
     REV_SPEED = "-6"
     
     def __init__(self):
@@ -615,6 +566,8 @@ class parkingNode(Node):
                 else:
                     self.get_logger().info('Parking ended ')
                     self._tf_parking = False
+                    self._speed_msg.data = "STOP"
+                    self.speed_publisher_.publish(self._speed_msg)
 
             elif self._tf_control:
                 try:
