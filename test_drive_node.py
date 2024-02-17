@@ -681,11 +681,7 @@ class parkingNode(Node):
 
         blobs = ((data[i],data[i+1],data[i+2]) for i in range (0,len(data),3))
         for blob in blobs:
-            color, x1, x2 = bl
-
-
-
-ob
+            color, x1, x2 = blob
             color = int(color)
             x1 = int(x1)
             x2 = int(x2)
