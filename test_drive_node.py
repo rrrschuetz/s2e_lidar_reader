@@ -742,6 +742,12 @@ class parkingNode(Node):
 
     def distance_sensor_callback(self, msg):
         self.get_logger().info('Distance msg received: "%s"' % msg)
+        if float(msg.data) < 0.07:
+            self.get_logger().info('Parking mode switched')
+            self._tf_control = False
+            self._speed_msg.data = "0"
+            self.speed_publisher_.publish(self._speed_msg)
+            self._tf_parking = True
         return
 
     def collision_callback(self, msg):
