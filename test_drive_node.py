@@ -486,6 +486,7 @@ class parkingNode(Node):
             
         self._processing = False
         self._tf_control = False
+        self._tf_parking = False
         self._collision = False
         self._X = 0.0 
         self._Y = 0.0
@@ -583,14 +584,35 @@ class parkingNode(Node):
             # raw data
             scan = np.array(msg.ranges[self.num_scan+self.num_scan3:]+msg.ranges[:self.num_scan2+self.num_scan3])
 
-            num_sections = 18
-            section_data = np.array_split(scan, num_sections)
-            section_means = [np.mean(section) for section in section_data]
-            self._front_dist = section_means[9]
-            self._side_dist = min(section_means[3],section_means[15])
-            #self.get_logger().info('Distance: %s,%s ' % (self._front_dist,self._side_dist))
+            if self._tf_parking:
+                num_sections = 18
+                section_data = np.array_split(scan, num_sections)
+                section_means = [np.mean(section) for section in section_data]
+                self._front_dist = section_means[9]
+                self._side_dist = min(section_means[3],section_means[15])
+                self.get_logger().info('Parking Distance: %s,%s ' % (self._front_dist,self._side_dist))
 
-            if self._tf_control:
+                if self._front_dist > 0.08 and self._side_dist > 0.11:
+
+                    self._X = 1.2 # right
+                    XX = int(self.servo_neutral+self._X*self.servo_ctl)
+                    self._pwm.set_pwm(0, 0, XX)
+                    time.sleep(1)
+
+                    self._speed_msg.data = "F5"
+                    self.speed_publisher_.publish(self._speed_msg)
+                    time.sleep(1)
+
+                    self._X = -1.2 # left
+                    XX = int(self.servo_neutral+self._X*self.servo_ctl)
+                    self._pwm.set_pwm(0, 0, XX)
+                    time.sleep(1)
+
+                    self._speed_msg.data = "R5"
+                    self.speed_publisher_.publish(self._speed_msg)
+                    time.sleep(1)
+
+            elif self._tf_control:
                 try:
                     scan[scan == np.inf] = np.nan
                     scan[scan > self.scan_max_dist] = np.nan
@@ -699,10 +721,11 @@ class parkingNode(Node):
                 self._speed_msg.data = self.FWD_SPEED
                 self.speed_publisher_.publish(self._speed_msg)
 
-            # Check if 'B' button is pressed - switch off AI steering
+            # Check if 'B' button is pressed - switch off all steering
             elif msg.buttons[1] == 1:
                 self.get_logger().info('emergency shutdown initiated by supervisor')
                 self._tf_control = False
+                self._tf_parking = False
                 self._processing = False
                 self._pwm.set_pwm(0, 0, int(self.servo_neutral))
                 self._speed_msg.data = "0"
@@ -711,29 +734,7 @@ class parkingNode(Node):
 
             # Check if 'X' button is pressed - test move
             elif msg.buttons[2] == 1:
-                self.get_logger().info('Parking Distance: %s,%s ' % (self._front_dist,self._side_dist))
-
-                while (self._front_dist == np.inf or self._front_dist > 0.08) and (self._side_dist == np.inf or self._side_dist > 0.11):
-                    self.get_logger().info('Parking Distance: %s,%s ' % (self._front_dist,self._side_dist))
-
-                    self._X = 1.2 # right
-                    XX = int(self.servo_neutral+self._X*self.servo_ctl)
-                    self._pwm.set_pwm(0, 0, XX)
-                    time.sleep(1)
-
-                    self._speed_msg.data = "F5"
-                    self.speed_publisher_.publish(self._speed_msg)
-                    time.sleep(1)
-
-                    self._X = -1.2 # left
-                    XX = int(self.servo_neutral+self._X*self.servo_ctl)
-                    self._pwm.set_pwm(0, 0, XX)
-                    time.sleep(1)
-
-                    self._speed_msg.data = "R5"
-                    self.speed_publisher_.publish(self._speed_msg)
-                    time.sleep(1)
-
+                self._tf_parking = True
 
     def distance_sensor_callback(self, msg):
         #self.get_logger().info('Distance msg received: "%s"' % msg)
