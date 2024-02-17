@@ -1,3 +1,4 @@
+import time
 import rclpy, math
 from rclpy.time import Time
 from rclpy.node import Node
@@ -705,6 +706,7 @@ class parkingNode(Node):
             elif msg.buttons[2] == 1:
                 self._speed_msg.data = "F5"
                 self.speed_publisher_.publish(self._speed_msg)
+                time.sleep(1)
                 self._speed_msg.data = "R5"
                 self.speed_publisher_.publish(self._speed_msg)
 
