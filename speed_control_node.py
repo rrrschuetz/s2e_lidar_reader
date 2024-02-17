@@ -58,19 +58,28 @@ class SpeedControlNode(Node):
         self.pid.sample_time = 0.1
 
     def move_to_impulse(self, impulse_goal):
-        power = -13 if impulse_goal < 0 else 18
+        power = -6 if impulse_goal < 0 else 12
         self.impulse_history.clear()
         self.impulse_count = 0
+
+        self.y_pwm = self.neutral_pulse + power
+        self.pwm.set_pwm(1, 0, self.y_pwm)
 
         while self.impulse_count < abs(impulse_goal):
             self.impulse_count += sum(self.impulse_history)
             self.impulse_history.clear()
-            self.y_pwm = self.neutral_pulse + power
-            self.pwm.set_pwm(1, 0, self.y_pwm)
-            time.sleep(0.07)
-            self.y_pwm = self.neutral_pulse
-            self.pwm.set_pwm(1, 0, self.y_pwm)
-            time.sleep(0.07)
+
+            #self.y_pwm = self.neutral_pulse + power
+            #self.pwm.set_pwm(1, 0, self.y_pwm)
+            #time.sleep(0.07)
+            #self.y_pwm = self.neutral_pulse
+            #self.pwm.set_pwm(1, 0, self.y_pwm)
+            #time.sleep(0.07)
+
+            time.sleep(0.1)
+
+        self.y_pwm = self.neutral_pulse
+        self.pwm.set_pwm(1, 0, self.y_pwm)
 
         return
 
