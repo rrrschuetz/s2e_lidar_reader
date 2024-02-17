@@ -55,7 +55,7 @@ class SpeedControlNode(Node):
     def reset_pid(self):
         self.desired_speed = 0
         self.pid = PID(0.4, 0.15, 0.00, setpoint=self.desired_speed)
-        self.pid.sample_time = 0.1  # Update every 0.2 seconds
+        self.pid.sample_time = 0.1
 
     def move_to_impulse(self, impulse_goal):
         power = -14 if impulse_goal < 0 else 20
@@ -84,6 +84,8 @@ class SpeedControlNode(Node):
                 self.pid_steering = False
                 self.pwm.set_pwm(1, 0, self.neutral_pulse)  # Set motor to neutral.
                 GPIO.output(self.relay_pin, GPIO.LOW)
+            elif new_speed =="RESET":
+                self.reset_pid()
             elif new_speed.startswith('F'):
                 self.pid_steering = False
                 self.get_logger().info("Received move forward command")
@@ -112,7 +114,7 @@ class SpeedControlNode(Node):
             self.y_pwm = self.neutral_pulse
         else:
             pid_output = self.pid(self.impulse_count)
-            self.get_logger().info('impulses %s power: %s %s' % (impulse_count,pid_output,self.reverse))
+            self.get_logger().info('impulses %s power: %s %s' % (self.impulse_count,pid_output,self.reverse))
             # Determine PWM adjustment based on PID output and desired direction.
             if self.reverse:
                 # If desired speed is negative, adjust for reverse.

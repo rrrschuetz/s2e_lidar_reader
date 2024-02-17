@@ -509,9 +509,6 @@ class parkingNode(Node):
         self._output_details_p = self._interpreter_p.get_output_details()
         self.get_logger().info('parking prediction model loaded')
 
-        #self._speed_msg.data = self.FWD_SPEED
-        #self.speed_publisher_.publish(self._speed_msg)
-
         msg = String()
         msg.data = "Ready!"
         self.publisher_.publish(msg)
@@ -671,9 +668,11 @@ class parkingNode(Node):
 
             # Check if 'A' button is pressed - switch on AI steering, counterclockwise
             if msg.buttons[0] == 1:
-                self._tf_control = True
+                self._speed_msg.data = "RESET"
+                self.speed_publisher_.publish(self._speed_msg)
                 self._speed_msg.data = self.FWD_SPEED
                 self.speed_publisher_.publish(self._speed_msg)
+                self._tf_control = True
 
             # Check if 'B' button is pressed - switch off all steering
             elif msg.buttons[1] == 1:
