@@ -588,7 +588,7 @@ class parkingNode(Node):
             section_means = [np.mean(section) for section in section_data]
             self._front_dist = section_means[9]
             self._side_dist = min(section_means[3],section_means[15])
-            self.get_logger().info('Distance: %s,%s ' % (self._front_dist,self._side_dist))
+            #self.get_logger().info('Distance: %s,%s ' % (self._front_dist,self._side_dist))
 
             if self._tf_control:
                 try:
@@ -681,7 +681,11 @@ class parkingNode(Node):
 
         blobs = ((data[i],data[i+1],data[i+2]) for i in range (0,len(data),3))
         for blob in blobs:
-            color, x1, x2 = blob
+            color, x1, x2 = bl
+
+
+
+ob
             color = int(color)
             x1 = int(x1)
             x2 = int(x2)
@@ -711,7 +715,7 @@ class parkingNode(Node):
 
             # Check if 'X' button is pressed - test move
             elif msg.buttons[2] == 1:
-                while self._front_dist > 12 and self._side_dist > 12:
+                while self._front_dist > 8 and self._side_dist > 10:
                     self.get_logger().info('Parking Distance: %s,%s ' % (self._front_dist,self._side_dist))
 
                     self._X = 1.2 # right
