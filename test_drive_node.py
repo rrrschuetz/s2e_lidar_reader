@@ -704,11 +704,25 @@ class parkingNode(Node):
 
             # Check if 'X' button is pressed - test move
             elif msg.buttons[2] == 1:
-                self._speed_msg.data = "F5"
-                self.speed_publisher_.publish(self._speed_msg)
-                time.sleep(1)
-                self._speed_msg.data = "R5"
-                self.speed_publisher_.publish(self._speed_msg)
+                for i in range(3):
+
+                    self._X = 1 # right
+                    XX = int(self.servo_neutral+self._X*self.servo_ctl)
+                    self._pwm.set_pwm(0, 0, XX)
+                    time.sleep(1)
+
+                    self._speed_msg.data = "F4"
+                    self.speed_publisher_.publish(self._speed_msg)
+                    time.sleep(1)
+
+                    self._X = -1 # left
+                    XX = int(self.servo_neutral+self._X*self.servo_ctl)
+                    self._pwm.set_pwm(0, 0, XX)
+                    time.sleep(1)
+
+                    self._speed_msg.data = "R4"
+                    self.speed_publisher_.publish(self._speed_msg)
+                    time.sleep(1)
 
     def distance_sensor_callback(self, msg):
         #self.get_logger().info('Distance msg received: "%s"' % msg)
