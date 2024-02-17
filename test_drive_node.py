@@ -711,7 +711,10 @@ class parkingNode(Node):
 
             # Check if 'X' button is pressed - test move
             elif msg.buttons[2] == 1:
-                while self._front_dist > 8 and self._side_dist > 10:
+                self.get_logger().info('Parking Distance: %s,%s ' % (self._front_dist,self._side_dist))
+
+                while (self._front_dist == np.inf or self._front_dist > 8) and
+                    (self._side_dist == np.inf or self._side_dist > 11):
                     self.get_logger().info('Parking Distance: %s,%s ' % (self._front_dist,self._side_dist))
 
                     self._X = 1.2 # right
