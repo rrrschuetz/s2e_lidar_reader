@@ -592,7 +592,7 @@ class parkingNode(Node):
                 self._side_dist = min(section_means[3],section_means[15])
                 self.get_logger().info('Parking Distance: %s,%s ' % (self._front_dist,self._side_dist))
 
-                if self._front_dist > 0.08 and self._side_dist > 0.11:
+                if self._front_dist > 0.13 and self._side_dist > 0.14:
 
                     self._X = 1.2 # right
                     XX = int(self.servo_neutral+self._X*self.servo_ctl)
@@ -611,6 +611,10 @@ class parkingNode(Node):
                     self._speed_msg.data = "R5"
                     self.speed_publisher_.publish(self._speed_msg)
                     time.sleep(1)
+
+                else:
+                    self.get_logger().info('Parking ended ')
+                    self._tf_parking = False
 
             elif self._tf_control:
                 try:
