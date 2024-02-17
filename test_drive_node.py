@@ -587,7 +587,7 @@ class parkingNode(Node):
             section_data = np.array_split(scan, num_sections)
             section_means = [np.mean(section) for section in section_data]
             self._front_dist = section_means[9]
-            self._side_dist = min(section_mneans[3],section_means[15])
+            self._side_dist = min(section_means[3],section_means[15])
             self.get_logger().info('Distance: %s,%s ' % (self._front_dist,self._side_dist))
 
             if self._tf_control:
