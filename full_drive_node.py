@@ -354,7 +354,7 @@ class fullDriveNode(Node):
                         self._tf_parking = False
                         self._speed_msg.data = "STOP"
                         self.speed_publisher_.publish(self._speed_msg)
-			            self.state = "IDLE"
+                        self._state = "IDLE"
 			            return
 
                 elif self._tf_control:
