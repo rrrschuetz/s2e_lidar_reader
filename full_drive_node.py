@@ -18,7 +18,7 @@ from Adafruit_PCA9685 import PCA9685
 from sense_hat import SenseHat
 import RPi.GPIO as GPIO
 
-class testDriveNode(Node):
+class fullDriveNode(Node):
     HPIX = 320
     VPIX = 200
     HFOV = 70.8
@@ -711,7 +711,7 @@ class parkingNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     
-#    test_drive_node = testDriveNode()
+#    full_drive_node = fullDriveNode()
 #    rclpy.spin(test_drive_node)
 #    test_drive_node.destroy_node()
 
