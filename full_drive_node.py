@@ -708,19 +708,47 @@ class parkingNode(Node):
         self._collision = True
         return
 
+class fullDriveNode(Node):
+    def __init__(self):
+        super().__init__('autonomous_vehicle_node')
+        # Initialize publishers, subscribers, etc.
+        self.state = 'idle'  # Possible states: 'idle', 'racing', 'parking'
+        # Initialize any other necessary variables
+
+    def race_completion_callback(self):
+        # This method is called when the race is completed.
+        self.state = 'parking'
+        # Perform any necessary cleanup from racing
+        # Initialize parking behavior
+        self.get_logger().info('Race completed, switching to parking mode.')
+
+    def parking_completion_callback(self):
+        # This method is called when parking is completed.
+        self.state = 'idle'
+        # Perform any necessary cleanup from parking
+        self.get_logger().info('Parking completed.')
+
+    def main_loop(self):
+        while rclpy.ok():
+            if self.state == 'racing':
+                # Perform racing logic
+                pass
+            elif self.state == 'parking':
+                # Perform parking logic
+                pass
+            # Sleep or spin_once here if needed
+            rclpy.spin_once(self, timeout_sec=0.1)
+
 def main(args=None):
     rclpy.init(args=args)
-    
-#    full_drive_node = fullDriveNode()
-#    rclpy.spin(test_drive_node)
-#    test_drive_node.destroy_node()
-
-    parking_node = parkingNode()
-    rclpy.spin(parking_node)
-    parking_node.destroy_node()
-    
-    rclpy.shutdown()
+    full_drive_node = fullDriveNode()
+    try:
+        full_drive_node.main_loop()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        full_drive_node.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
-
