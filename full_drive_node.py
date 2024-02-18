@@ -174,7 +174,7 @@ class fullDriveNode(Node):
         msg.data = "Ready!"
         self.publisher_.publish(msg)
 
-	    self._state = "RACE"
+        self._state = "RACE"
 
 
     def __del__(self):
