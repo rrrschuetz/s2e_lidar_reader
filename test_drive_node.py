@@ -418,7 +418,7 @@ class parkingNode(Node):
     servo_max = 400  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl_fwd = int(-(servo_max-servo_min)/2 * 1.7)
-    servo_ctl_rev = int(-(servo_max-servo_min)/2 * 1.9)
+    servo_ctl_rev = int(-(servo_max-servo_min)/2 * 2.0)
     motor_ctl = -20
     relay_pin = 17
     WEIGHT = 1
@@ -544,7 +544,7 @@ class parkingNode(Node):
 
                 if self._front_dist > 0.13 and self._side_dist > 0.14:
 
-                    self._X = 1.2 # right
+                    self._X = 1.0 # right
                     XX = int(self.servo_neutral+self._X*self.servo_ctl_fwd)
                     self._pwm.set_pwm(0, 0, XX)
                     time.sleep(1)
@@ -553,7 +553,7 @@ class parkingNode(Node):
                     self.speed_publisher_.publish(self._speed_msg)
                     time.sleep(1)
 
-                    self._X = -1.2  # left
+                    self._X = -1.0  # left
                     XX = int(self.servo_neutral+self._X*self.servo_ctl_rev)
                     self._pwm.set_pwm(0, 0, XX)
                     time.sleep(1)
