@@ -417,7 +417,8 @@ class parkingNode(Node):
     servo_min = 210  # Min pulse length out of 4096
     servo_max = 400  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
-    servo_ctl = int(-(servo_max-servo_min)/2 * 1.7)
+    servo_ctl_fwd = int(-(servo_max-servo_min)/2 * 1.7)
+    servo_ctl_rev = int(-(servo_max-servo_min)/2 * 1.9)
     motor_ctl = -20
     relay_pin = 17
     WEIGHT = 1
@@ -544,7 +545,7 @@ class parkingNode(Node):
                 if self._front_dist > 0.13 and self._side_dist > 0.14:
 
                     self._X = 1.2 # right
-                    XX = int(self.servo_neutral+self._X*self.servo_ctl)
+                    XX = int(self.servo_neutral+self._X*self.servo_ctl_fwd)
                     self._pwm.set_pwm(0, 0, XX)
                     time.sleep(1)
 
@@ -553,7 +554,7 @@ class parkingNode(Node):
                     time.sleep(1)
 
                     self._X = -1.2  # left
-                    XX = int(self.servo_neutral+self._X*self.servo_ctl)
+                    XX = int(self.servo_neutral+self._X*self.servo_ctl_rev)
                     self._pwm.set_pwm(0, 0, XX)
                     time.sleep(1)
 
@@ -594,10 +595,7 @@ class parkingNode(Node):
                     predictions = self._interpreter_p.get_tensor(self._output_details_p[0]['index'])
                     self._X = predictions[0, 0]
                     self._Y = predictions[0, 1]
-
-                    XX = int(self.servo_neutral+self._X*self.servo_ctl)
-                    #self.get_logger().info('Steering: %s,%s ' % (self._X,XX))
-                    #self.get_logger().info('Power: %s ' % self._Y)
+                    #self.get_logger().info('Steering, power: %s, %s ' % (self._X,self._Y))
 
                     if self._collision:
                         self.get_logger().info('Collision: STOP ')
@@ -605,13 +603,15 @@ class parkingNode(Node):
                         self._tf_control = False
                         self._speed_msg.data = "STOP"
                     else:
-                        self._pwm.set_pwm(0, 0, XX)
                         if self._Y >= 0:
+                            XX = int(self.servo_neutral+self._X*self.servo_ctl_rev)
                             self._speed_msg.data = self.REV_SPEED
-                            self.get_logger().info('Reverse: %s / %s ' % (self._Y,self._speed_msg.data))
+                            #self.get_logger().info('Reverse: %s / %s ' % (self._Y,self._speed_msg.data))
                         else:
+                            XX = int(self.servo_neutral+self._X*self.servo_ctl_fwd)
                             self._speed_msg.data = self.FWD_SPEED
-                            self.get_logger().info('Forward: %s / %s ' % (self._Y,self._speed_msg.data))
+                            #self.get_logger().info('Forward: %s / %s ' % (self._Y,self._speed_msg.data))
+                        self._pwm.set_pwm(0, 0, XX)
 
                     self.speed_publisher_.publish(self._speed_msg)
             

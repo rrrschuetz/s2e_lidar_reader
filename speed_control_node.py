@@ -12,7 +12,7 @@ class SpeedControlNode(Node):
     neutral_pulse = 307
     forward_pulse = 409
     base_fwd = 10
-    base_rev = -6
+    base_rev = -4
     gpio_pin = 22
     relay_pin = 17
 
