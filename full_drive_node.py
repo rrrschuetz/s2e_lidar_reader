@@ -311,7 +311,7 @@ class fullDriveNode(Node):
 
                 self._processing = False
 
-	    elif self._state == 'PARK':
+        elif self._state == 'PARK':
 
             if self._processing:
                 self.get_logger().info('Scan skipped')
