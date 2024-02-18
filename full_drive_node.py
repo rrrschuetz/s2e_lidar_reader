@@ -50,7 +50,7 @@ class fullDriveNode(Node):
                 reliability=QoSReliabilityPolicy.BEST_EFFORT,
                 durability=QoSDurabilityPolicy.VOLATILE)
     
-	self.state == 'IDLE':
+	    self._state == 'IDLE':
 
         self._processing = False
         self._tf_control = False
@@ -174,7 +174,7 @@ class fullDriveNode(Node):
         msg.data = "Ready!"
         self.publisher_.publish(msg)
 
-	self.state = "RACE"
+	    self._state = "RACE"
 
 
     def __del__(self):
@@ -200,7 +200,7 @@ class fullDriveNode(Node):
             return raw_diff
 
     def lidar_callback(self, msg):
-	if self.state == 'RACE':
+	    if self._state == 'RACE':
 
             if not self._tf_control: return
             if self._processing:
@@ -232,7 +232,7 @@ class fullDriveNode(Node):
                             self._speed_msg.data = "0"
                             self.speed_publisher_.publish(self._speed_msg)
                             self.get_logger().info("Race completed!")
-			    self.state = "PARK"
+			                self.state = "PARK"
                             return
 
                 self._clockwise = (self._total_heading_change > 0)
@@ -311,7 +311,7 @@ class fullDriveNode(Node):
 
                 self._processing = False
 
-	elif self.state == 'PARK':
+	    elif self._state == 'PARK':
 
             if self._processing:
                 self.get_logger().info('Scan skipped')
@@ -354,8 +354,8 @@ class fullDriveNode(Node):
                         self._tf_parking = False
                         self._speed_msg.data = "STOP"
                         self.speed_publisher_.publish(self._speed_msg)
-			self.state = "IDLE"
-			return
+			            self.state = "IDLE"
+			            return
 
                 elif self._tf_control:
                     try:
@@ -390,7 +390,7 @@ class fullDriveNode(Node):
                             self.get_logger().info('Collision: STOP ')
                             self._collision = False
                             self._tf_control = False
-			    self.state = "IDLE"
+			                self._state = "IDLE"
                             self._speed_msg.data = "STOP"
                         else:
                             if self._Y >= 0:
@@ -413,12 +413,12 @@ class fullDriveNode(Node):
 
                 self._processing = False
 
-	elif self.state == 'IDLE':
+	    elif self._state == 'IDLE':
             self.get_logger().info('lidar_callback: wait mode active')
 
        
     def joy_callback(self, msg):
-	if self.state == 'RACE':	
+	    if self._state == 'RACE':
 
             if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
 
@@ -458,7 +458,7 @@ class fullDriveNode(Node):
                 self._X = msg.axes[2]
                 self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl_fwd))
 
-	elif self.state == 'PARK':	
+	    elif self._state == 'PARK':
 
             if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
 
@@ -485,7 +485,7 @@ class fullDriveNode(Node):
                     self._tf_parking = True
                     self._dist_sensor = False
 
-  	    elif self.state == 'IDLE':	
+  	    elif self._state == 'IDLE':
 	        self.get_logger().info('joy_callback: wait mode active')
 
 
