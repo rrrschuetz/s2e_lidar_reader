@@ -54,7 +54,8 @@ class SpeedControlNode(Node):
 
     def reset_pid(self):
         self.desired_speed = 0
-        self.pid = PID(0.4, 0.15, 0.00, setpoint=self.desired_speed)
+        #self.pid = PID(0.4, 0.15, 0.00, setpoint=self.desired_speed)
+        self.pid = PID(1.0, 0.15, 0.00, setpoint=self.desired_speed)
         self.pid.sample_time = 0.1
 
     def move_to_impulse(self, impulse_goal):
@@ -136,7 +137,7 @@ class SpeedControlNode(Node):
             
         self.impulse_history.clear()  # Clear history after each measurement
 
-        if abs(pid_output) > self.pid_output_max and self.impulse_count_p > 0 and self. impulse_count == 0:
+        if abs(pid_output) > self.pid_output_max and self.impulse_count_p > 0 and self.impulse_count == 0:
             self.get_logger().error("Track blocked: %s" % pid_output)
             self.reset_pid()
             self.y_pwm = self.neutral_pulse
