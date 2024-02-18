@@ -11,6 +11,8 @@ class SpeedControlNode(Node):
     reverse_pulse = 204
     neutral_pulse = 307
     forward_pulse = 409
+    base_fwd = 12
+    base_rev = 6
     gpio_pin = 22
     relay_pin = 17
 
@@ -40,7 +42,6 @@ class SpeedControlNode(Node):
         self.impulse_count = 0
         self.impulse_count_p = 0
         self.pid_output_max = 15
-        self.base_pwm = self.neutral_pulse  # Base PWM value for steady motor speed
         self.rolling_avg_size = 100  # Number of measurements for the rolling average
         self.impulse_history = collections.deque(maxlen=self.rolling_avg_size)
         self.reset_pid()
@@ -54,8 +55,7 @@ class SpeedControlNode(Node):
 
     def reset_pid(self):
         self.desired_speed = 0
-        #self.pid = PID(0.4, 0.15, 0.00, setpoint=self.desired_speed)
-        self.pid = PID(1.0, 0.15, 0.00, setpoint=self.desired_speed)
+        self.pid = PID(0.4, 0.15, 0.00, setpoint=self.desired_speed)
         self.pid.sample_time = 0.1
 
     def move_to_impulse(self, impulse_goal):
@@ -128,11 +128,11 @@ class SpeedControlNode(Node):
             # Determine PWM adjustment based on PID output and desired direction.
             if self.reverse:
                 # If desired speed is negative, adjust for reverse.
-                self.y_pwm = self.neutral_pulse - abs(int(pid_output * self.motor_ctl))
+                self.y_pwm = self.base_rev - abs(int(pid_output * self.motor_ctl))
                 self.y_pwm = max(self.min_y, self.y_pwm)  # Ensure PWM is within reverse range.
             else:
                 # If desired speed is positive or zero, adjust for forward.
-                self.y_pwm = self.neutral_pulse + int(pid_output * self.motor_ctl)
+                self.y_pwm = self.base_fwd + int(pid_output * self.motor_ctl)
                 self.y_pwm = min(self.max_y, self.y_pwm)  # Ensure PWM is within forward range.
             
         self.impulse_history.clear()  # Clear history after each measurement
