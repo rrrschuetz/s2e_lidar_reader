@@ -30,7 +30,7 @@ class fullDriveNode(Node):
     servo_min = 210  # Min pulse length out of 4096
     servo_max = 400  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
-    servo_ctl_fwd = int(-(servo_max-servo_min)/2 * 2.0)   # 1.7
+    servo_ctl_fwd = int(-(servo_max-servo_min)/2 * 1.7)
     servo_ctl_rev = int(-(servo_max-servo_min)/2 * 2.0)
     motor_ctl = -20
     relay_pin = 17
