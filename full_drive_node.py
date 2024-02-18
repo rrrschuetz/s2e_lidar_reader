@@ -710,7 +710,7 @@ class parkingNode(Node):
 
 class fullDriveNode(Node):
     def __init__(self):
-        super().__init__('autonomous_vehicle_node')
+        super().__init__('full_drive_node')
         # Initialize publishers, subscribers, etc.
         self.state = 'idle'  # Possible states: 'idle', 'racing', 'parking'
         # Initialize any other necessary variables
