@@ -200,7 +200,7 @@ class fullDriveNode(Node):
             return raw_diff
 
     def lidar_callback(self, msg):
-	    if self._state == 'RACE':
+        if self._state == 'RACE':
 
             if not self._tf_control: return
             if self._processing:
