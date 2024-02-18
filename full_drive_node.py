@@ -390,7 +390,7 @@ class fullDriveNode(Node):
                             self.get_logger().info('Collision: STOP ')
                             self._collision = False
                             self._tf_control = False
-			                self._state = "IDLE"
+                            self._state = "IDLE"
                             self._speed_msg.data = "STOP"
                         else:
                             if self._Y >= 0:
@@ -413,12 +413,12 @@ class fullDriveNode(Node):
 
                 self._processing = False
 
-	    elif self._state == 'IDLE':
+        elif self._state == 'IDLE':
             self.get_logger().info('lidar_callback: wait mode active')
 
        
     def joy_callback(self, msg):
-	    if self._state == 'RACE':
+        if self._state == 'RACE':
 
             if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
 
@@ -458,7 +458,7 @@ class fullDriveNode(Node):
                 self._X = msg.axes[2]
                 self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl_fwd))
 
-	    elif self._state == 'PARK':
+        elif self._state == 'PARK':
 
             if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
 
@@ -485,8 +485,8 @@ class fullDriveNode(Node):
                     self._tf_parking = True
                     self._dist_sensor = False
 
-  	    elif self._state == 'IDLE':
-	        self.get_logger().info('joy_callback: wait mode active')
+        elif self._state == 'IDLE':
+            self.get_logger().info('joy_callback: wait mode active')
 
 
     def touch_button_callback(self, msg):
