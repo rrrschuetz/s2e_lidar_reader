@@ -50,7 +50,7 @@ class fullDriveNode(Node):
                 reliability=QoSReliabilityPolicy.BEST_EFFORT,
                 durability=QoSDurabilityPolicy.VOLATILE)
     
-        self._state == 'IDLE'
+        self._state = 'IDLE'
 
         self._processing = False
         self._tf_control = False
@@ -604,7 +604,7 @@ def main(args=None):
     rclpy.init(args=args)
 
     full_drive_node = fullDriveNode()
-    rclpy.spin(parking_node)
+    rclpy.spin(full_drive_node)
     full_drive_node.destroy_node()
     
     rclpy.shutdown()
