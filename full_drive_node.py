@@ -78,13 +78,6 @@ class fullDriveNode(Node):
         self._pwm = PCA9685()
         self._pwm.set_pwm_freq(50)  # Set frequency to 50Hz
 
- #       self.get_logger().info('calibrating ESC')
- #       self._pwm.set_pwm(1, 0, self.neutral_pulse)
-
- #       msg = String()
- #       msg.data = "Switch on ESC"
- #       self.publisher_.publish(msg)
-
         self._start_time = self.get_clock().now()
         self._end_time = self._start_time
         self._round_start_time = self._start_time
