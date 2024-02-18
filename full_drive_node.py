@@ -50,7 +50,7 @@ class fullDriveNode(Node):
                 reliability=QoSReliabilityPolicy.BEST_EFFORT,
                 durability=QoSDurabilityPolicy.VOLATILE)
     
-        self._state == 'IDLE':
+        self._state == 'IDLE'
 
         self._processing = False
         self._tf_control = False
