@@ -232,7 +232,7 @@ class fullDriveNode(Node):
                             self._speed_msg.data = "0"
                             self.speed_publisher_.publish(self._speed_msg)
                             self.get_logger().info("Race completed!")
-			                self.state = "PARK"
+                            self._state = "PARK"
                             return
 
                 self._clockwise = (self._total_heading_change > 0)
