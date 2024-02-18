@@ -11,8 +11,8 @@ class SpeedControlNode(Node):
     reverse_pulse = 204
     neutral_pulse = 307
     forward_pulse = 409
-    base_fwd = 12
-    base_rev = 6
+    base_fwd = 10
+    base_rev = -6
     gpio_pin = 22
     relay_pin = 17
 
@@ -128,11 +128,11 @@ class SpeedControlNode(Node):
             # Determine PWM adjustment based on PID output and desired direction.
             if self.reverse:
                 # If desired speed is negative, adjust for reverse.
-                self.y_pwm = self.base_rev - abs(int(pid_output * self.motor_ctl))
+                self.y_pwm = self.neutral_pulse + self.base_rev - abs(int(pid_output * self.motor_ctl))
                 self.y_pwm = max(self.min_y, self.y_pwm)  # Ensure PWM is within reverse range.
             else:
                 # If desired speed is positive or zero, adjust for forward.
-                self.y_pwm = self.base_fwd + int(pid_output * self.motor_ctl)
+                self.y_pwm = self.neutral_pulse + self.base_fwd + int(pid_output * self.motor_ctl)
                 self.y_pwm = min(self.max_y, self.y_pwm)  # Ensure PWM is within forward range.
             
         self.impulse_history.clear()  # Clear history after each measurement
