@@ -224,15 +224,11 @@ class fullDriveNode(Node):
                         duration_in_seconds = (self._round_end_time - self._round_start_time).nanoseconds * 1e-9
                         self._round_start_time = self._round_end_time
                         self.get_logger().info(f"Round {self._total_rounds} in {duration_in_seconds} sec completed!")
+
                         if self._total_rounds >= 3:
-                            self._total_rounds = 0
-                            self._tf_control = False
-                            self._processing = False
-                            #self._pwm.set_pwm(0, 0, int(self.servo_neutral))
-                            #self._speed_msg.data = "0"
-                            #self.speed_publisher_.publish(self._speed_msg)
                             self.get_logger().info("Race completed!")
                             self._state = "PARK"
+                            self._processing = False
                             return
 
                 self._clockwise = (self._total_heading_change > 0)
