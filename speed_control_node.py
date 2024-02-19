@@ -15,6 +15,7 @@ class SpeedControlNode(Node):
     base_rev = -4
     gpio_pin = 22
     relay_pin = 17
+    line_count_max = 20
 
     def __init__(self):
         super().__init__('speed_control')
@@ -117,6 +118,12 @@ class SpeedControlNode(Node):
         pid_output = 0
         self.impulse_count_p = self.impulse_count
         self.impulse_count = sum(self.impulse_history)
+
+        if self.impulse_count > self.impulse_count_max:
+            self.pid_steering = False
+            self.pwm.set_pwm(1, 0, self.neutral_pulse)  # Set motor to neutral.
+            GPIO.output(self.relay_pin, GPIO.LOW)
+            return
 
         if self.reverse != self.reverse_p:
             self.reverse_p = self.reverse
