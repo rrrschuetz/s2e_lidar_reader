@@ -168,7 +168,7 @@ class s2eLidarReaderNode(Node):
 
     def openmv_h7_callback1(self, msg):
         if self._clockwise: return
-        self.get_logger().info('cam msg received: "%s"' % msg)
+        #self.get_logger().info('cam msg received: "%s"' % msg)
 
         self._color1_g = np.zeros(self.HPIX, dtype=int)
         self._color1_r = np.zeros(self.HPIX, dtype=int)
@@ -196,7 +196,7 @@ class s2eLidarReaderNode(Node):
 
     def openmv_h7_callback2(self, msg):
         if not self._clockwise: return
-        self.get_logger().info('cam msg received: "%s"' % msg)
+        #self.get_logger().info('cam msg received: "%s"' % msg)
 
         self._color2_g = np.zeros(self.HPIX, dtype=int)
         self._color2_r = np.zeros(self.HPIX, dtype=int)
