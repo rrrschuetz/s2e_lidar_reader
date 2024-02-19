@@ -228,9 +228,9 @@ class fullDriveNode(Node):
                             self._total_rounds = 0
                             self._tf_control = False
                             self._processing = False
-                            self._pwm.set_pwm(0, 0, int(self.servo_neutral))
-                            self._speed_msg.data = "0"
-                            self.speed_publisher_.publish(self._speed_msg)
+                            #self._pwm.set_pwm(0, 0, int(self.servo_neutral))
+                            #self._speed_msg.data = "0"
+                            #self.speed_publisher_.publish(self._speed_msg)
                             self.get_logger().info("Race completed!")
                             self._state = "PARK"
                             return
