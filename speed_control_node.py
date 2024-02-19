@@ -15,7 +15,7 @@ class SpeedControlNode(Node):
     base_rev = -4
     gpio_pin = 22
     relay_pin = 17
-    line_count_max = 20
+    impulse_count_max = 20
 
     def __init__(self):
         super().__init__('speed_control')
