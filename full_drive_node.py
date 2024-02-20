@@ -25,7 +25,7 @@ class fullDriveNode(Node):
     num_scan = 1620
     num_scan2 = 810
     num_scan3 = 405
-    MIN_DIST = 0.45
+    scan_min_dist = 0.25
     scan_max_dist = 2.8
     servo_min = 210  # Min pulse length out of 4096
     servo_max = 400  # Max pulse length out of 4096
@@ -251,11 +251,10 @@ class fullDriveNode(Node):
                     section_data = np.array_split(scan, num_sections)
                     section_means = [np.mean(section) for section in section_data]
                     min_section_index = np.argmin(section_means)
-                    if section_means[min_section_index] < self.MIN_DIST:
+                    if section_means[min_section_index] < self.scan_min_dist:
 
                         #if self._RED: self.get_logger().info("RED in focus");
                         #else: self.get_logger().info("GREEN in focus");
-
                         if self._RED and min_section_index <= 2:
                             self._passed = True
                             self.get_logger().info("Obstacle to the left #%s in distance %s" % (min_section_index, section_means[min_section_index]))
