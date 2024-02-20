@@ -255,10 +255,10 @@ class fullDriveNode(Node):
 
                         #if self._RED: self.get_logger().info("RED in focus");
                         #else: self.get_logger().info("GREEN in focus");
-                        if self._RED and min_section_index <= 2:
+                        if self._RED and min_section_index in [0,1]:
                             self._passed = True
                             self.get_logger().info("RED obstacle to the left #%s in distance %s" % (min_section_index, section_means[min_section_index]))
-                        elif not self._RED and min_section_index >= 15:
+                        elif not self._RED and min_section_index in [17,18]:
                             self._passed = True
                             self.get_logger().info("GREEN obstacle to the right #%s in distance %s" % (min_section_index, section_means[min_section_index]))
 
