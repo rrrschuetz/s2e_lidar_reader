@@ -25,7 +25,7 @@ class fullDriveNode(Node):
     num_scan = 1620
     num_scan2 = 810
     num_scan3 = 405
-    scan_min_dist = 0.25
+    scan_min_dist = 0.30
     scan_max_dist = 2.8
     servo_min = 210  # Min pulse length out of 4096
     servo_max = 400  # Max pulse length out of 4096
@@ -257,10 +257,10 @@ class fullDriveNode(Node):
                         #else: self.get_logger().info("GREEN in focus");
                         if self._RED and min_section_index <= 2:
                             self._passed = True
-                            self.get_logger().info("Obstacle to the left #%s in distance %s" % (min_section_index, section_means[min_section_index]))
+                            self.get_logger().info("RED obstacle to the left #%s in distance %s" % (min_section_index, section_means[min_section_index]))
                         elif not self._RED and min_section_index >= 15:
                             self._passed = True
-                            self.get_logger().info("Obstacle to the right #%s in distance %s" % (min_section_index, section_means[min_section_index]))
+                            self.get_logger().info("GREEN obstacle to the right #%s in distance %s" % (min_section_index, section_means[min_section_index]))
 
                     scan[scan == np.inf] = np.nan
                     scan[scan > self.scan_max_dist] = np.nan
