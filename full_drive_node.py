@@ -588,7 +588,7 @@ class fullDriveNode(Node):
             self._tf_parking = True
             self._dist_sensor = False
             msg = String()
-            msg.data = "Parking mode switched"
+            msg.data = "ParkMode switched"
             self.publisher_.publish(msg)
         return
 
