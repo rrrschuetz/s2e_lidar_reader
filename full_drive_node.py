@@ -229,6 +229,7 @@ class fullDriveNode(Node):
                             self.get_logger().info("Race completed!")
                             self._state = "PARK"
                             self._processing = False
+                            self._dist_sensor = True
                             msg = String()
                             msg.data = "Race completed, parking mode"
                             self.publisher_.publish(msg)
