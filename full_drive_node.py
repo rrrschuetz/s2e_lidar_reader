@@ -225,7 +225,7 @@ class fullDriveNode(Node):
                         self._round_start_time = self._round_end_time
                         self.get_logger().info(f"Round {self._total_rounds} in {duration_in_seconds} sec completed!")
 
-                        if self._total_rounds >= 12:
+                        if self._total_rounds > 12:
                             self.get_logger().info("Race completed!")
                             self._state = "PARK"
                             self._processing = False
