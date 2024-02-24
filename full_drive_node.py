@@ -85,7 +85,6 @@ class fullDriveNode(Node):
         self._initial_heading = self._sense.gyro['yaw']
         self._start_heading = self._initial_heading
         self._last_heading = self._initial_heading
-        self._total_rounds = 0
         self._total_heading_change = 0
         self.get_logger().info(f"Initial heading: {self._initial_heading} degrees")
 
@@ -97,7 +96,6 @@ class fullDriveNode(Node):
         self._start_time = self.get_clock().now()
         self._end_time = self._start_time
         self._round_start_time = self._start_time
-        self._round_end_time = self._start_time
 
         self.subscription_lidar = self.create_subscription(
             LaserScan,
@@ -218,22 +216,15 @@ class fullDriveNode(Node):
                     self._last_heading = self._current_heading
                     #self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
                     if abs(self._total_heading_change) > 1150:
-                        self._total_rounds += 1
-                        self._total_heading_change = 0
-                        self._round_end_time = self.get_clock().now()
-                        duration_in_seconds = (self._round_end_time - self._round_start_time).nanoseconds * 1e-9
-                        self._round_start_time = self._round_end_time
-                        self.get_logger().info(f"Round {self._total_rounds} in {duration_in_seconds} sec completed!")
-
-                        if self._total_rounds >= 1:
-                            self.get_logger().info("Race completed!")
-                            self._state = "PARK"
-                            self._processing = False
-                            self._dist_sensor = True
-                            msg = String()
-                            msg.data = "Race completed, parking mode"
-                            self.publisher_.publish(msg)
-                            return
+                        duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
+                        self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
+                        self._state = "PARK"
+                        self._processing = False
+                        self._dist_sensor = True
+                        msg = String()
+                        msg.data = "Race completed, parking mode"
+                        self.publisher_.publish(msg)
+                        return
 
                 self._clockwise = (self._total_heading_change > 0)
                 #if not self._clockwise:
