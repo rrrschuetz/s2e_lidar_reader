@@ -588,7 +588,7 @@ class fullDriveNode(Node):
 
     def distance_sensor_callback(self, msg):
         if not self._dist_sensor: return
-        self.get_logger().info('Distance msg received: "%s"' % msg)
+        #self.get_logger().info('Distance msg received: "%s"' % msg)
         if float(msg.data) < 0.09:
             self.get_logger().info('Parking mode switched')
             self._tf_control = False
