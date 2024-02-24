@@ -217,7 +217,7 @@ class fullDriveNode(Node):
                     self._total_heading_change += heading_change
                     self._last_heading = self._current_heading
                     #self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
-                    if abs(self._total_heading_change) >= 360:
+                    if abs(self._total_heading_change) >= 90:
                         self._total_rounds += 1
                         self._total_heading_change = 0
                         self._round_end_time = self.get_clock().now()
@@ -225,7 +225,7 @@ class fullDriveNode(Node):
                         self._round_start_time = self._round_end_time
                         self.get_logger().info(f"Round {self._total_rounds} in {duration_in_seconds} sec completed!")
 
-                        if self._total_rounds >= 3:
+                        if self._total_rounds >= 13:
                             self.get_logger().info("Race completed!")
                             self._state = "PARK"
                             self._processing = False
