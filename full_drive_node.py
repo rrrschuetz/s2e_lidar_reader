@@ -225,7 +225,7 @@ class fullDriveNode(Node):
                         self._round_start_time = self._round_end_time
                         self.get_logger().info(f"Round {self._total_rounds} in {duration_in_seconds} sec completed!")
 
-                        if self._total_rounds >= 13:
+                        if self._total_rounds >= 12:
                             self.get_logger().info("Race completed!")
                             self._state = "PARK"
                             self._processing = False
@@ -586,7 +586,7 @@ class fullDriveNode(Node):
 
     def distance_sensor_callback(self, msg):
         if not self._dist_sensor: return
-        #self.get_logger().info('Distance msg received: "%s"' % msg)
+        self.get_logger().info('Distance msg received: "%s"' % msg)
         if float(msg.data) < 0.09:
             self.get_logger().info('Parking mode switched')
             self._tf_control = False
@@ -594,6 +594,9 @@ class fullDriveNode(Node):
             self.speed_publisher_.publish(self._speed_msg)
             self._tf_parking = True
             self._dist_sensor = False
+            msg = String()
+            msg.data = "Parking mode switched"
+            self.publisher_.publish(msg)
         return
 
     def collision_callback(self, msg):
