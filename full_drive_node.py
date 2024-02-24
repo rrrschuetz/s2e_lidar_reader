@@ -413,6 +413,7 @@ class fullDriveNode(Node):
                 self._processing = False
 
         elif self._state == 'IDLE':
+            pass
             #self.get_logger().info('lidar_callback: wait mode active')
 
        
