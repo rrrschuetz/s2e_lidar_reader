@@ -140,9 +140,9 @@ class fullDriveNode(Node):
         )
 
         self.subscription_distance = self.create_subscription(
-            Float32,
-            'distance_sensor',
-            self.distance_sensor_callback,
+            Bool,
+            'line_detector',
+            self.line_detector_callback,
             qos_profile
         )
 
@@ -577,10 +577,10 @@ class fullDriveNode(Node):
             #self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
 
 
-    def distance_sensor_callback(self, msg):
+    def line_detector_callback(self, msg):
         if not self._dist_sensor: return
-        #self.get_logger().info('Distance msg received: "%s"' % msg)
-        if float(msg.data) < 0.09:
+        self.get_logger().info('Distance msg received: "%s"' % msg)
+        if bool(msg.data):
             self.get_logger().info('Parking mode switched')
             self._tf_control = False
             self._speed_msg.data = "0"
