@@ -103,6 +103,13 @@ class s2eLidarReaderParkingNode(Node):
             qos_profile
         )
 
+        self.subscription_distance = self.create_subscription(
+            Bool,
+            'line_detector',
+            self.line_detector_callback,
+            qos_profile
+        )
+
     def __del__(self):
         GPIO.output(self.relay_pin, GPIO.LOW)
         GPIO.cleanup()
@@ -212,6 +219,9 @@ class s2eLidarReaderParkingNode(Node):
             x2 = int(x2)
             if color == 4:
                 self._color2_m[x1:x2] = self.WEIGHT
+
+    def line_detector_callback(self, msg):
+        self.get_logger().info('Distance msg received: "%s"' % msg)
 
 def main(args=None):
     rclpy.init(args=args)
