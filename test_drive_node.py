@@ -30,10 +30,10 @@ class testDriveNode(Node):
     SPEED = "10"
     WEIGHT = 1
 
-    servo_min = 230  # Min pulse length out of 4096
-    servo_max = 385  # Max pulse length out of 4096
+    servo_min = 250  # Min pulse length out of 4096
+    servo_max = 380  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
-    servo_ctl = int(-(servo_max-servo_min)/2 * 1.7)
+    servo_ctl = int(-(servo_max-servo_min)/2 * 1.0)
 
     def __init__(self):
         super().__init__('test_drive_node')
