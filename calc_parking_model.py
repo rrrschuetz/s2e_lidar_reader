@@ -24,7 +24,7 @@ def apply_reciprocal_to_scan(df):
     scan_cols = df.filter(regex='^SCAN').columns
     for col in scan_cols:
         # Apply the reciprocal transformation, avoiding division by zero
-        df[col] = df[col].apply(lambda x: 1/x if x != 0 else 0)
+        df[col] = df[col].apply(lambda x: 1/(x*x) if x != 0 else 0)
     return df
 
 # 1. Preprocess data
