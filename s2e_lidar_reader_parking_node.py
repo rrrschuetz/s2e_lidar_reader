@@ -26,7 +26,7 @@ class s2eLidarReaderParkingNode(Node):
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 *1.0)
     motor_ctl_fwd = 16
-    motor_ctl_rev = 8
+    motor_ctl_rev = 10
     relay_pin = 17
     WEIGHT = 1
 

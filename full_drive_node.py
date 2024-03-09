@@ -238,25 +238,7 @@ class fullDriveNode(Node):
 
                 try:
                     # raw data
-                    #scan = np.array(msg.ranges)
                     scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
-
-                    # obstacle passing detector
-                    num_sections = 18
-                    section_data = np.array_split(scan, num_sections)
-                    section_means = [np.mean(section) for section in section_data]
-                    min_section_index = np.argmin(section_means)
-                    if section_means[min_section_index] < self.scan_min_dist:
-
-                        #if self._RED: self.get_logger().info("RED in focus");
-                        #else: self.get_logger().info("GREEN in focus");
-                        if self._RED and min_section_index in [0,1]:
-                            self._passed = True
-                            self.get_logger().info("RED obstacle to the left #%s in distance %s" % (min_section_index, section_means[min_section_index]))
-                        elif not self._RED and min_section_index in [17,18]:
-                            self._passed = True
-                            self.get_logger().info("GREEN obstacle to the right #%s in distance %s" % (min_section_index, section_means[min_section_index]))
-
                     scan[scan == np.inf] = np.nan
                     scan[scan > self.scan_max_dist] = np.nan
                     x = np.arange(len(scan))
