@@ -9,7 +9,7 @@ from Adafruit_PCA9685 import PCA9685
 
 class SpeedControlNode(Node):
     reverse_pulse = 204
-    neutral_pulse = 307
+    neutral_pulse = 310
     forward_pulse = 409
     base_fwd = 10
     base_rev = -4

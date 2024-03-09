@@ -19,7 +19,7 @@ class s2eLidarReaderParkingNode(Node):
     num_scan3 = 405
     scan_max_dist = 2.8
     reverse_pulse = 204
-    neutral_pulse = 307
+    neutral_pulse = 310  #307
     forward_pulse = 409
     servo_min = 250  # Min pulse length out of 4096
     servo_max = 380  # Max pulse length out of 4096
