@@ -440,9 +440,6 @@ class fullDriveNode(Node):
                 self._tf_control = True
                 self._clockwise = False
                 self._Y = 1.0
-                self._start_heading = self._sense.gyro['yaw']
-                self._last_heading = self._start_heading
-                self._round_start_time = self.get_clock().now()
                 self._speed_msg.data = "RESET"
                 self.speed_publisher_.publish(self._speed_msg)
                 self._speed_msg.data = self.FWD_SPEED
