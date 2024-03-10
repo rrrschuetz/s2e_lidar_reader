@@ -544,7 +544,7 @@ class fullDriveNode(Node):
 
 
     def line_detector_callback(self, msg):
-        self.get_logger().info('Distance msg received: "%s"' % msg)
+        #self.get_logger().info('Distance msg received: "%s"' % msg)
         if not self._dist_sensor: return
         if bool(msg.data):
             self.get_logger().info('Parking mode switched')
