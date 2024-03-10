@@ -70,14 +70,6 @@ class SpeedControlNode(Node):
         while self.impulse_count < abs(impulse_goal):
             self.impulse_count += sum(self.impulse_history)
             self.impulse_history.clear()
-
-            #self.y_pwm = self.neutral_pulse + power
-            #self.pwm.set_pwm(1, 0, self.y_pwm)
-            #time.sleep(0.07)
-            #self.y_pwm = self.neutral_pulse
-            #self.pwm.set_pwm(1, 0, self.y_pwm)
-            #time.sleep(0.07)
-
             time.sleep(0.1)
 
         self.y_pwm = self.neutral_pulse
