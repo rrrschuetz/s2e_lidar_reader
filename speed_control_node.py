@@ -11,7 +11,7 @@ class SpeedControlNode(Node):
     reverse_pulse = 204
     neutral_pulse = 310
     forward_pulse = 409
-    base_fwd = 10
+    base_fwd = 6   # 10
     base_rev = -4
     gpio_pin = 22
     relay_pin = 17
@@ -128,7 +128,7 @@ class SpeedControlNode(Node):
         if self.reverse != self.reverse_p:
             self.reverse_p = self.reverse
             self.reset_pid()
-            self.y_pwm = self.neutral_pulse
+            self.y_pwm = self.min_y if self.reverse else self.max_y
         else:
             pid_output = self.pid(self.impulse_count)
             #self.get_logger().info('impulses %s power: %s %s' % (self.impulse_count,pid_output,self.reverse))
