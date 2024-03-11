@@ -10,24 +10,24 @@ class openmvH7Node(Node):
         self.publisher_log_ = self.create_publisher(String, 'main_logger', 10)
 
         #self.serial_port = serial.Serial('/dev/ttyACM0', 115200, timeout=5)   #115200
-        self.pipe_s_path = "/mnt/cam1/pipe_s" 
-        self.pipe_r_path = "/mnt/cam1/pipe_r" 
+        self.pipe_s_path = "/mnt/cam1/pipe_s"
+        self.pipe_r_path = "/mnt/cam1/pipe_r"
         if not os.path.exists(self.pipe_s_path):
             os.mkfifo(self.pipe_s_path)
         if not os.path.exists(self.pipe_r_path):
             os.mkfifo(self.pipe_r_path)
         self.get_logger().info('OpenMV H7 1 connected' )
-        
+
         with open("/home/rrrschuetz/ros2_ws4/src/s2e_lidar_reader/s2e_lidar_reader/h7_cam_exec.py", 'rb') as file:
             script_data = file.read()
             fifo.write(script_data)
             fifo.flush()
         self.get_logger().info('OpenMV H7 1 script sent' )
         time.sleep(10)
-        
+
         #self.serial_port.reset_input_buffer()
         #self.serial_port.reset_output_buffer()
-        
+
         self.timer = self.create_timer(0.05, self.timer_callback)  # Adjust the timer callback rate as needed
         self._counter = 0
 
@@ -44,7 +44,7 @@ class openmvH7Node(Node):
             fd = os.open(self.pipe_s_path, os.O_RDONLY | os.O_NONBLOCK)
             fifo = os.fdopen(fd, 'r')
             header = fifo.readline().strip()
-            if header:   
+            if header:
                 self.get_logger().info(f'header {header}')
                 parts = header.split(',')
                 if len(parts) >= 4:
@@ -81,4 +81,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-
