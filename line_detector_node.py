@@ -19,7 +19,7 @@ class LineDetectorNode(Node):
         msg = Bool()
         msg.data = (GPIO.input(self.sensor_pin) == 0)
         self.publisher.publish(msg)
-        #self.get_logger().info('Publishing: "%s"' % msg.data)
+        self.get_logger().info('Publishing: "%s"' % msg.data)
 
 def main(args=None):
     rclpy.init(args=args)
