@@ -48,10 +48,6 @@ magenta = (0, 100, 32, 127, 127, -94)
 thresholds=[green, red, magenta]
 roi = [0,0,320,140]
 
-pipe_path = "/pipe_s"
-if not os.path.exists(pipe_path):
-    os.mkfifo(pipe_path)
-    
 while True:
     #while usb.any():
     #    data = usb.recv(4096)  # Receive 64 bytes at a time
@@ -80,9 +76,9 @@ while True:
         #usb.write(header)
         #usb.write(bloblist)
         #usb.write(jpg)
-        
-        with open(pipe_path, "w") as fifo:
-            fifo.write(header)
-            fifo.write(bloblist)
-            fifo.write(jpg)
-            fifo.flush()
+
+        with open("/pipe", "w") as file:
+            file.write(header)
+            file.write(bloblist)
+            file.write(jpg)
+            file.flush()
