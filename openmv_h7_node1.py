@@ -41,25 +41,24 @@ class openmvH7Node(Node):
             #if self.serial_port.in_waiting:
             #    header = self.serial_port.readline().decode().strip()
 
-            with open(pipe_path, "r") as fifo:
-                header = fifo.readline().strip()
-                if header:        
-                    # Log the received header
-                    #self.get_logger().info(f'header {header}')
-
-                    parts = header.split(',')
-                    if len(parts) >= 4:
-                        str_len = int(parts[1])
-                        jpg_len = int(parts[3])
-                        msg.data = self.serial_port.read(str_len).decode()
-                        # Additional code for processing the data
-                        with open("/home/rrrschuetz/test/saved_images/image_1_{}.jpg".format(self._counter),'wb') as f:
-                            f.write(fifo.read(jpg_len))
-                            self._counter += 1
-                            if self._counter > 9999: self._counter = 0
-                            self.publisher_.publish(msg)
-                    else:
-                        self.get_logger().warning(f"Invalid header format: {header}")
+            fd = os.open(self.pipe_s_path, os.O_RDONLY | os.O_NONBLOCK)
+            fifo = os.fdopen(fd, 'r')
+            header = fifo.readline().strip()
+            if header:   
+                self.get_logger().info(f'header {header}')
+                parts = header.split(',')
+                if len(parts) >= 4:
+                    str_len = int(parts[1])
+                    jpg_len = int(parts[3])
+                    msg.data = fifo.read(str_len).decode()
+                    # Additional code for processing the data
+                    with open("/home/rrrschuetz/test/saved_images/image_1_{}.jpg".format(self._counter),'wb') as f:
+                        f.write(fifo.read(jpg_len))
+                        self._counter += 1
+                        if self._counter > 9999: self._counter = 0
+                        self.publisher_.publish(msg)
+                else:
+                    self.get_logger().warning(f"Invalid header format: {header}")
 
         #except serial.SerialException as e:
         #    self.get_logger().error(f"Serial Exception: {e}")
@@ -69,6 +68,9 @@ class openmvH7Node(Node):
             self.get_logger().error(f"Unexpected Error: {e}")
         #    self.serial_port.reset_input_buffer()
         #    self.serial_port.reset_output_buffer()
+
+        finally:
+            fifo.close()
 
 def main(args=None):
     rclpy.init(args=args)
