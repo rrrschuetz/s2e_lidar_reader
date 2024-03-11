@@ -1,13 +1,22 @@
-import sensor, image, time, math, pyb, lcd, os
+#import sensor, image, time, math, pyb, lcd, os
+import sensor, image, time, os
+from machine import Pin
 
-usb = pyb.USB_VCP()
-red_led = pyb.LED(1)
-green_led = pyb.LED(2)
-blue_led = pyb.LED(3)
+#usb = pyb.USB_VCP()
 
-red_led.on()
-green_led.off()
-blue_led.off()
+#red_led = pyb.LED(1)
+#green_led = pyb.LED(2)
+#blue_led = pyb.LED(3)
+#red_led.on()
+#green_led.off()
+#blue_led.off()
+
+red_led = Pin('P0', Pin.OUT)
+green_led = Pin('P1', Pin.OUT)
+blue_led = Pin('P2', Pin.OUT)
+red_led.value(1)  # 1 to turn on, 0 to turn off
+green_led.value(0)
+blue_led.value(0)
 
 sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
@@ -39,9 +48,13 @@ magenta = (0, 100, 32, 127, 127, -94)
 thresholds=[green, red, magenta]
 roi = [0,0,320,140]
 
+pipe_path = "/pipe_s"
+if not os.path.exists(pipe_path):
+    os.mkfifo(pipe_path)
+    
 while True:
-    while usb.any():
-        data = usb.recv(4096)  # Receive 64 bytes at a time
+    #while usb.any():
+    #    data = usb.recv(4096)  # Receive 64 bytes at a time
 
     #time.sleep(0.05)
     img = sensor.snapshot()
@@ -63,6 +76,13 @@ while True:
     if bloblist:
         jpg = img.compress(quality=85)  # Compress image into JPEG format
         header = "STR,{},JPG,{}\n".format(len(bloblist), len(jpg))
-        usb.write(header)
-        usb.write(bloblist)
-        usb.write(jpg)
+        
+        #usb.write(header)
+        #usb.write(bloblist)
+        #usb.write(jpg)
+        
+        with open(pipe_path, "w") as fifo:
+            fifo.write(header)
+            fifo.write(bloblist)
+            fifo.write(jpg)
+            fifo.flush()
