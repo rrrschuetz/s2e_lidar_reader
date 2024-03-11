@@ -20,7 +20,11 @@ blue_led.value(0)
 def receive_script(filename):
     #while not usb.isconnected():
     #    pass
-
+    
+    pipe_r_path = "/pipe_r"
+    if not os.path.exists(pipe_r_path):
+        os.mkfifo(pipe_r_path)
+    
     #red_led.off()
     #green_led.off()
     #blue_led.on()
@@ -31,10 +35,14 @@ def receive_script(filename):
     #while not usb.any():
     #    pass  # Wait for data
 
-    #with open(filename, 'wb') as file:
-    #    while usb.any():
-    #        data = usb.recv(4096)  # Receive 64 bytes at a time
-    #        file.write(data)
+    with open(filename, 'wb') as file:
+        
+        #while usb.any():
+        #    data = usb.recv(4096)  # Receive 64 bytes at a time
+        #    file.write(data)
+
+        with open(pipe_r_path, "r") as fifo:
+            file.write(fifo.read())
 
 # Name of the new script file
 new_script_filename = "/h7_cam_exec.py"
