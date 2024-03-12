@@ -8,7 +8,7 @@ class openmvH7Node(Node):
         super().__init__('serial_node')
         self.publisher_ = self.create_publisher(String, 'openmv_topic2', 10)
         self.publisher_log_ = self.create_publisher(String, 'main_logger', 10)
-        self.serial_port = serial.Serial('/dev/ttyACM1', 115200, timeout=5)  # 115200
+        self.serial_port = serial.Serial('/dev/ttyACM0', 115200, timeout=5)  # 115200
         self.get_logger().info('OpenMV H7 2 connected' )
         with open("/home/rrrschuetz/ros2_ws4/src/s2e_lidar_reader/s2e_lidar_reader/h7_cam_exec.py", 'rb') as file:
             script_data = file.read()
