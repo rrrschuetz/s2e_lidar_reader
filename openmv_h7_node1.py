@@ -31,12 +31,13 @@ class openmvH7Node(Node):
                 header = self.serial_port.readline().decode().strip()
 
                 # Log the received header
-                #self.get_logger().info(f'header {header}')
+                self.get_logger().info(f'header {header}')
 
                 parts = header.split(',')
-                if len(parts) >= 4:
-                    str_len = int(parts[1])
-                    jpg_len = int(parts[3])
+                if len(parts) >= 5:
+                    cam_id = parts[1]
+                    str_len = int(parts[2])
+                    jpg_len = int(parts[4])
                     msg.data = self.serial_port.read(str_len).decode()
 
                     # Additional code for processing the data
