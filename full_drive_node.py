@@ -30,8 +30,8 @@ class fullDriveNode(Node):
     servo_min = 250  # Min pulse length out of 4096
     servo_max = 380  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
-    servo_ctl_fwd = int(-(servo_max-servo_min)/2 * 1.0)
-    servo_ctl_rev = int(-(servo_max-servo_min)/2 * 1.0)
+    servo_ctl_fwd = int(-(servo_max-servo_min)/2 * 1.1)
+    servo_ctl_rev = int(-(servo_max-servo_min)/2 * 1.1)
     motor_ctl = -20
     relay_pin = 17
     WEIGHT = 1
@@ -172,9 +172,6 @@ class fullDriveNode(Node):
         msg.data = "Ready!"
         self.publisher_.publish(msg)
 
-        self._state = "RACE"
-
-
     def __del__(self):
         self.get_logger().info('Switch off ESC')
         self.motor_off()
@@ -215,7 +212,7 @@ class fullDriveNode(Node):
                     self._total_heading_change += heading_change
                     self._last_heading = self._current_heading
                     #self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
-                    if abs(self._total_heading_change) > 1150:
+                    if abs(self._total_heading_change) > 1125:
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                         self._state = "PARK"
@@ -238,25 +235,7 @@ class fullDriveNode(Node):
 
                 try:
                     # raw data
-                    #scan = np.array(msg.ranges)
                     scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
-
-                    # obstacle passing detector
-                    num_sections = 18
-                    section_data = np.array_split(scan, num_sections)
-                    section_means = [np.mean(section) for section in section_data]
-                    min_section_index = np.argmin(section_means)
-                    if section_means[min_section_index] < self.scan_min_dist:
-
-                        #if self._RED: self.get_logger().info("RED in focus");
-                        #else: self.get_logger().info("GREEN in focus");
-                        if self._RED and min_section_index in [0,1]:
-                            self._passed = True
-                            self.get_logger().info("RED obstacle to the left #%s in distance %s" % (min_section_index, section_means[min_section_index]))
-                        elif not self._RED and min_section_index in [17,18]:
-                            self._passed = True
-                            self.get_logger().info("GREEN obstacle to the right #%s in distance %s" % (min_section_index, section_means[min_section_index]))
-
                     scan[scan == np.inf] = np.nan
                     scan[scan > self.scan_max_dist] = np.nan
                     x = np.arange(len(scan))
@@ -409,79 +388,66 @@ class fullDriveNode(Node):
 
        
     def joy_callback(self, msg):
-        if self._state == 'RACE':
+        if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
 
-            if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
+            # Check if 'A' button is pressed - switch on AI steering, counterclockwise
+            if msg.buttons[0] == 1:
+                self._state = "RACE"
+                self._tf_control = True
+                self._clockwise = False
+                self._dist_sensor = False
+                self._Y = 1.0
+                self._start_heading = self._sense.gyro['yaw']
+                self._last_heading = self._start_heading
+                self._round_start_time = self.get_clock().now()
+                self._speed_msg.data = "RESET"
+                self.speed_publisher_.publish(self._speed_msg)
+                self._speed_msg.data = self.FWD_SPEED
+                self.speed_publisher_.publish(self._speed_msg)
 
-                # Check if 'A' button is pressed - switch on AI steering, counterclockwise
-                if msg.buttons[0] == 1:
-                    self._tf_control = True
-                    self._clockwise = False
-                    self._Y = 1.0
-                    self._start_heading = self._sense.gyro['yaw']
-                    self._last_heading = self._start_heading
-                    self._round_start_time = self.get_clock().now()
-                    self._speed_msg.data = "RESET"
-                    self.speed_publisher_.publish(self._speed_msg)
-                    self._speed_msg.data = self.FWD_SPEED
-                    self.speed_publisher_.publish(self._speed_msg)
+            # Check if 'X' button is pressed - switch on AI steering, clockwise
+            if msg.buttons[2] == 1:
+                self._state = "RACE"
+                self._tf_control = True
+                self._clockwise = True
+                self._dist_sensor = False
+                self._Y = 1.0
+                self._start_heading = self._sense.gyro['yaw']
+                self._last_heading = self._start_heading
+                self._round_start_time = self.get_clock().now()
+                self._speed_msg.data = "RESET"
+                self.speed_publisher_.publish(self._speed_msg)
+                self._speed_msg.data = self.FWD_SPEED
+                self.speed_publisher_.publish(self._speed_msg)
 
-                # Check if 'X' button is pressed - switch on AI steering, clockwise
-                if msg.buttons[2] == 1:
-                    self._tf_control = True
-                    self._clockwise = True
-                    self._Y = 1.0
-                    self._start_heading = self._sense.gyro['yaw']
-                    self._last_heading = self._start_heading
-                    self._round_start_time = self.get_clock().now()
-                    self._speed_msg.data = "RESET"
-                    self.speed_publisher_.publish(self._speed_msg)
-                    self._speed_msg.data = self.FWD_SPEED
-                    self.speed_publisher_.publish(self._speed_msg)
+            # Check if 'B' button is pressed - switch off AI steering
+            elif msg.buttons[1] == 1:
+                self.get_logger().info('emergency shutdown initiated by supervisor')
+                self._state = "IDLE"
+                self._tf_control = False
+                self._tf_parking = False
+                self._processing = False
+                self._dist_sensor = False
+                self._pwm.set_pwm(0, 0, int(self.servo_neutral))
+                self._speed_msg.data = "0"
+                self.speed_publisher_.publish(self._speed_msg)
+                self.motor_off()
 
-                # Check if 'B' button is pressed - switch off AI steering
-                elif msg.buttons[1] == 1:
-                    self.get_logger().info('emergency shutdown initiated by supervisor')
-                    self._tf_control = False
-                    self._processing = False
-                    self._pwm.set_pwm(0, 0, int(self.servo_neutral))
-                    self._speed_msg.data = "0"
-                    self.speed_publisher_.publish(self._speed_msg)
-                    self.motor_off()
+            # Check if 'Y' button is pressed - switch on AI parking
+            if msg.buttons[3] == 1:
+                self._state = "PARK"
+                self._dist_sensor = True
+                self._tf_control = True
+                self._clockwise = False
+                self._Y = 1.0
+                self._speed_msg.data = "RESET"
+                self.speed_publisher_.publish(self._speed_msg)
+                self._speed_msg.data = self.FWD_SPEED
+                self.speed_publisher_.publish(self._speed_msg)
 
-            elif hasattr(msg, 'axes') and len(msg.axes) > 5:
-                self._X = msg.axes[2]
-                self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl_fwd))
-
-        elif self._state == 'PARK':
-
-            if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
-
-                # Check if 'A' button is pressed - switch on AI steering, counterclockwise
-                if msg.buttons[0] == 1:
-                    self._speed_msg.data = "RESET"
-                    self.speed_publisher_.publish(self._speed_msg)
-                    self._speed_msg.data = self.FWD_SPEED
-                    self.speed_publisher_.publish(self._speed_msg)
-                    self._tf_control = True
-                    self._dist_sensor = True
-
-                # Check if 'B' button is pressed - switch off all steering
-                elif msg.buttons[1] == 1:
-                    self.get_logger().info('emergency shutdown initiated by supervisor')
-                    self._tf_control = False
-                    self._tf_parking = False
-                    self._processing = False
-                    self._pwm.set_pwm(0, 0, int(self.servo_neutral))
-                    self.motor_off()
-
-                # Check if 'X' button is pressed - test move
-                elif msg.buttons[2] == 1:
-                    self._tf_parking = True
-                    self._dist_sensor = False
-
-        elif self._state == 'IDLE':
-            self.get_logger().info('joy_callback: wait mode active')
+        elif hasattr(msg, 'axes') and len(msg.axes) > 5:
+            self._X = msg.axes[2]
+            self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl_fwd))
 
 
     def touch_button_callback(self, msg):
@@ -578,8 +544,8 @@ class fullDriveNode(Node):
 
 
     def line_detector_callback(self, msg):
+        #self.get_logger().info('Distance msg received: "%s"' % msg)
         if not self._dist_sensor: return
-        self.get_logger().info('Distance msg received: "%s"' % msg)
         if bool(msg.data):
             self.get_logger().info('Parking mode switched')
             self._tf_control = False
