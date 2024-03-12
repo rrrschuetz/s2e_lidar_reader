@@ -1,4 +1,9 @@
 import sensor, image, time, math, pyb, lcd, os
+import machine
+
+# Get the unique machine ID
+unique_id = machine.unique_id()
+unique_id_hex = ''.join(['{:02x}'.format(byte) for byte in unique_id])
 
 usb = pyb.USB_VCP()
 red_led = pyb.LED(1)
@@ -62,7 +67,7 @@ while True:
     bloblist = ','.join(blob_entries)
     if bloblist:
         jpg = img.compress(quality=85)  # Compress image into JPEG format
-        header = "STR,{},JPG,{}\n".format(len(bloblist), len(jpg))
+        header = "STR,{},STR,{},JPG,{}\n".format(unique_id_hex, len(bloblist), len(jpg))
         usb.write(header)
         usb.write(bloblist)
         usb.write(jpg)
