@@ -88,14 +88,14 @@ class s2eLidarReaderNode(Node):
         self.subscription_h71 = self.create_subscription(
             String,
             'openmv_topic1',
-            self.openmv_h7_callback1,
+            self.openmv_h7_callback,
             qos_profile
         )
 
         self.subscription_h72 = self.create_subscription(
             String,
             'openmv_topic2',
-            self.openmv_h7_callback2,
+            self.openmv_h7_callback,
             qos_profile
         )
 
@@ -166,7 +166,34 @@ class s2eLidarReaderNode(Node):
         except IOError as e:
             self.get_logger().error('IOError I2C occurred: %s' % str(e))
 
-    def openmv_h7_callback1(self, msg):
+    def openmv_h7_callback(self, msg):
+        #self.get_logger().info('cam msg received: "%s"' % msg)
+        data = msg.data.split(',')
+        cam = int(data[0])
+        if cam == 1:
+            self._color1_g = np.zeros(self.HPIX, dtype=int)
+            self._color1_r = np.zeros(self.HPIX, dtype=int)
+        elif cam == 2:
+            self._color2_g = np.zeros(self.HPIX, dtype=int)
+            self._color2_r = np.zeros(self.HPIX, dtype=int)
+
+        blobs = ((data[i],data[i+1],data[i+2]) for i in range (1,len(data),3))
+        for blob in blobs:
+            color, x1, x2 = blob
+            color = int(color)
+            x1 = int(x1)
+            x2 = int(x2)
+            if color == 1:
+                if cam == 1 and not self._clockwise: self._color1_g[x1:x2] = self.WEIGHT
+                if cam == 2 and self._clockwise: self._color2_g[x1:x2] = self.WEIGHT
+                self._RED = False
+            if color == 2:
+                if cam == 1 and not self._clockwise: self._color1_r[x1:x2] = self.WEIGHT
+                if cam == 2 and self._clockwise: self._color2_r[x1:x2] = self.WEIGHT
+                self._RED = True
+            #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
+
+    def openmv_h7_callback(self, msg):
         if self._clockwise: return
         #self.get_logger().info('cam msg received: "%s"' % msg)
 
@@ -193,38 +220,6 @@ class s2eLidarReaderNode(Node):
             elif color == 2:
                 self._color1_r[x1:x2] = self.WEIGHT
                 #self._color1_r[0:self.HPIX] = self.WEIGHT
-
-    def openmv_h7_callback2(self, msg):
-        if not self._clockwise: return
-        #self.get_logger().info('cam msg received: "%s"' % msg)
-
-        self._color2_g = np.zeros(self.HPIX, dtype=int)
-        self._color2_r = np.zeros(self.HPIX, dtype=int)
-
-        data = msg.data.split(',')
-        if not msg.data:
-            self.get_logger().warning("Received empty message!")
-            return
-        if len(data) % 3 != 0:
-            self.get_logger().error("Data length is not divisible by 3!")
-            return
-
-        blobs = ((data[i],data[i+1],data[i+2]) for i in range (0,len(data),3))
-        for blob in blobs:
-            color, x1, x2 = blob
-            color = int(color)
-            x1 = int(x1)
-            x2 = int(x2)
-            if color == 1:
-                self._color2_g[x1:x2] = self.WEIGHT
-                #self._color2_g[0:self.HPIX] = self.WEIGHT
-            elif color == 2:
-                self._color2_r[x1:x2] = self.WEIGHT
-                #self._color2_r[0:self.HPIX] = self.WEIGHT
-
-#    def speed_monitor_callback(self, msg):
-#        self._speed = eval(msg.data)
-#        #self.get_logger().info('Speed monitor: %s m/s' % self._speed)
 
 def main(args=None):
     rclpy.init(args=args)

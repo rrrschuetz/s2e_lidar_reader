@@ -90,14 +90,14 @@ class s2eLidarReaderParkingNode(Node):
         self.subscription_h71 = self.create_subscription(
             String,
             'openmv_topic1',
-            self.openmv_h7_callback1,
+            self.openmv_h7_callback,
             qos_profile
         )
 
         self.subscription_h72 = self.create_subscription(
             String,
             'openmv_topic2',
-            self.openmv_h7_callback2,
+            self.openmv_h7_callback,
             qos_profile
         )
 
@@ -172,52 +172,23 @@ class s2eLidarReaderParkingNode(Node):
         except IOError as e:
             self.get_logger().error('IOError I2C occurred: %s' % str(e))
 
-    def openmv_h7_callback1(self, msg):
-        #self.get_logger().info('CAM1 msg received: "%s"' % msg)
-        self._color1_m = np.zeros(self.HPIX, dtype=int)
-
+    def openmv_h7_callback(self, msg):
+        #self.get_logger().info('CAM msg received: "%s"' % msg)
         data = msg.data.split(',')
-        if not msg.data:
-            self.get_logger().warning("Received empty message!")
-            return
-        if len(data) % 3 != 0:
-            self.get_logger().error("Data length is not divisible by 3!")
-            return
-
+        cam = int(data[0])
+        if cam == 1:  self._color1_m = np.zeros(self.HPIX, dtype=int)
+        elif cam == 2: self._color2_m = np.zeros(self.HPIX, dtype=int)
         self._cam_online = True
 
-        blobs = ((data[i],data[i+1],data[i+2]) for i in range (0,len(data),3))
+        blobs = ((data[i],data[i+1],data[i+2]) for i in range (1,len(data),3))
         for blob in blobs:
             color, x1, x2 = blob
             color = int(color)
             x1 = int(x1)
             x2 = int(x2)
             if color == 4:
-                self._color1_m[x1:x2] = self.WEIGHT
-
-    def openmv_h7_callback2(self, msg):
-        #self.get_logger().info('CAM2 msg received: "%s"' % msg)
-        self._color2_m = np.zeros(self.HPIX, dtype=int)
-
-        data = msg.data.split(',')
-        if not msg.data:
-            self.get_logger().warning("Received empty message!")
-            return
-        if len(data) % 3 != 0:
-            self.get_logger().error("Data length is not divisible by 3!")
-            return
-
-        self._cam_online = True
-
-        blobs = ((data[i],data[i+1],data[i+2]) for i in range (0,len(data),3))
-        for blob in blobs:
-            color, x1, x2 = blob
-            color = int(color)
-            x1 = int(x1)
-            x2 = int(x2)
-            if color == 4:
-                self._color2_m[x1:x2] = self.WEIGHT
-
+                if cam == 1: self._color1_m[x1:x2] = self.WEIGHT
+                if cam == 2: self._color2_m[x1:x2] = self.WEIGHT
     def line_detector_callback(self, msg):
         self.get_logger().info('Distance msg received: "%s"' % msg)
 
