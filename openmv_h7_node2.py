@@ -38,8 +38,8 @@ class openmvH7Node(Node):
                     cam_id = parts[1]
                     str_len = int(parts[3])
                     jpg_len = int(parts[5])
-                    if cam_id   == '33001c000851303436373730': msg.data = '1,'
-                    elif cam_id == '340046000e51303434373339': msg.data = '2,'
+                    if cam_id   == '33001c000851303436373730': msg.data = '2,'
+                    elif cam_id == '340046000e51303434373339': msg.data = '1,'
                     msg.data += self.serial_port.read(str_len).decode()
 
                     # Additional code for processing the data
