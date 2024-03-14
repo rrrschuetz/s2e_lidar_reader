@@ -475,7 +475,7 @@ class fullDriveNode(Node):
 
 
     def openmv_h7_callback(self, msg):
-        self.get_logger().info('cam msg received: "%s"' % msg)
+        #self.get_logger().info('cam msg received: "%s"' % msg)
         data = msg.data.split(',')
         cam = int(data[0])
         if cam == 1:
