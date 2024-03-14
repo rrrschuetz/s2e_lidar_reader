@@ -114,14 +114,14 @@ class fullDriveNode(Node):
         self.subscription_h71 = self.create_subscription(
             String,
             'openmv_topic1',
-            self.openmv_h7_callback1,
+            self.openmv_h7_callback,
             qos_profile
         )
 
         self.subscription_h72 = self.create_subscription(
             String,
             'openmv_topic2',
-            self.openmv_h7_callback2,
+            self.openmv_h7_callback,
             qos_profile
         )
 
@@ -474,73 +474,35 @@ class fullDriveNode(Node):
         self.publisher_.publish(ack)
 
 
-    def openmv_h7_callback1(self, msg):
-        if self._clockwise: return
-        #self.get_logger().info('cam msg received: "%s"' % msg)
-        self._color1_g = np.zeros(self.HPIX, dtype=int)
-        self._color1_r = np.zeros(self.HPIX, dtype=int)
+    def openmv_h7_callback(self, msg):
+        self.get_logger().info('cam msg received: "%s"' % msg)
         data = msg.data.split(',')
-        if not msg.data:
-            self.get_logger().warning("Received empty message!")
-            return
-        if len(data) % 3 != 0:
-            self.get_logger().error("Data length is not divisible by 3!")
-            return
+        cam = int(data[0])
+        if cam == 1:
+            self._color1_g = np.zeros(self.HPIX, dtype=int)
+            self._color1_r = np.zeros(self.HPIX, dtype=int)
+        elif cam == 2:
+            self._color2_g = np.zeros(self.HPIX, dtype=int)
+            self._color2_r = np.zeros(self.HPIX, dtype=int)
 
-        blobs = ((data[i],data[i+1],data[i+2]) for i in range (0,len(data),3))
+        blobs = ((data[i],data[i+1],data[i+2]) for i in range (1,len(data),3))
         for blob in blobs:
             color, x1, x2 = blob
             color = int(color)
             x1 = int(x1)
             x2 = int(x2)
             if color == 1:
-                self._color1_g[x1:x2] = self.WEIGHT
-                #self._color1_g[0:self.HPIX] = self.WEIGHT
+                if cam == 1 and not self._clockwise: self._color1_g[x1:x2] = self.WEIGHT
+                if cam == 2: and self._clockwise: self._color2_g[x1:x2] = self.WEIGHT
                 self._RED = False
-                #self.get_logger().info('GREEN plan activated')
             if color == 2:
-                self._color1_r[x1:x2] = self.WEIGHT
-                #self._color1_r[0:self.HPIX] = self.WEIGHT
+                if cam == 1 and not self._clockwise: self._color1_r[x1:x2] = self.WEIGHT
+                if cam == 2 and self._clockwise: self._color2_r[x1:x2] = self.WEIGHT
                 self._RED = True
-                #self.get_logger().info('RED plan activated')
             if color == 4:
-                self._color1_m[x1:x2] = self.WEIGHT
-
-            #self.get_logger().info('CAM1: blob inserted: %s,%s,%s' % (color,x1,x2))
-
-    def openmv_h7_callback2(self, msg):
-        if not self._clockwise: return
-        #self.get_logger().info('cam msg received: "%s"' % msg)
-        self._color2_g = np.zeros(self.HPIX, dtype=int)
-        self._color2_r = np.zeros(self.HPIX, dtype=int)
-        data = msg.data.split(',')
-        if not msg.data:
-            self.get_logger().warning("Received empty message!")
-            return
-        if len(data) % 3 != 0:
-            self.get_logger().error("Data length is not divisible by 3!")
-            return
-
-        blobs = ((data[i],data[i+1],data[i+2]) for i in range (0,len(data),3))  
-        for blob in blobs:
-            color, x1, x2 = blob
-            color = int(color)
-            x1 = int(x1)
-            x2 = int(x2)
-            if color == 1:
-                self._color2_g[x1:x2] = self.WEIGHT
-                #self._color2_g[0:self.HPIX] = self.WEIGHT
-                self._RED = False
-                #self.get_logger().info('GREEN plan activated')
-            if color == 2:
-                self._color2_r[x1:x2] = self.WEIGHT
-                #self._color2_r[0:self.HPIX] = self.WEIGHT
-                self._RED = True
-                #self.get_logger().info('RED plan activated')
-            if color == 4:
-                self._color2_m[x1:x2] = self.WEIGHT
-
-            #self.get_logger().info('CAM2: blob inserted: %s,%s,%s' % (color,x1,x2))
+                if cam == 1: self._color1_m[x1:x2] = self.WEIGHT
+                if cam == 2: self._color2_m[x1:x2] = self.WEIGHT
+            #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
 
 
     def line_detector_callback(self, msg):
