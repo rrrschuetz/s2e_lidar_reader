@@ -493,7 +493,7 @@ class fullDriveNode(Node):
             x2 = int(x2)
             if color == 1:
                 if cam == 1 and not self._clockwise: self._color1_g[x1:x2] = self.WEIGHT
-                if cam == 2: and self._clockwise: self._color2_g[x1:x2] = self.WEIGHT
+                if cam == 2 and self._clockwise: self._color2_g[x1:x2] = self.WEIGHT
                 self._RED = False
             if color == 2:
                 if cam == 1 and not self._clockwise: self._color1_r[x1:x2] = self.WEIGHT
