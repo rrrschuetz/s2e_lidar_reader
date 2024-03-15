@@ -27,7 +27,7 @@ class fullDriveNode(Node):
     num_scan3 = 405
     scan_min_dist = 0.30
     scan_max_dist = 2.8
-    servo_min = 250  # Min pulse length out of 4096
+    servo_min = 260  # Min pulse length out of 4096
     servo_max = 380  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl_fwd = int(-(servo_max-servo_min)/2 * 1.0)
@@ -442,7 +442,7 @@ class fullDriveNode(Node):
                 self._Y = 1.0
                 self._speed_msg.data = "RESET"
                 self.speed_publisher_.publish(self._speed_msg)
-                self._speed_msg.data = self.FWD_SPEED
+                self._speed_msg.data = self.REV_SPEED
                 self.speed_publisher_.publish(self._speed_msg)
 
         elif hasattr(msg, 'axes') and len(msg.axes) > 5:
