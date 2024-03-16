@@ -289,6 +289,8 @@ class fullDriveNode(Node):
                 self._processing = True
                 # raw data
                 scan = np.array(msg.ranges[self.num_scan+self.num_scan3:]+msg.ranges[:self.num_scan2+self.num_scan3])
+                scan[:200] = 0
+                scan[2132:0] = 0
 
                 if self._tf_parking:
                     num_sections = 18
@@ -334,8 +336,6 @@ class fullDriveNode(Node):
                         finite_vals = np.isfinite(scan)
                         scan_interpolated = np.interp(x, x[finite_vals], scan[finite_vals])
                         scan_interpolated = [1/value if value != 0 else 0 for value in scan_interpolated]
-                        scan_interpolated[:200] = 0
-                        scan_interpolated[2132:] = 0
                         scan_interpolated = list(scan_interpolated)
                         color_data = list(self._color1_m) + list(self._color2_m)
 
