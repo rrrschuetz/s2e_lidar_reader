@@ -290,7 +290,7 @@ class fullDriveNode(Node):
                 # raw data
                 scan = np.array(msg.ranges[self.num_scan+self.num_scan3:]+msg.ranges[:self.num_scan2+self.num_scan3])
                 scan[:200] = 0
-                scan[2132:0] = 0
+                #scan[2132:0] = 0
 
                 if self._tf_parking:
                     num_sections = 18
