@@ -26,7 +26,7 @@ class s2eLidarReaderParkingNode(Node):
     servo_neutral = int((servo_max+servo_min)/2)
     servo_ctl = int(-(servo_max-servo_min)/2 *1.0)
     motor_ctl_fwd = 16
-    motor_ctl_rev = 8
+    motor_ctl_rev = 10
     relay_pin = 17
     WEIGHT = 1
 
@@ -118,6 +118,7 @@ class s2eLidarReaderParkingNode(Node):
 
         # Convert the laser scan data to a string
         scan = np.array(msg.ranges[self.num_scan+self.num_scan3:]+msg.ranges[:self.num_scan2+self.num_scan3])
+        scan[:200] = 0
 
         scan[scan == np.inf] = np.nan
         scan[scan > self.scan_max_dist] = np.nan
