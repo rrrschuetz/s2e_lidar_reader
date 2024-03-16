@@ -364,8 +364,8 @@ class fullDriveNode(Node):
                             self._state = "IDLE"
                             self._speed_msg.data = "STOP"
                         else:
-                            #if self._Y >= 0:
-                            if True:
+                            if self._Y >= 0:
+                            #if True:
                                 XX = int(self.servo_neutral+self._X*self.servo_ctl_rev)
                                 self._speed_msg.data = self.REV_SPEED
                                 #self.get_logger().info('Reverse: %s / %s ' % (self._Y,self._speed_msg.data))
@@ -445,7 +445,7 @@ class fullDriveNode(Node):
                 self._Y = 1.0
                 self._speed_msg.data = "RESET"
                 self.speed_publisher_.publish(self._speed_msg)
-                self._speed_msg.data = self.REV_SPEED
+                self._speed_msg.data = self.FWD_SPEED
                 self.speed_publisher_.publish(self._speed_msg)
 
         elif hasattr(msg, 'axes') and len(msg.axes) > 5:
