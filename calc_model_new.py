@@ -87,60 +87,27 @@ class WeightedConcatenate(Layer):
          lidar, color = inputs
          return tf.concat([self.weight_lidar * lidar, self.weight_color * color], axis=-1)
 
-#def create_cnn_model(lidar_input_shape, color_input_shape):
-#    # LIDAR data path
-#    lidar_input = Input(shape=lidar_input_shape)
-#    lidar_path = Conv1D(64, kernel_size=5, activation='relu')(lidar_input)
-#    lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
-#    lidar_path = Conv1D(128, kernel_size=5, activation='relu', kernel_regularizer=l2(0.01))(lidar_path)
-#    lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
-#    lidar_path = Flatten()(lidar_path)
-
-#    color_input = Input(shape=color_input_shape)
-#    color_path = Dense(64, activation='relu')(color_input)
-#    color_path = Dropout(0.3)(color_path)  # Use dropout
-#    color_path = Dense(128, activation='relu', kernel_regularizer=l2(0.01))(color_path)  # Regularization
-#    color_path = Flatten()(color_path)
-
-#    # Concatenation
-#    #concatenated = Concatenate()([lidar_path, color_path])
-#    concatenated = WeightedConcatenate(weight_lidar=0.2, weight_color=0.8)([lidar_path, color_path])
-
-#    # Further processing
-#    combined = Dense(64, activation='relu')(concatenated)
-#    combined = Dense(64, activation='relu')(combined)
-#    combined = Dense(64, activation='relu')(combined)
-#    combined = Dense(64, activation='relu')(combined)
-#    combined = Dense(32, activation='relu')(combined)
-#    output = Dense(2)(combined)
-
-#    model = Model(inputs=[lidar_input, color_input], outputs=output)
-#    model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
-#    return model
-
 def create_cnn_model(lidar_input_shape, color_input_shape):
     # LIDAR data path
     lidar_input = Input(shape=lidar_input_shape)
-    # Increase the number of filters in convolutional layers
-    lidar_path = Conv1D(128, kernel_size=5, activation='relu')(lidar_input)  # Increased from 64 to 128
+    lidar_path = Conv1D(64, kernel_size=5, activation='relu')(lidar_input)
     lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
-    lidar_path = Conv1D(256, kernel_size=5, activation='relu', kernel_regularizer=l2(0.01))(lidar_path)  # Increased from 128 to 256
+    lidar_path = Conv1D(128, kernel_size=5, activation='relu', kernel_regularizer=l2(0.01))(lidar_path)
     lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
     lidar_path = Flatten()(lidar_path)
 
-    # Color data path
     color_input = Input(shape=color_input_shape)
-    # Increase the units in dense layers
-    color_path = Dense(128, activation='relu')(color_input)  # Increased from 64 to 128
-    color_path = Dropout(0.3)(color_path)
-    color_path = Dense(256, activation='relu', kernel_regularizer=l2(0.01))(color_path)  # Increased from 128 to 256
+    color_path = Dense(64, activation='relu')(color_input)
+    color_path = Dropout(0.3)(color_path)  # Use dropout
+    color_path = Dense(128, activation='relu', kernel_regularizer=l2(0.01))(color_path)  # Regularization
     color_path = Flatten()(color_path)
 
+    # Concatenation
     #concatenated = Concatenate()([lidar_path, color_path])
     concatenated = WeightedConcatenate(weight_lidar=0.2, weight_color=0.8)([lidar_path, color_path])
+
     # Further processing
-    combined = Dense(128, activation='relu')(concatenated)  # Increased capacity
-    # Reduced the number of layers but increased units per layer for simplicity and to manage computational cost
+    combined = Dense(64, activation='relu')(concatenated)
     combined = Dense(64, activation='relu')(combined)
     combined = Dense(64, activation='relu')(combined)
     combined = Dense(64, activation='relu')(combined)
@@ -150,9 +117,6 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     model = Model(inputs=[lidar_input, color_input], outputs=output)
     model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
     return model
-
-
-
 
 # Create EarlyStopping callback
 early_stopping_callback = EarlyStopping(monitor='val_loss', patience=2)
