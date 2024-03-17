@@ -220,11 +220,6 @@ class fullDriveNode(Node):
                         self._dist_sensor = True
                         msg = String()
                         msg.data = "Race completed, parking mode"
-                        self.publisher_.publish(msg)
-                        self._speed_msg.data = "RESET"
-                        self.speed_publisher_.publish(self._speed_msg)
-                        self._speed_msg.data = self.FWD_SPEED
-                        self.speed_publisher_.publish(self._speed_msg)
                         return
 
                 #self._clockwise = (self._total_heading_change > 0)
@@ -332,11 +327,23 @@ class fullDriveNode(Node):
                     num_sections = 18
                     section_data = np.array_split(scan, num_sections)
                     section_means = [np.mean(section) for section in section_data]
-                    if section_means[12] < 0.5:
-                        self.get_logger().info('Parking ended ')
-                        self._tf_parking = False
-                        self._speed_msg.data = "STOP"
+                    if section_means[7] < 0.95:
+
+                        self.get_logger().info('Parking mode switched')
+                        self._tf_control = False
+                        self._tf_parking = True
+                        self._speed_msg.data = "0"
                         self.speed_publisher_.publish(self._speed_msg)
+
+                        self._X = 1.0 # right
+                        XX = int(self.servo_neutral+self._X*self.servo_ctl_fwd)
+                        self._pwm.set_pwm(0, 0, XX)
+                        time.sleep(1)
+
+                        self._speed_msg.data = "R20"
+                        self.speed_publisher_.publish(self._speed_msg)
+                        time.sleep(1)
+
                         self._state = "IDLE"
                         return
 
