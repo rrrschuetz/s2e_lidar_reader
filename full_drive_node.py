@@ -497,6 +497,10 @@ class fullDriveNode(Node):
                 if cam == 2: self._color2_m[x1:x2] = self.WEIGHT
             #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
 
+        if self._clockwise:
+            self._color1_g.reverse()
+            self._color1_r.reverse()
+
 
     def line_detector_callback(self, msg):
         #self.get_logger().info('Distance msg received: "%s"' % msg)
