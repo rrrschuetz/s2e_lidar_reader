@@ -228,7 +228,7 @@ class fullDriveNode(Node):
                 try:
                     # raw data
                     scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
-                    if self._clockwise: scan.reverse()
+                    if self._clockwise: scan = scan[::-1]
                     scan[scan == np.inf] = np.nan
                     scan[scan > self.scan_max_dist] = np.nan
                     x = np.arange(len(scan))
@@ -285,7 +285,7 @@ class fullDriveNode(Node):
                 scan = np.array(msg.ranges[self.num_scan+self.num_scan3:]+msg.ranges[:self.num_scan2+self.num_scan3])
                 scan[:200] = 0
                 #scan[2132:0] = 0
-                if self._clockwise: scan.reverse()
+                if self._clockwise: scan = scan[::-1]
 
                 if self._tf_parking:
                     num_sections = 18
