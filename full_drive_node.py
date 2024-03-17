@@ -261,6 +261,7 @@ class fullDriveNode(Node):
                     self._X = predictions[0, 0]
                     self._Y = predictions[0, 1]
                     #self.get_logger().info('Predicted axes: "%s"' % predictions)
+                    if self._clockwise: self._X *= -1
 
                     XX = int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl_fwd)
                     self._pwm.set_pwm(0, 0, XX)
@@ -284,6 +285,7 @@ class fullDriveNode(Node):
                 scan = np.array(msg.ranges[self.num_scan+self.num_scan3:]+msg.ranges[:self.num_scan2+self.num_scan3])
                 scan[:200] = 0
                 #scan[2132:0] = 0
+                if self._clockwise: scan.reverse()
 
                 if self._tf_parking:
                     num_sections = 18
@@ -349,6 +351,7 @@ class fullDriveNode(Node):
                         self._X = predictions[0, 0]
                         self._Y = predictions[0, 1]
                         #self.get_logger().info('Steering, power: %s, %s ' % (self._X,self._Y))
+                        if self._clockwise: self._X *= -1
 
                         if self._collision:
                             self.get_logger().info('Collision: STOP ')
@@ -474,12 +477,8 @@ class fullDriveNode(Node):
         #self.get_logger().info('cam msg received: "%s"' % msg)
         data = msg.data.split(',')
         cam = int(data[0])
-        if cam == 1:
-            self._color1_g = np.zeros(self.HPIX, dtype=int)
-            self._color1_r = np.zeros(self.HPIX, dtype=int)
-        elif cam == 2:
-            self._color2_g = np.zeros(self.HPIX, dtype=int)
-            self._color2_r = np.zeros(self.HPIX, dtype=int)
+        self._color1_g = np.zeros(self.HPIX, dtype=int)
+        self._color1_r = np.zeros(self.HPIX, dtype=int)
 
         blobs = ((data[i],data[i+1],data[i+2]) for i in range (1,len(data),3))
         for blob in blobs:
@@ -489,10 +488,10 @@ class fullDriveNode(Node):
             x2 = int(x2)
             if color == 1:
                 if cam == 1 and not self._clockwise: self._color1_g[x1:x2] = self.WEIGHT
-                if cam == 2 and self._clockwise: self._color2_g[x1:x2] = self.WEIGHT
+                if cam == 2 and self._clockwise: self._color1_r[x1:x2] = self.WEIGHT
             if color == 2:
                 if cam == 1 and not self._clockwise: self._color1_r[x1:x2] = self.WEIGHT
-                if cam == 2 and self._clockwise: self._color2_r[x1:x2] = self.WEIGHT
+                if cam == 2 and self._clockwise: self._color1_g[x1:x2] = self.WEIGHT
             if color == 4:
                 if cam == 1: self._color1_m[x1:x2] = self.WEIGHT
                 if cam == 2: self._color2_m[x1:x2] = self.WEIGHT
