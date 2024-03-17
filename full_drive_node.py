@@ -505,10 +505,10 @@ class fullDriveNode(Node):
             #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
 
         if self._clockwise:
-            self._color1_g.reverse()
-            self._color1_r.reverse()
-            self._color1_m.reverse()
-            self._color2_m.reverse()
+            self._color1_g = self._color1_g[::-1]
+            self._color1_r = self._color1_r[::-1]
+            self._color1_m = self._color1_m[::-1]
+            self._color2_m = self._color2_m[::-1]
 
     def line_detector_callback(self, msg):
         #self.get_logger().info('Distance msg received: "%s"' % msg)
