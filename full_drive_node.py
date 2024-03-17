@@ -74,9 +74,6 @@ class fullDriveNode(Node):
         self._front_dist = np.inf
         self._side_dist = np.inf
 
-        self._RED = False
-        self._passed = False
-
         self._speed_msg = String()
         self._speed_msg.data = "0"
 
@@ -223,12 +220,7 @@ class fullDriveNode(Node):
                         self.publisher_.publish(msg)
                         return
 
-                self._clockwise = (self._total_heading_change > 0)
-                #if not self._clockwise:
-                #    self.get_logger().info("Using CAM1")
-                #else:
-                #    self.get_logger().info("Using CAM2")
-
+                #self._clockwise = (self._total_heading_change > 0)
                 self._start_time = self.get_clock().now()
                 self._dt = (self._start_time - self._end_time).nanoseconds * 1e-9
                 self._end_time = self._start_time
@@ -236,6 +228,7 @@ class fullDriveNode(Node):
                 try:
                     # raw data
                     scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
+                    if self._clockwise: scan.reverse()
                     scan[scan == np.inf] = np.nan
                     scan[scan > self.scan_max_dist] = np.nan
                     x = np.arange(len(scan))
@@ -497,11 +490,9 @@ class fullDriveNode(Node):
             if color == 1:
                 if cam == 1 and not self._clockwise: self._color1_g[x1:x2] = self.WEIGHT
                 if cam == 2 and self._clockwise: self._color2_g[x1:x2] = self.WEIGHT
-                self._RED = False
             if color == 2:
                 if cam == 1 and not self._clockwise: self._color1_r[x1:x2] = self.WEIGHT
                 if cam == 2 and self._clockwise: self._color2_r[x1:x2] = self.WEIGHT
-                self._RED = True
             if color == 4:
                 if cam == 1: self._color1_m[x1:x2] = self.WEIGHT
                 if cam == 2: self._color2_m[x1:x2] = self.WEIGHT
