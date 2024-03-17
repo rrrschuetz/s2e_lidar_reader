@@ -62,7 +62,6 @@ class fullDriveNode(Node):
         self._X = 0.0 
         self._Y = 0.0
         self._Xtrim = 0.0
-        self._line_cnt = 0
         self._dt = 0.1
         self._color1_g = np.zeros(self.HPIX, dtype=int)
         self._color1_r = np.zeros(self.HPIX, dtype=int)
@@ -139,13 +138,6 @@ class fullDriveNode(Node):
             qos_profile
         )
 
-        self.subscription_distance = self.create_subscription(
-            Bool,
-            'line_detector',
-            self.line_detector_callback,
-            qos_profile
-        )
-
         # Load the trained model and the scaler
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
         with open('/home/rrrschuetz/test/scaler.pkl', 'rb') as f:
@@ -212,7 +204,7 @@ class fullDriveNode(Node):
                     self._total_heading_change += heading_change
                     self._last_heading = self._current_heading
                     #self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
-                    if abs(self._total_heading_change) > 1120:
+                    if abs(self._total_heading_change) > 1125:
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                         self._state = "PARK"
@@ -327,11 +319,10 @@ class fullDriveNode(Node):
                     num_sections = 18
                     section_data = np.array_split(scan, num_sections)
                     section_means = [np.mean(section) for section in section_data]
-                    if section_means[7] < 0.95:
+                    if section_means[7] < 0.80:
 
                         self.get_logger().info('Parking mode switched')
                         self._tf_control = False
-                        self._tf_parking = True
                         self._speed_msg.data = "0"
                         self.speed_publisher_.publish(self._speed_msg)
 
@@ -340,11 +331,20 @@ class fullDriveNode(Node):
                         self._pwm.set_pwm(0, 0, XX)
                         time.sleep(1)
 
-                        self._speed_msg.data = "R20"
+                        self._speed_msg.data = "R30"
+                        self.speed_publisher_.publish(self._speed_msg)
+                        time.sleep(5)
+
+                        self._X = -1.0 # left
+                        XX = int(self.servo_neutral+self._X*self.servo_ctl_fwd)
+                        self._pwm.set_pwm(0, 0, XX)
+                        time.sleep(1)
+
+                        self._speed_msg.data = "R15"
                         self.speed_publisher_.publish(self._speed_msg)
                         time.sleep(1)
 
-                        self._state = "IDLE"
+                        self._tf_parking = True
                         return
 
                     try:
@@ -524,22 +524,6 @@ class fullDriveNode(Node):
                 if cam == 1: self._color1_m[x1:x2] = self.WEIGHT
                 if cam == 2: self._color2_m[x1:x2] = self.WEIGHT
             #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
-
-
-    def line_detector_callback(self, msg):
-        #self.get_logger().info('Distance msg received: "%s"' % msg)
-        if not self._dist_sensor: return
-        if bool(msg.data):
-            self.get_logger().info('Parking mode switched')
-            self._tf_control = False
-            self._speed_msg.data = "0"
-            self.speed_publisher_.publish(self._speed_msg)
-            self._tf_parking = True
-            self._dist_sensor = False
-            msg = String()
-            msg.data = "ParkMode switched"
-            self.publisher_.publish(msg)
-        return
 
     def collision_callback(self, msg):
         self.get_logger().info('Collision msg received')
