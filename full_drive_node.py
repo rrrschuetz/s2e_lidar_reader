@@ -479,6 +479,8 @@ class fullDriveNode(Node):
         cam = int(data[0])
         self._color1_g = np.zeros(self.HPIX, dtype=int)
         self._color1_r = np.zeros(self.HPIX, dtype=int)
+        if cam == 1:  self._color1_m = np.zeros(self.HPIX, dtype=int)
+        elif cam == 2: self._color2_m = np.zeros(self.HPIX, dtype=int)
 
         blobs = ((data[i],data[i+1],data[i+2]) for i in range (1,len(data),3))
         for blob in blobs:
@@ -493,14 +495,20 @@ class fullDriveNode(Node):
                 if cam == 1 and not self._clockwise: self._color1_r[x1:x2] = self.WEIGHT
                 if cam == 2 and self._clockwise: self._color1_g[x1:x2] = self.WEIGHT
             if color == 4:
-                if cam == 1: self._color1_m[x1:x2] = self.WEIGHT
-                if cam == 2: self._color2_m[x1:x2] = self.WEIGHT
+                if not self._clockwise:
+                    if cam == 1: self._color1_m[x1:x2] = self.WEIGHT
+                    if cam == 2: self._color2_m[x1:x2] = self.WEIGHT
+                else:
+                    if cam == 2: self._color1_m[x1:x2] = self.WEIGHT
+                    if cam == 1: self._color2_m[x1:x2] = self.WEIGHT
+
             #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
 
         if self._clockwise:
             self._color1_g.reverse()
             self._color1_r.reverse()
-
+            self._color1_m.reverse()
+            self._color2_m.reverse()
 
     def line_detector_callback(self, msg):
         #self.get_logger().info('Distance msg received: "%s"' % msg)
