@@ -261,7 +261,7 @@ class fullDriveNode(Node):
                     self._X = predictions[0, 0]
                     self._Y = predictions[0, 1]
                     #self.get_logger().info('Predicted axes: "%s"' % predictions)
-                    if self._clockwise: self._X *= -0.8
+                    if self._clockwise: self._X *= -0.85
 
                     XX = int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl_fwd)
                     self._pwm.set_pwm(0, 0, XX)
@@ -351,7 +351,7 @@ class fullDriveNode(Node):
                         self._X = predictions[0, 0]
                         self._Y = predictions[0, 1]
                         #self.get_logger().info('Steering, power: %s, %s ' % (self._X,self._Y))
-                        if self._clockwise: self._X *= -0.8
+                        if self._clockwise: self._X *= -0.85
 
                         if self._collision:
                             self.get_logger().info('Collision: STOP ')
