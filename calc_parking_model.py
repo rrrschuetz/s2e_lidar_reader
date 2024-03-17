@@ -106,10 +106,7 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     concatenated = WeightedConcatenate(weight_lidar=0.9, weight_color=0.1)([lidar_path, color_path])
 
     # Further processing
-    combined = Dense(128, activation='relu')(concatenated)
-    combined = Dense(64, activation='relu')(combined)
-    combined = Dense(64, activation='relu')(combined)
-    combined = Dense(64, activation='relu')(combined)
+    combined = Dense(64, activation='relu')(concatenated)
     combined = Dense(64, activation='relu')(combined)
     combined = Dense(32, activation='relu')(combined)
     output = Dense(2)(combined)

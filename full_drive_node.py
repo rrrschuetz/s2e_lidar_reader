@@ -328,6 +328,18 @@ class fullDriveNode(Node):
                         return
 
                 elif self._tf_control:
+
+                    num_sections = 18
+                    section_data = np.array_split(scan, num_sections)
+                    section_means = [np.mean(section) for section in section_data]
+                    if section_means[12] < 0.5:
+                        self.get_logger().info('Parking ended ')
+                        self._tf_parking = False
+                        self._speed_msg.data = "STOP"
+                        self.speed_publisher_.publish(self._speed_msg)
+                        self._state = "IDLE"
+                        return
+
                     try:
                         scan[scan == np.inf] = np.nan
                         scan[scan > self.scan_max_dist] = np.nan
