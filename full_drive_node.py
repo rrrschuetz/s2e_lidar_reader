@@ -35,8 +35,8 @@ class fullDriveNode(Node):
     motor_ctl = -20
     relay_pin = 17
     WEIGHT = 1
-    ASYM_L = 1.2
-    ASYM_R = 0.8
+    ASYM_L = 1.15
+    ASYM_R = 0.85
     FWD_SPEED = "12"
     REV_SPEED = "-6"
 
