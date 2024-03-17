@@ -212,7 +212,7 @@ class fullDriveNode(Node):
                     self._total_heading_change += heading_change
                     self._last_heading = self._current_heading
                     #self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
-                    if abs(self._total_heading_change) > 1115:
+                    if abs(self._total_heading_change) > 1120:
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                         self._state = "PARK"
@@ -221,6 +221,10 @@ class fullDriveNode(Node):
                         msg = String()
                         msg.data = "Race completed, parking mode"
                         self.publisher_.publish(msg)
+                        self._speed_msg.data = "RESET"
+                        self.speed_publisher_.publish(self._speed_msg)
+                        self._speed_msg.data = self.FWD_SPEED
+                        self.speed_publisher_.publish(self._speed_msg)
                         return
 
                 #self._clockwise = (self._total_heading_change > 0)
