@@ -35,10 +35,10 @@ class fullDriveNode(Node):
     motor_ctl = -20
     relay_pin = 17
     WEIGHT = 1
-    REVERSE = -0.82
+    ASYM_L = 1.2
+    ASYM_R = 0.8
     FWD_SPEED = "12"
     REV_SPEED = "-6"
-
 
     def __init__(self):
         super().__init__('full_drive_node')
@@ -262,7 +262,9 @@ class fullDriveNode(Node):
                     self._X = predictions[0, 0]
                     self._Y = predictions[0, 1]
                     #self.get_logger().info('Predicted axes: "%s"' % predictions)
-                    if self._clockwise: self._X *= self.REVERSE
+                    if self._clockwise:
+                        self._X *= -1
+                        self._X = self._X * self.ASYM_R if self._X > 0 else self._X * self.ASYM_L
 
                     XX = int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl_fwd)
                     self._pwm.set_pwm(0, 0, XX)
@@ -352,7 +354,9 @@ class fullDriveNode(Node):
                         self._X = predictions[0, 0]
                         self._Y = predictions[0, 1]
                         #self.get_logger().info('Steering, power: %s, %s ' % (self._X,self._Y))
-                        if self._clockwise: self._X *= self.REVERSE
+                        if self._clockwise:
+                            self._X *= -1
+                            self._X = self._X * self.ASYM_R if self._X > 0 else self._X * self.ASYM_L
 
                         if self._collision:
                             self.get_logger().info('Collision: STOP ')
