@@ -186,9 +186,11 @@ class s2eLidarReaderNode(Node):
             if color == 1:
                 if cam == 1 and not self._clockwise: self._color1_g[x1:x2] = self.WEIGHT
                 if cam == 2 and self._clockwise: self._color2_g[x1:x2] = self.WEIGHT
+                self._RED = False
             if color == 2:
                 if cam == 1 and not self._clockwise: self._color1_r[x1:x2] = self.WEIGHT
                 if cam == 2 and self._clockwise: self._color2_r[x1:x2] = self.WEIGHT
+                self._RED = True
             #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
 
 def main(args=None):

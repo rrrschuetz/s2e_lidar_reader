@@ -35,10 +35,9 @@ class fullDriveNode(Node):
     motor_ctl = -20
     relay_pin = 17
     WEIGHT = 1
-    ASYM_R = 1.00
-    ASYM_L = 1.00
     FWD_SPEED = "12"
     REV_SPEED = "-6"
+
 
     def __init__(self):
         super().__init__('full_drive_node')
@@ -74,6 +73,9 @@ class fullDriveNode(Node):
 
         self._front_dist = np.inf
         self._side_dist = np.inf
+
+        self._RED = False
+        self._passed = False
 
         self._speed_msg = String()
         self._speed_msg.data = "0"
@@ -221,7 +223,12 @@ class fullDriveNode(Node):
                         self.publisher_.publish(msg)
                         return
 
-                #self._clockwise = (self._total_heading_change > 0)
+                self._clockwise = (self._total_heading_change > 0)
+                #if not self._clockwise:
+                #    self.get_logger().info("Using CAM1")
+                #else:
+                #    self.get_logger().info("Using CAM2")
+
                 self._start_time = self.get_clock().now()
                 self._dt = (self._start_time - self._end_time).nanoseconds * 1e-9
                 self._end_time = self._start_time
@@ -229,7 +236,6 @@ class fullDriveNode(Node):
                 try:
                     # raw data
                     scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
-                    if self._clockwise: scan = scan[::-1]
                     scan[scan == np.inf] = np.nan
                     scan[scan > self.scan_max_dist] = np.nan
                     x = np.arange(len(scan))
@@ -262,9 +268,6 @@ class fullDriveNode(Node):
                     self._X = predictions[0, 0]
                     self._Y = predictions[0, 1]
                     #self.get_logger().info('Predicted axes: "%s"' % predictions)
-                    if self._clockwise:
-                        self._X *= -1
-                        self._X = self._X * self.ASYM_R if self._X > 0 else self._X * self.ASYM_L
 
                     XX = int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl_fwd)
                     self._pwm.set_pwm(0, 0, XX)
@@ -288,7 +291,6 @@ class fullDriveNode(Node):
                 scan = np.array(msg.ranges[self.num_scan+self.num_scan3:]+msg.ranges[:self.num_scan2+self.num_scan3])
                 scan[:200] = 0
                 #scan[2132:0] = 0
-                if self._clockwise: scan = scan[::-1]
 
                 if self._tf_parking:
                     num_sections = 18
@@ -354,9 +356,6 @@ class fullDriveNode(Node):
                         self._X = predictions[0, 0]
                         self._Y = predictions[0, 1]
                         #self.get_logger().info('Steering, power: %s, %s ' % (self._X,self._Y))
-                        if self._clockwise:
-                            self._X *= -1
-                            self._X = self._X * self.ASYM_R if self._X > 0 else self._X * self.ASYM_L
 
                         if self._collision:
                             self.get_logger().info('Collision: STOP ')
@@ -482,10 +481,12 @@ class fullDriveNode(Node):
         #self.get_logger().info('cam msg received: "%s"' % msg)
         data = msg.data.split(',')
         cam = int(data[0])
-        self._color1_g = np.zeros(self.HPIX, dtype=int)
-        self._color1_r = np.zeros(self.HPIX, dtype=int)
-        if cam == 1:  self._color1_m = np.zeros(self.HPIX, dtype=int)
-        elif cam == 2: self._color2_m = np.zeros(self.HPIX, dtype=int)
+        if cam == 1:
+            self._color1_g = np.zeros(self.HPIX, dtype=int)
+            self._color1_r = np.zeros(self.HPIX, dtype=int)
+        elif cam == 2:
+            self._color2_g = np.zeros(self.HPIX, dtype=int)
+            self._color2_r = np.zeros(self.HPIX, dtype=int)
 
         blobs = ((data[i],data[i+1],data[i+2]) for i in range (1,len(data),3))
         for blob in blobs:
@@ -495,25 +496,17 @@ class fullDriveNode(Node):
             x2 = int(x2)
             if color == 1:
                 if cam == 1 and not self._clockwise: self._color1_g[x1:x2] = self.WEIGHT
-                if cam == 2 and self._clockwise: self._color1_r[x1:x2] = self.WEIGHT
+                if cam == 2 and self._clockwise: self._color2_g[x1:x2] = self.WEIGHT
+                self._RED = False
             if color == 2:
                 if cam == 1 and not self._clockwise: self._color1_r[x1:x2] = self.WEIGHT
-                if cam == 2 and self._clockwise: self._color1_g[x1:x2] = self.WEIGHT
+                if cam == 2 and self._clockwise: self._color2_r[x1:x2] = self.WEIGHT
+                self._RED = True
             if color == 4:
-                if not self._clockwise:
-                    if cam == 1: self._color1_m[x1:x2] = self.WEIGHT
-                    if cam == 2: self._color2_m[x1:x2] = self.WEIGHT
-                else:
-                    if cam == 2: self._color1_m[x1:x2] = self.WEIGHT
-                    if cam == 1: self._color2_m[x1:x2] = self.WEIGHT
-
+                if cam == 1: self._color1_m[x1:x2] = self.WEIGHT
+                if cam == 2: self._color2_m[x1:x2] = self.WEIGHT
             #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
 
-        if self._clockwise:
-            self._color1_g = self._color1_g[::-1]
-            self._color1_r = self._color1_r[::-1]
-            self._color1_m = self._color1_m[::-1]
-            self._color2_m = self._color2_m[::-1]
 
     def line_detector_callback(self, msg):
         #self.get_logger().info('Distance msg received: "%s"' % msg)
