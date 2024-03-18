@@ -76,6 +76,7 @@ class SpeedControlNode(Node):
         self.y_pwm = self.neutral_pulse
         self.pwm.set_pwm(1, 0, self.y_pwm)
 
+        self.get_logger().info("impulses moved: %s" % self.impulse_count)
         return
 
     def impulse_callback(self, channel):
