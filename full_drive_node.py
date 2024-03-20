@@ -296,7 +296,7 @@ class fullDriveNode(Node):
                     self._side_dist = min(section_means[3],section_means[15])
                     self.get_logger().info('Parking Distance: %s,%s ' % (self._front_dist,self._side_dist))
 
-                    if self._front_dist > 0.13 and self._side_dist > 0.14:
+                    if self._front_dist > 0.13 and self._side_dist > 0.14 and self._state != "IDLE":
 
                         self._X = 1.0 # right
                         XX = int(self.servo_neutral+self._X*self.servo_ctl_fwd)
