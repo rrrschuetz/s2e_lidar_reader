@@ -58,7 +58,6 @@ class fullDriveNode(Node):
         self._X = 0.0 
         self._Y = 0.0
         self._Xtrim = 0.0
-        self._dt = 0.1
         self._color1_g = np.zeros(self.HPIX, dtype=int)
         self._color1_r = np.zeros(self.HPIX, dtype=int)
         self._color2_g = np.zeros(self.HPIX, dtype=int)
@@ -218,7 +217,7 @@ class fullDriveNode(Node):
                     self._total_heading_change += heading_change
                     self._last_heading = self._current_heading
                     #self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
-                    if abs(self._total_heading_change) > 1180:
+                    if abs(self._total_heading_change) > 450:    #1170
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                         self._state = "PARK"
@@ -229,7 +228,6 @@ class fullDriveNode(Node):
 
                 #self._clockwise = (self._total_heading_change > 0)
                 self._start_time = self.get_clock().now()
-                self._dt = (self._start_time - self._end_time).nanoseconds * 1e-9
                 self._end_time = self._start_time
 
                 try:
@@ -453,29 +451,15 @@ class fullDriveNode(Node):
             self._X = msg.axes[2]
             self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl_fwd))
 
-
     def touch_button_callback(self, msg):
         ack = String()
         if not self._tf_control:
-            self._tf_control = True
-            self._start_heading = self._sense.gyro['yaw']
-            self._last_heading = self._start_heading
-            self._round_start_time = self.get_clock().now()
-            self._speed_msg.data = self.FWD_SPEED
-            self.speed_publisher_.publish(self._speed_msg)
-            ack.data = "Race Mode ON"
             self.get_logger().info('Start button pressed!')
+            self._clockwise = False
+            self.start_race()
         else:
-            self._tf_control = False
-            self._processing = False
-            self._pwm.set_pwm(0, 0, int(self.servo_neutral))
- #          self._pwm.set_pwm(1, 0, int(self.neutral_pulse))
-            self._speed_msg.data = "STOP"
-            self.speed_publisher_.publish(self._speed_msg)
-            ack.data = "Race Mode OFF"
             self.get_logger().info('Stop button pressed!')
-        self.publisher_.publish(ack)
-
+            self.stop_race()
 
     def openmv_h7_callback(self, msg):
         #self.get_logger().info('cam msg received: "%s"' % msg)
