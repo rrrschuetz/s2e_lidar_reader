@@ -342,7 +342,7 @@ class fullDriveNode(Node):
                         self._pwm.set_pwm(0, 0, XX)
                         time.sleep(1)
 
-                        self._speed_msg.data = "R35"
+                        self._speed_msg.data = "R30"
                         self.speed_publisher_.publish(self._speed_msg)
                         time.sleep(5)
 
@@ -351,7 +351,7 @@ class fullDriveNode(Node):
                         self._pwm.set_pwm(0, 0, XX)
                         time.sleep(1)
 
-                        self._speed_msg.data = "R20"
+                        self._speed_msg.data = "R15"
                         self.speed_publisher_.publish(self._speed_msg)
                         time.sleep(1)
 
