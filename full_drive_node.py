@@ -8,12 +8,9 @@ from sensor_msgs.msg import LaserScan
 from sensor_msgs.msg import Joy
 from std_msgs.msg import String
 from std_msgs.msg import Bool
-from std_msgs.msg import Float32
 import numpy as np
 import tensorflow as tf
 import pickle
-#import logging
-#from logging.handlers import RotatingFileHandler
 from Adafruit_PCA9685 import PCA9685
 from sense_hat import SenseHat
 import RPi.GPIO as GPIO
@@ -56,7 +53,6 @@ class fullDriveNode(Node):
         self._tf_control = False
         self._clockwise = False
         self._tf_parking = False
-        self._dist_sensor = False
         self._collision = False
 
         self._X = 0.0 
@@ -72,9 +68,6 @@ class fullDriveNode(Node):
 
         self._front_dist = np.inf
         self._side_dist = np.inf
-
-        self._RED = False
-        self._passed = False
 
         self._speed_msg = String()
         self._speed_msg.data = "0"
@@ -175,6 +168,27 @@ class fullDriveNode(Node):
         GPIO.output(self.relay_pin, GPIO.LOW)
         GPIO.cleanup()
 
+    def start_race(self):
+        self._state = "RACE"
+        self._tf_control = True
+        self._start_heading = self._sense.gyro['yaw']
+        self._last_heading = self._start_heading
+        self._round_start_time = self.get_clock().now()
+        self._speed_msg.data = "RESET"
+        self.speed_publisher_.publish(self._speed_msg)
+        self._speed_msg.data = self.FWD_SPEED
+        self.speed_publisher_.publish(self._speed_msg)
+
+    def stop_race(self):
+        self._state = "IDLE"
+        self._tf_control = False
+        self._tf_parking = False
+        self._processing = False
+        self._pwm.set_pwm(0, 0, int(self.servo_neutral))
+        self._speed_msg.data = "0"
+        self.speed_publisher_.publish(self._speed_msg)
+        #self.motor_off()
+
     def calculate_heading_change(self, start_heading, current_heading):
         # Calculate the raw difference
         raw_diff = current_heading - start_heading
@@ -209,7 +223,6 @@ class fullDriveNode(Node):
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                         self._state = "PARK"
                         self._processing = False
-                        self._dist_sensor = True
                         msg = String()
                         msg.data = "Race completed, parking mode"
                         return
@@ -413,54 +426,24 @@ class fullDriveNode(Node):
 
             # Check if 'A' button is pressed - switch on AI steering, counterclockwise
             if msg.buttons[0] == 1:
-                self._state = "RACE"
-                self._tf_control = True
                 self._clockwise = False
-                self._dist_sensor = False
-                self._Y = 1.0
-                self._start_heading = self._sense.gyro['yaw']
-                self._last_heading = self._start_heading
-                self._round_start_time = self.get_clock().now()
-                self._speed_msg.data = "RESET"
-                self.speed_publisher_.publish(self._speed_msg)
-                self._speed_msg.data = self.FWD_SPEED
-                self.speed_publisher_.publish(self._speed_msg)
+                self.start_race()
 
             # Check if 'X' button is pressed - switch on AI steering, clockwise
             if msg.buttons[2] == 1:
-                self._state = "RACE"
-                self._tf_control = True
                 self._clockwise = True
-                self._dist_sensor = False
-                self._Y = 1.0
-                self._start_heading = self._sense.gyro['yaw']
-                self._last_heading = self._start_heading
-                self._round_start_time = self.get_clock().now()
-                self._speed_msg.data = "RESET"
-                self.speed_publisher_.publish(self._speed_msg)
-                self._speed_msg.data = self.FWD_SPEED
-                self.speed_publisher_.publish(self._speed_msg)
+                self.start_race()
 
             # Check if 'B' button is pressed - switch off AI steering
             elif msg.buttons[1] == 1:
                 self.get_logger().info('emergency shutdown initiated by supervisor')
-                self._state = "IDLE"
-                self._tf_control = False
-                self._tf_parking = False
-                self._processing = False
-                self._dist_sensor = False
-                self._pwm.set_pwm(0, 0, int(self.servo_neutral))
-                self._speed_msg.data = "0"
-                self.speed_publisher_.publish(self._speed_msg)
-                self.motor_off()
+                self.stop_race()
 
             # Check if 'Y' button is pressed - switch on AI parking
             if msg.buttons[3] == 1:
                 self._state = "PARK"
-                self._dist_sensor = True
                 self._tf_control = True
                 self._clockwise = False
-                self._Y = 1.0
                 self._speed_msg.data = "RESET"
                 self.speed_publisher_.publish(self._speed_msg)
                 self._speed_msg.data = self.FWD_SPEED
@@ -475,7 +458,6 @@ class fullDriveNode(Node):
         ack = String()
         if not self._tf_control:
             self._tf_control = True
-            self._Y = 1.0
             self._start_heading = self._sense.gyro['yaw']
             self._last_heading = self._start_heading
             self._round_start_time = self.get_clock().now()
@@ -515,11 +497,9 @@ class fullDriveNode(Node):
             if color == 1:
                 if cam == 1 and not self._clockwise: self._color1_g[x1:x2] = self.WEIGHT
                 if cam == 2 and self._clockwise: self._color2_g[x1:x2] = self.WEIGHT
-                self._RED = False
             if color == 2:
                 if cam == 1 and not self._clockwise: self._color1_r[x1:x2] = self.WEIGHT
                 if cam == 2 and self._clockwise: self._color2_r[x1:x2] = self.WEIGHT
-                self._RED = True
             if color == 4:
                 if cam == 1: self._color1_m[x1:x2] = self.WEIGHT
                 if cam == 2: self._color2_m[x1:x2] = self.WEIGHT
