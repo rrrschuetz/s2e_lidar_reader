@@ -202,10 +202,13 @@ class fullDriveNode(Node):
     def lidar_callback(self, msg):
         if self._processing:
             self.get_logger().info('Scan skipped')
-                return
+            return
         else:
             self._processing = True
 
+            ########################
+            # RACE
+            ########################
             if self._state == 'RACE' and self._tf_control:
 
                 # Round completion check
@@ -275,6 +278,9 @@ class fullDriveNode(Node):
                     self.get_logger().error('IOError I2C occurred: %s' % str(e))
 
 
+            ########################
+            # PARK
+            ########################
             elif self._state == 'PARK':
 
                 # raw data
@@ -402,6 +408,9 @@ class fullDriveNode(Node):
                         except IOError as e:
                             self.get_logger().error('IOError I2C occurred: %s' % str(e))
 
+            ########################
+            # IDLE
+            ########################
             elif self._state == 'IDLE':
                 pass
                 #self.get_logger().info('lidar_callback: wait mode active')
