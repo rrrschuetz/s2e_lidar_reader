@@ -200,14 +200,13 @@ class fullDriveNode(Node):
             return raw_diff
 
     def lidar_callback(self, msg):
-        if self._state == 'RACE':
-
-            if not self._tf_control: return
-            if self._processing:
-                self.get_logger().info('Scan skipped')
+        if self._processing:
+            self.get_logger().info('Scan skipped')
                 return
-            else:
-                self._processing = True
+        else:
+            self._processing = True
+
+            if self._state == 'RACE' and self._tf_control:
 
                 # Round completion check
                 self._current_heading = self._sense.gyro['yaw']
@@ -275,15 +274,9 @@ class fullDriveNode(Node):
                 except IOError as e:
                     self.get_logger().error('IOError I2C occurred: %s' % str(e))
 
-                self._processing = False
 
-        elif self._state == 'PARK':
+            elif self._state == 'PARK':
 
-            if self._processing:
-                self.get_logger().info('Scan skipped')
-                return
-            else:
-                self._processing = True
                 # raw data
                 scan = np.array(msg.ranges[self.num_scan+self.num_scan3:]+msg.ranges[:self.num_scan2+self.num_scan3])
                 scan[:200] = 0
@@ -319,11 +312,11 @@ class fullDriveNode(Node):
 
                     else:
                         self.get_logger().info('Parking ended ')
-                        self._tf_parking = False
-                        self._speed_msg.data = "STOP"
+                        self._speed_msg.data = "0"
                         self.speed_publisher_.publish(self._speed_msg)
                         self._state = "IDLE"
-                        return
+                        self._tf_parking = False
+                        self._processing = False
 
                 elif self._tf_control:
 
@@ -334,6 +327,7 @@ class fullDriveNode(Node):
 
                         self.get_logger().info('Parking mode switched')
                         self._tf_control = False
+                        self._tf_parking = True
                         self._speed_msg.data = "0"
                         self.speed_publisher_.publish(self._speed_msg)
 
@@ -355,68 +349,64 @@ class fullDriveNode(Node):
                         self.speed_publisher_.publish(self._speed_msg)
                         time.sleep(1)
 
-                        self._tf_parking = True
-                        return
+                    else:
+                        try:
+                            scan[scan == np.inf] = np.nan
+                            scan[scan > self.scan_max_dist] = np.nan
+                            x = np.arange(len(scan))
+                            finite_vals = np.isfinite(scan)
+                            scan_interpolated = np.interp(x, x[finite_vals], scan[finite_vals])
+                            scan_interpolated = [1/value if value != 0 else 0 for value in scan_interpolated]
+                            scan_interpolated = list(scan_interpolated)
+                            color_data = list(self._color1_m) + list(self._color2_m)
 
-                    try:
-                        scan[scan == np.inf] = np.nan
-                        scan[scan > self.scan_max_dist] = np.nan
-                        x = np.arange(len(scan))
-                        finite_vals = np.isfinite(scan)
-                        scan_interpolated = np.interp(x, x[finite_vals], scan[finite_vals])
-                        scan_interpolated = [1/value if value != 0 else 0 for value in scan_interpolated]
-                        scan_interpolated = list(scan_interpolated)
-                        color_data = list(self._color1_m) + list(self._color2_m)
+                            lidar_data = np.reshape(scan_interpolated, (1, -1))  # Reshape LIDAR data
+                            lidar_data_standardized = self._scaler_p.transform(lidar_data)
+                            color_data_standardized = np.reshape(color_data, (1, -1))         # Reshape COLOR data
 
-                        lidar_data = np.reshape(scan_interpolated, (1, -1))  # Reshape LIDAR data
-                        lidar_data_standardized = self._scaler_p.transform(lidar_data)
-                        color_data_standardized = np.reshape(color_data, (1, -1))         # Reshape COLOR data
-
-                        lidar_data_standardized = np.reshape(lidar_data_standardized, (1, lidar_data_standardized.shape[1], 1)).astype(np.float32)
-                        color_data_standardized = np.reshape(color_data_standardized, (1, color_data_standardized.shape[1], 1)).astype(np.float32)
+                            lidar_data_standardized = np.reshape(lidar_data_standardized, (1, lidar_data_standardized.shape[1], 1)).astype(np.float32)
+                            color_data_standardized = np.reshape(color_data_standardized, (1, color_data_standardized.shape[1], 1)).astype(np.float32)
      
-                        self._interpreter_p.set_tensor(self._input_details_p[0]['index'], lidar_data_standardized)
-                        self._interpreter_p.set_tensor(self._input_details_p[1]['index'], color_data_standardized)
+                            self._interpreter_p.set_tensor(self._input_details_p[0]['index'], lidar_data_standardized)
+                            self._interpreter_p.set_tensor(self._input_details_p[1]['index'], color_data_standardized)
 
-                        # Run inference
-                        self._interpreter_p.invoke()
-                        # Retrieve the output of the model
-                        predictions = self._interpreter_p.get_tensor(self._output_details_p[0]['index'])
-                        self._X = predictions[0, 0]
-                        self._Y = predictions[0, 1]
-                        #self.get_logger().info('Steering, power: %s, %s ' % (self._X,self._Y))
+                            # Run inference
+                            self._interpreter_p.invoke()
+                            # Retrieve the output of the model
+                            predictions = self._interpreter_p.get_tensor(self._output_details_p[0]['index'])
+                            self._X = predictions[0, 0]
+                            self._Y = predictions[0, 1]
+                            #self.get_logger().info('Steering, power: %s, %s ' % (self._X,self._Y))
 
-                        if self._collision:
-                            self.get_logger().info('Collision: STOP ')
-                            self._collision = False
-                            self._tf_control = False
-                            self._state = "IDLE"
-                            self._speed_msg.data = "STOP"
-                        else:
-                            if self._Y >= 0:
-                            #if True:
-                                XX = int(self.servo_neutral+self._X*self.servo_ctl_rev)
-                                self._speed_msg.data = self.REV_SPEED
-                                #self.get_logger().info('Reverse: %s / %s ' % (self._Y,self._speed_msg.data))
+                            if self._collision:
+                                self.get_logger().info('Collision: STOP ')
+                                self._collision = False
+                                self._tf_control = False
+                                self._state = "IDLE"
+                                self._speed_msg.data = "STOP"
                             else:
-                                XX = int(self.servo_neutral+self._X*self.servo_ctl_fwd)
-                                self._speed_msg.data = self.FWD_SPEED
-                                #self.get_logger().info('Forward: %s / %s ' % (self._Y,self._speed_msg.data))
-                            self._pwm.set_pwm(0, 0, XX)
+                                if self._Y >= 0:
+                                    XX = int(self.servo_neutral+self._X*self.servo_ctl_rev)
+                                    self._speed_msg.data = self.REV_SPEED
+                                    #self.get_logger().info('Reverse: %s / %s ' % (self._Y,self._speed_msg.data))
+                                else:
+                                    XX = int(self.servo_neutral+self._X*self.servo_ctl_fwd)
+                                    self._speed_msg.data = self.FWD_SPEED
+                                    #self.get_logger().info('Forward: %s / %s ' % (self._Y,self._speed_msg.data))
+                                self._pwm.set_pwm(0, 0, XX)
 
-                        self.speed_publisher_.publish(self._speed_msg)
+                            self.speed_publisher_.publish(self._speed_msg)
              
-                    except ValueError as e:
-                        self.get_logger().error('Model rendered nan: %s' % str(e))
+                        except ValueError as e:
+                            self.get_logger().error('Model rendered nan: %s' % str(e))
+                        except IOError as e:
+                            self.get_logger().error('IOError I2C occurred: %s' % str(e))
 
-                    except IOError as e:
-                        self.get_logger().error('IOError I2C occurred: %s' % str(e))
+            elif self._state == 'IDLE':
+                pass
+                #self.get_logger().info('lidar_callback: wait mode active')
 
-                self._processing = False
-
-        elif self._state == 'IDLE':
-            pass
-            #self.get_logger().info('lidar_callback: wait mode active')
+            self._processing = False
 
        
     def joy_callback(self, msg):
