@@ -412,8 +412,16 @@ class fullDriveNode(Node):
             # IDLE
             ########################
             elif self._state == 'IDLE':
-                pass
-                #self.get_logger().info('lidar_callback: wait mode active')
+                
+                scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
+                scan[scan == np.inf] = np.nan
+                scan[scan > self.scan_max_dist] = np.nan
+
+                sum_first_half = np.nansum(scan[:self.num_scan2])
+                sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
+                self._clockwise = (sum_first_half <= sum_second_half)
+                
+                self.get_logger().info('lidar_callback: IDLE, clockwise "%s" ' % self._clockwise)
 
             self._processing = False
 
@@ -454,7 +462,6 @@ class fullDriveNode(Node):
         ack = String()
         if not self._tf_control:
             self.get_logger().info('Start button pressed!')
-            self._clockwise = False
             self.start_race()
         else:
             self.get_logger().info('Stop button pressed!')
