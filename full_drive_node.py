@@ -288,15 +288,16 @@ class fullDriveNode(Node):
                 scan[:200] = 0
                 #scan[2132:0] = 0
 
-                if self._tf_parking:
-                    num_sections = 18
-                    section_data = np.array_split(scan, num_sections)
-                    section_means = [np.mean(section) for section in section_data]
-                    self._front_dist = section_means[9]
-                    self._side_dist = min(section_means[3],section_means[15])
-                    self.get_logger().info('Parking Distance: %s,%s ' % (self._front_dist,self._side_dist))
+                num_sections = 18
+                section_data = np.array_split(scan, num_sections)
+                section_means = [np.mean(section) for section in section_data]
+                self._front_dist = section_means[9]
+                self._side_dist = min(section_means[3],section_means[15])
+                self.get_logger().info('Parking Distance: %s,%s ' % (self._front_dist,self._side_dist))
 
-                    if self._front_dist > 0.13 and self._side_dist > 0.14 and self._state != "IDLE":
+                if self._tf_parking:
+
+                    if self._front_dist > 0.13 and self._side_dist > 0.14:
 
                         self._X = 1.0 # right
                         XX = int(self.servo_neutral+self._X*self.servo_ctl_fwd)
@@ -326,10 +327,7 @@ class fullDriveNode(Node):
 
                 elif self._tf_control:
 
-                    num_sections = 18
-                    section_data = np.array_split(scan, num_sections)
-                    section_means = [np.mean(section) for section in section_data]
-                    if section_means[7] < 0.80:
+                    if self._front_dist < 0.80:
 
                         self.get_logger().info('Parking mode switched')
                         self._tf_control = False
