@@ -11,10 +11,6 @@ from Adafruit_PCA9685 import PCA9685
 from sense_hat import SenseHat
 import RPi.GPIO as GPIO
 
-###############################
-# ADJUST self._clockwise
-###############################
-
 class s2eLidarReaderNode(Node):
     HPIX = 320
     VPIX = 200
@@ -48,7 +44,8 @@ class s2eLidarReaderNode(Node):
         self._color2_g = np.zeros(self.HPIX, dtype=int)
         self._color1_r = np.zeros(self.HPIX, dtype=int)
         self._color2_r = np.zeros(self.HPIX, dtype=int)
-        self._clockwise = True
+        self._clockwise = False
+        self._clockwise_def = False
         self._X = 0.0 
         self._Y = 0.0
 #        self._speed = 0.0
@@ -128,6 +125,14 @@ class s2eLidarReaderNode(Node):
         scan[scan == np.inf] = np.nan
         scan[scan > self.scan_max_dist] = np.nan
         x = np.arange(len(scan))
+
+        if not self._clockwise_def:
+            self._clockwise_def = True
+            sum_first_half = np.nansum(scan[:self.num_scan2])
+            sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
+            self._clockwise = (sum_first_half <= sum_second_half)
+            self.get_logger().info('lidar_callback: clockwise "%s" ' % self._clockwise)
+
         finite_vals = np.isfinite(scan)
         self._scan_interpolated = np.interp(x,x[finite_vals],scan[finite_vals])
 
