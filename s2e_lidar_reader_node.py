@@ -39,14 +39,19 @@ class s2eLidarReaderNode(Node):
             reliability=QoSReliabilityPolicy.BEST_EFFORT,
             durability=QoSDurabilityPolicy.VOLATILE)
 
+        self._capture = False
+        self._sequence_count = 0
+
         self._scan_interpolated = np.zeros(self.num_scan)
         self._color1_g = np.zeros(self.HPIX, dtype=int)
         self._color2_g = np.zeros(self.HPIX, dtype=int)
         self._color1_r = np.zeros(self.HPIX, dtype=int)
         self._color2_r = np.zeros(self.HPIX, dtype=int)
+
         self._clockwise = False
         self._clockwise_def = False
-        self._X = 0.0 
+
+        self._X = 0.0
         self._Y = 0.0
 #        self._speed = 0.0
         self._line_cnt = 0
@@ -115,6 +120,8 @@ class s2eLidarReaderNode(Node):
         if not labels: f.write(line)
 
     def lidar_callback(self, msg):
+        if not self._capture: return
+
         # Convert the laser scan data to a string
         scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
 
@@ -147,6 +154,7 @@ class s2eLidarReaderNode(Node):
         scan_data += ','.join(str(e) for e in self._color1_r)+','
         scan_data += ','.join(str(e) for e in self._color2_r)
 
+        self._sequence_count += 1
         # Write the scan data to a file
         with open('/home/rrrschuetz/test/file.txt', 'a') as f:
             f.write(scan_data + '\n')
@@ -158,7 +166,21 @@ class s2eLidarReaderNode(Node):
     def joy_callback(self, msg):
         #self.get_logger().info('Buttons: "%s"' % msg.buttons)
         #self.get_logger().info('Axes: "%s"' % msg.axes)
-        if hasattr(msg, 'axes') and len(msg.axes) > 2:
+
+        if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
+
+            # Check if 'A' button is pressed - switch on AI steering
+            if msg.buttons[0] == 1:
+                self.get_logger().info('data capture started')
+                self._capture = True
+                self._sequence_count = 0
+
+            # Check if 'B' button is pressed - switch off AI steering
+            elif msg.buttons[1] == 1:
+                self.get_logger().info('data capture stopped, %s lines' % self._sequence_count)
+                self._capture = False
+
+        elif hasattr(msg, 'axes') and len(msg.axes) > 2:
             self._X = msg.axes[2]
             self._Y = msg.axes[1]
 
