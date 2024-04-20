@@ -52,6 +52,7 @@ class fullDriveNode(Node):
         self._processing = False
         self._tf_control = False
         self._clockwise = False
+        self._clockwise_def = False
         self._tf_parking = False
         self._collision = False
 
@@ -237,6 +238,14 @@ class fullDriveNode(Node):
                     scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
                     scan[scan == np.inf] = np.nan
                     scan[scan > self.scan_max_dist] = np.nan
+
+                    if not self._clockwise_def:
+                        self._clockwise_def = True
+                        sum_first_half = np.nansum(scan[:self.num_scan2])
+                        sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
+                        self._clockwise = (sum_first_half <= sum_second_half)
+                        self.get_logger().info('lidar_callback: clockwise "%s" ' % self._clockwise)
+
                     x = np.arange(len(scan))
                     finite_vals = np.isfinite(scan)
                     scan_interpolated = np.interp(x, x[finite_vals], scan[finite_vals])
@@ -410,16 +419,7 @@ class fullDriveNode(Node):
             # IDLE
             ########################
             elif self._state == 'IDLE':
-                
-                scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
-                scan[scan == np.inf] = np.nan
-                scan[scan > self.scan_max_dist] = np.nan
-
-                sum_first_half = np.nansum(scan[:self.num_scan2])
-                sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
-                self._clockwise = (sum_first_half <= sum_second_half)
-                
-                #self.get_logger().info('lidar_callback: IDLE, clockwise "%s" ' % self._clockwise)
+                pass
 
             self._processing = False
 
@@ -429,12 +429,6 @@ class fullDriveNode(Node):
 
             # Check if 'A' button is pressed - switch on AI steering, counterclockwise
             if msg.buttons[0] == 1:
-                self._clockwise = False
-                self.start_race()
-
-            # Check if 'X' button is pressed - switch on AI steering, clockwise
-            if msg.buttons[2] == 1:
-                self._clockwise = True
                 self.start_race()
 
             # Check if 'B' button is pressed - switch off AI steering
