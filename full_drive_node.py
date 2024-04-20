@@ -419,7 +419,7 @@ class fullDriveNode(Node):
                 sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
                 self._clockwise = (sum_first_half <= sum_second_half)
                 
-                self.get_logger().info('lidar_callback: IDLE, clockwise "%s" ' % self._clockwise)
+                #self.get_logger().info('lidar_callback: IDLE, clockwise "%s" ' % self._clockwise)
 
             self._processing = False
 
