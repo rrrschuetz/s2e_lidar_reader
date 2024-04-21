@@ -131,21 +131,28 @@ class fullDriveNode(Node):
             qos_profile
         )
 
-        # Load the trained model and the scaler
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+
+        # Load the trained racing model and the scaler counterclockwise and clockwise
         with open('/home/rrrschuetz/test/scaler.pkl', 'rb') as f:
             self._scaler = pickle.load(f)
-            
         self._interpreter = tf.lite.Interpreter(model_path="/home/rrrschuetz/test/model.tflite")
         self._interpreter.allocate_tensors()
         self._input_details = self._interpreter.get_input_details()
         self._output_details = self._interpreter.get_output_details()
-        self.get_logger().info('prediction model loaded')
-     
-        tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+        self.get_logger().info('counterclockwise prediction model loaded')
+
+        with open('/home/rrrschuetz/test/scaleru.pkl', 'rb') as f:
+            self._scaleru = pickle.load(f)
+        self._interpreteru = tf.lite.Interpreter(model_path="/home/rrrschuetz/test/modelu.tflite")
+        self._interpreteru.allocate_tensors()
+        self._input_detailsu = self._interpreter.get_input_details()
+        self._output_detailsu = self._interpreter.get_output_details()
+        self.get_logger().info('clockwise prediction model loaded')
+
+        # Load the trained parking model and the scaler
         with open('/home/rrrschuetz/test/scaler_p.pkl', 'rb') as f:
             self._scaler_p = pickle.load(f)
-            
         self._interpreter_p = tf.lite.Interpreter(model_path="/home/rrrschuetz/test/model_p.tflite")
         self._interpreter_p.allocate_tensors()
         # Get input and output tensors information
@@ -252,26 +259,29 @@ class fullDriveNode(Node):
                     scan_interpolated = [1/value if value != 0 else 0 for value in scan_interpolated]
                     scan_interpolated = list(scan_interpolated)
                     color_data = list(self._color1_g) + list(self._color2_g) + list(self._color1_r) + list(self._color2_r)
-                
-                    lidar_data = np.reshape(scan_interpolated, (1, -1))  # Reshape LIDAR data
-                    lidar_data_standardized = self._scaler.transform(lidar_data)
+                    lidar_data = np.reshape(scan_interpolated, (1, -1))               # Reshape LIDAR data
                     color_data_standardized = np.reshape(color_data, (1, -1))         # Reshape COLOR data
-            
-                    # Reshape for TFLite model input
-                    lidar_data_standardized = np.reshape(lidar_data_standardized, (1, lidar_data_standardized.shape[1], 1)).astype(np.float32)
-
                     # Reshape color_data to (1, 1, 1) to match dimensions
                     color_data_standardized = np.reshape(color_data_standardized, (1, color_data_standardized.shape[1], 1)).astype(np.float32)
 
-                    # Combine LIDAR and color data for the model input (concatenation, as required by your model)
-                    self._interpreter.set_tensor(self._input_details[0]['index'], lidar_data_standardized)
-                    self._interpreter.set_tensor(self._input_details[1]['index'], color_data_standardized)
-
-                    # Run inference
-                    self._interpreter.invoke()
-
-                    # Retrieve the output of the model
-                    predictions = self._interpreter.get_tensor(self._output_details[0]['index'])
+                    if not self._clockwise:
+                        lidar_data_standardized = self._scaler.transform(lidar_data)
+                        # Reshape for TFLite model input
+                        lidar_data_standardized = np.reshape(lidar_data_standardized, (1, lidar_data_standardized.shape[1], 1)).astype(np.float32)
+                        # Combine LIDAR and color data for the model input (concatenation, as required by your model)
+                        self._interpreter.set_tensor(self._input_details[0]['index'], lidar_data_standardized)
+                        self._interpreter.set_tensor(self._input_details[1]['index'], color_data_standardized)
+                        # Run inference
+                        self._interpreter.invoke()
+                        # Retrieve the output of the model
+                        predictions = self._interpreter.get_tensor(self._output_details[0]['index'])
+                    else:
+                        lidar_data_standardized = self._scaleru.transform(lidar_data)
+                        lidar_data_standardized = np.reshape(lidar_data_standardized, (1, lidar_data_standardized.shape[1], 1)).astype(np.float32)
+                        self._interpreteru.set_tensor(self._input_detailsu[0]['index'], lidar_data_standardized)
+                        self._interpreteru.set_tensor(self._input_detailsu[1]['index'], color_data_standardized)
+                        self._interpreteru.invoke()
+                        predictions = self._interpreteru.get_tensor(self._output_detailsu[0]['index'])
 
                     self._X = predictions[0, 0]
                     self._Y = predictions[0, 1]
