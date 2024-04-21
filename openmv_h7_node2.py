@@ -31,7 +31,7 @@ class openmvH7Node(Node):
                 header = self.serial_port.readline().decode().strip()
 
                 # Log the received header
-                #self.get_logger().info(f'header {header}')
+                self.get_logger().info(f'header {header}')
 
                 parts = header.split(',')
                 if len(parts) >= 5:

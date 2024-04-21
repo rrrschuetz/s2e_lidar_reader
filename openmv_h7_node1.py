@@ -8,7 +8,7 @@ class openmvH7Node(Node):
         super().__init__('serial_node')
         self.publisher_ = self.create_publisher(String, 'openmv_topic1', 10)
         self.publisher_log_ = self.create_publisher(String, 'main_logger', 10)
-        self.serial_port = serial.Serial('/dev/ttyACM1', 115200, timeout=5)   #115200
+        self.serial_port = serial.Serial('/dev/ttyACM2', 115200, timeout=5)   #115200
         self.get_logger().info('OpenMV H7 1 connected' )
         with open("/home/rrrschuetz/ros2_ws4/src/s2e_lidar_reader/s2e_lidar_reader/h7_cam_exec.py", 'rb') as file:
             script_data = file.read()
@@ -31,7 +31,7 @@ class openmvH7Node(Node):
                 header = self.serial_port.readline().decode().strip()
 
                 # Log the received header
-                #self.get_logger().info(f'header {header}')
+                self.get_logger().info(f'header {header}')
 
                 parts = header.split(',')
                 if len(parts) >= 5:

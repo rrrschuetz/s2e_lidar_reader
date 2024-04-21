@@ -1,4 +1,4 @@
-import sensor, image, time, math, pyb, lcd, os
+import sensor, image, time, math, pyb, os
 import machine
 
 # Get the unique machine ID
