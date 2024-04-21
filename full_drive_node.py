@@ -234,6 +234,7 @@ class fullDriveNode(Node):
                         self._processing = False
                         msg = String()
                         msg.data = "Race completed, parking mode"
+                        self.publisher_.publish(msg)
                         return
 
                 #self._clockwise = (self._total_heading_change > 0)
@@ -252,6 +253,9 @@ class fullDriveNode(Node):
                         sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
                         self._clockwise = (sum_first_half <= sum_second_half)
                         self.get_logger().info('lidar_callback: clockwise "%s" ' % self._clockwise)
+                        msg = String()
+                        msg.data = "CLOCKWISE" if self._clockwise else "COUNTERCLOCKWISE"
+                        self.publisher_.publish(msg)
 
                     x = np.arange(len(scan))
                     finite_vals = np.isfinite(scan)
