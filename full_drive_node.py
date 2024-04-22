@@ -227,13 +227,19 @@ class fullDriveNode(Node):
                     self._total_heading_change += heading_change
                     self._last_heading = self._current_heading
                     #self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
-                    if abs(self._total_heading_change) > 1170:    #1170  #450
+                    if abs(self._total_heading_change) > 1080:    #1170  #450
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
-                        self._state = "PARK"
+                        
+                        #self._state = "PARK"
+                        #msg = String()
+                        #msg.data = "Race completed, parking mode"
+                        
+                        self._state = "IDLE"
+                        self._speed_msg.data = "0"
+                        self.speed_publisher_.publish(self._speed_msg)
+                        
                         self._processing = False
-                        msg = String()
-                        msg.data = "Race completed, parking mode"
                         return
 
                 #self._clockwise = (self._total_heading_change > 0)
