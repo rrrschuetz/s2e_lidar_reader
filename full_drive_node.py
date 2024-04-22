@@ -234,7 +234,6 @@ class fullDriveNode(Node):
                         #self._state = "PARK"
                         #msg = String()
                         #msg.data = "Race completed, parking mode"
-                        
                         self._state = "IDLE"
                         self._speed_msg.data = "0"
                         self.speed_publisher_.publish(self._speed_msg)
