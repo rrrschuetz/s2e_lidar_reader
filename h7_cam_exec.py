@@ -67,11 +67,12 @@ while True:
 
         bloblist = ','.join(blob_entries)
         if bloblist:
-            jpg = img.compress(quality=85)  # Compress image into JPEG format
-            header = "STR,{},STR,{},JPG,{}\n".format(unique_id_hex, len(bloblist), len(jpg))
+            #jpg = img.compress(quality=85)  # Compress image into JPEG format
+            #header = "STR,{},STR,{},JPG,{}\n".format(unique_id_hex, len(bloblist), len(jpg))
+            header = "STR,{},STR,{},JPG,{}\n".format(unique_id_hex, len(bloblist), 0)
             usb.write(header)
             usb.write(bloblist)
-            usb.write(jpg)
+            #usb.write(jpg)
 
     except Exception as e:
         usb.write("Failed to capture frame:"+e)
