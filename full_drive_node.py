@@ -32,7 +32,7 @@ class fullDriveNode(Node):
     motor_ctl = -20
     relay_pin = 17
     WEIGHT = 1
-    FWD_SPEED = "4"      #  "12"
+    FWD_SPEED = "8"      #  "12"
     REV_SPEED = "-6"
 
 
