@@ -69,7 +69,7 @@ while True:
         if bloblist:
             #jpg = img.compress(quality=85)  # Compress image into JPEG format
             #header = "STR,{},STR,{},JPG,{}\n".format(unique_id_hex, len(bloblist), len(jpg))
-            header = "STR,{},STR,{},JPG,{}\n".format(unique_id_hex, len(bloblist), 0)
+            header = "{},{}\n".format(unique_id_hex, len(bloblist))
             usb.write(header)
             usb.write(bloblist)
             #usb.write(jpg)
