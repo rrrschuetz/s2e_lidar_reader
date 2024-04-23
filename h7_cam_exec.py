@@ -51,9 +51,9 @@ while True:
     try:
         #time.sleep(0.05)
         img = sensor.snapshot()
-        img.lens_corr(strength=2.6, zoom=1.0)
-        img.gamma_corr(gamma = 1.0, contrast = 1.0, brightness = 0.2)
-        img.laplacian(2, sharpen=True)
+        #img.lens_corr(strength=2.6, zoom=1.0)
+        #img.gamma_corr(gamma = 1.0, contrast = 1.0, brightness = 0.2)
+        #img.laplacian(2, sharpen=True)
 
         blob_entries = []
         blobs = img.find_blobs(thresholds,0,roi,pixels_threshold=160, merge=False)
@@ -61,8 +61,8 @@ while True:
             (b_x,b_y,b_w,b_h) = blob.rect()
             b_c = blob.code()
             if (b_c == 4 and b_h/b_w < 1) or (b_c in [1,2] and b_h/b_w > 1):
-                img.draw_rectangle(blob.rect(),color=(0,0,255),thickness=3)
-                img.draw_cross(blob.cx(), blob.cy())
+                #img.draw_rectangle(blob.rect(),color=(0,0,255),thickness=3)
+                #img.draw_cross(blob.cx(), blob.cy())
                 blob_entries.append("{},{},{}".format(b_c, b_x, b_x+b_w))
 
         bloblist = ','.join(blob_entries)
