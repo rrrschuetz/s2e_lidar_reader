@@ -475,13 +475,17 @@ class fullDriveNode(Node):
             self.stop_race()
 
     def openmv_h7_callback(self, msg):
-        self.get_logger().info('cam msg received: "%s"' % msg)
+        #self.get_logger().info('cam msg received: "%s"' % msg)
         data = msg.data.split(',')
 
-        if data[0] == '240024001951333039373338':    # 33001c000851303436373730
+        if data[0] == '240024001951333039373338': cam = 1     # 33001c000851303436373730
+        elif data[0] == '2d0024001951333039373338': cam = 2   # 340046000e51303434373339
+        else: return
+
+        if cam == 1:
             self._color1_g = np.zeros(self.HPIX, dtype=int)
             self._color1_r = np.zeros(self.HPIX, dtype=int)
-        elif data[0] == '2d0024001951333039373338':    # 340046000e51303434373339
+        elif cam == 2:
             self._color2_g = np.zeros(self.HPIX, dtype=int)
             self._color2_r = np.zeros(self.HPIX, dtype=int)
 
