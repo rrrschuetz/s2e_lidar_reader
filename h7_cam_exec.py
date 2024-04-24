@@ -19,6 +19,8 @@ sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
 sensor.set_auto_gain(True) # must be turned off for color tracking
 sensor.set_auto_whitebal(True) # must be turned off for color tracking
+#sensor.set_auto_gain(False) # must be turned off for color tracking
+#sensor.set_auto_whitebal(False) # must be turned off for color tracking
 sensor.skip_frames(time = 2000)
 
 #yellow = (95,100,-24,2,12,46)
