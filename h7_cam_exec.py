@@ -23,24 +23,12 @@ sensor.set_auto_whitebal(True) # must be turned off for color tracking
 #sensor.set_auto_whitebal(False) # must be turned off for color tracking
 sensor.skip_frames(time = 2000)
 
-#yellow = (95,100,-24,2,12,46)
-#green = (100, 26, -128, -29, 9, 80)
-#blue = (31, 92, -19, 6, -64, -17)
-#white = (82, 100, -22, 2, 43, 5)
-#black = (18, 30, -30, -5, 38, -10)
-#silver = (100, 255, 0, 64, 0, 64)
+#green =  (30, 100, -64, -8, -32, 32)  # generic green
+green = (38,60,-9,-128,-128, 127)
 
-#green = (67, 51, -66, -29, 18, 56)
-#green = (69, 38, -66, -20, 16, 55)
-#green = (54, 43, -32, -8, -8, 31)
-green =  (30, 100, -64, -8, -32, 32)  # generic green
+#red =  (30, 100, 15, 127, 15, 127)    # generic red
+red = (0,49,127,6,-2,20)
 
-#red = (44,100,35,77,-9,31)
-#red = (40, 74, 23, 84, 13, 62)
-red =  (30, 100, 15, 127, 15, 127)    # generic red
-
-#magenta = (0, 59, 40, 68, 127, -128)
-#magenta = (0, 71, 45, 127, 127, -94)
 magenta = (0, 100, 32, 127, 127, -94)
 
 thresholds=[green, red, magenta]
