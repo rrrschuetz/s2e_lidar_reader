@@ -507,9 +507,9 @@ class fullDriveNode(Node):
             #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
 
     def openmv_h7_callback1(self, msg):
-        openmv_h7_callback(msg)
+        self.openmv_h7_callback(msg)
     def openmv_h7_callback2(self, msg):
-        openmv_h7_callback(msg)
+        self.openmv_h7_callback(msg)
 
     def collision_callback(self, msg):
         self.get_logger().info('Collision msg received')
