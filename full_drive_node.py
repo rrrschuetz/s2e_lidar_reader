@@ -32,7 +32,7 @@ class fullDriveNode(Node):
     motor_ctl = -20
     relay_pin = 17
     WEIGHT = 1
-    FWD_SPEED = "4"      #  "12"
+    FWD_SPEED = "8"      #  "12"
     REV_SPEED = "-6"
 
 
@@ -475,7 +475,7 @@ class fullDriveNode(Node):
             self.stop_race()
 
     def openmv_h7_callback(self, msg):
-        #self.get_logger().info('cam msg received: "%s"' % msg)
+        self.get_logger().info('cam msg received: "%s"' % msg)
         data = msg.data.split(',')
 
         if data[0] == '240024001951333039373338': cam = 1     # 33001c000851303436373730

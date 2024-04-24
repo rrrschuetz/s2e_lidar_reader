@@ -51,8 +51,8 @@ while True:
     try:
         #time.sleep(0.05)
         img = sensor.snapshot()
-        #img.lens_corr(strength=2.6, zoom=1.0)
-        #img.gamma_corr(gamma = 1.0, contrast = 1.0, brightness = 0.2)
+        img.lens_corr(strength=2.6, zoom=1.0)
+        img.gamma_corr(gamma = 1.0, contrast = 1.0, brightness = 0.2)
         #img.laplacian(2, sharpen=True)
 
         blob_entries = []
