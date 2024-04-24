@@ -106,14 +106,14 @@ class fullDriveNode(Node):
         self.subscription_h71 = self.create_subscription(
             String,
             'openmv_topic1',
-            self.openmv_h7_callback,
+            self.openmv_h7_callback1,
             qos_profile
         )
 
         self.subscription_h72 = self.create_subscription(
             String,
             'openmv_topic2',
-            self.openmv_h7_callback,
+            self.openmv_h7_callback2,
             qos_profile
         )
 
@@ -505,6 +505,11 @@ class fullDriveNode(Node):
                 if cam == 1: self._color1_m[x1:x2] = self.WEIGHT
                 if cam == 2: self._color2_m[x1:x2] = self.WEIGHT
             #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
+
+    def openmv_h7_callback1(self, msg):
+        openmv_h7_callback(msg)
+    def openmv_h7_callback2(self, msg):
+        openmv_h7_callback(msg)
 
     def collision_callback(self, msg):
         self.get_logger().info('Collision msg received')
