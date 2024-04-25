@@ -227,6 +227,7 @@ class s2eLidarReaderNode(Node):
     def openmv_h7_callback2(self, msg):
         self.openmv_h7_callback(msg)
 
+
 def main(args=None):
     rclpy.init(args=args)
     lidar_reader_node = s2eLidarReaderNode()
