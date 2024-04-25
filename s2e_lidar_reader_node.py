@@ -90,14 +90,14 @@ class s2eLidarReaderNode(Node):
         self.subscription_h71 = self.create_subscription(
             String,
             'openmv_topic1',
-            self.openmv_h7_callback,
+            self.openmv_h7_callback1,
             qos_profile
         )
 
         self.subscription_h72 = self.create_subscription(
             String,
             'openmv_topic2',
-            self.openmv_h7_callback,
+            self.openmv_h7_callback2,
             qos_profile
         )
 
@@ -220,9 +220,6 @@ class s2eLidarReaderNode(Node):
             if color == 2:
                 if cam == 1 and not self._clockwise: self._color1_r[x1:x2] = self.WEIGHT
                 if cam == 2 and self._clockwise: self._color2_r[x1:x2] = self.WEIGHT
-            if color == 4:
-                if cam == 1: self._color1_m[x1:x2] = self.WEIGHT
-                if cam == 2: self._color2_m[x1:x2] = self.WEIGHT
             #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
 
 def main(args=None):
