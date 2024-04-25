@@ -222,6 +222,11 @@ class s2eLidarReaderNode(Node):
                 if cam == 2 and self._clockwise: self._color2_r[x1:x2] = self.WEIGHT
             #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
 
+    def openmv_h7_callback1(self, msg):
+        self.openmv_h7_callback(msg)
+    def openmv_h7_callback2(self, msg):
+        self.openmv_h7_callback(msg)
+
 def main(args=None):
     rclpy.init(args=args)
     lidar_reader_node = s2eLidarReaderNode()
