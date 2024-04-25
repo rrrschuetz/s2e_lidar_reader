@@ -23,11 +23,11 @@ sensor.set_auto_whitebal(True) # must be turned off for color tracking
 #sensor.set_auto_whitebal(False) # must be turned off for color tracking
 sensor.skip_frames(time = 2000)
 
-#green =  (30, 100, -64, -8, -32, 32)  # generic green
-green = (38,60,-9,-128,-128, 127)
+green =  (30, 100, -64, -8, -32, 32)  # generic green
+#green = (38,60,-9,-128,-128, 127)
 
-#red =  (30, 100, 15, 127, 15, 127)    # generic red
-red = (0,49,127,6,-2,20)
+red =  (30, 100, 15, 127, 15, 127)    # generic red
+#red = (0,49,127,6,-2,20)
 
 magenta = (0, 100, 32, 127, 127, -94)
 
@@ -42,7 +42,7 @@ while True:
         #time.sleep(0.05)
         img = sensor.snapshot()
         img.lens_corr(strength=2.6, zoom=1.0)
-        img.gamma_corr(gamma = 1.0, contrast = 1.0, brightness = 0.2)
+        img.gamma_corr(gamma = 1.0, contrast = 1.0, brightness = 0.3)
         #img.laplacian(2, sharpen=True)
 
         blob_entries = []
