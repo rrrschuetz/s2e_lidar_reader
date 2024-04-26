@@ -232,6 +232,8 @@ class fullDriveNode(Node):
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed! Heading change: {self._total_heading_change}")
                         
                         self._state = "PARK"
+                        self._processing = False
+
                         #self.stop_race()
                         return
 
