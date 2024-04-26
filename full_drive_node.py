@@ -231,11 +231,8 @@ class fullDriveNode(Node):
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed! Heading change: {self._total_heading_change}")
                         
-                        #self._state = "PARK"
-                        #msg = String()
-                        #msg.data = "Race completed, parking mode"
-
-                        self.stop_race()
+                        self._state = "PARK"
+                        #self.stop_race()
                         return
 
                 self._start_time = self.get_clock().now()
@@ -339,11 +336,8 @@ class fullDriveNode(Node):
 
                     else:
                         self.get_logger().info('Parking ended ')
-                        self._speed_msg.data = "0"
-                        self.speed_publisher_.publish(self._speed_msg)
-                        self._state = "IDLE"
-                        self._tf_parking = False
-                        self._processing = False
+                        self.stop_race()
+
 
                 elif self._tf_control:
 
@@ -481,9 +475,11 @@ class fullDriveNode(Node):
         if cam == 1:
             self._color1_g = np.zeros(self.HPIX, dtype=int)
             self._color1_r = np.zeros(self.HPIX, dtype=int)
+            self._color1_m = np.zeros(self.HPIX, dtype=int)
         elif cam == 2:
             self._color2_g = np.zeros(self.HPIX, dtype=int)
             self._color2_r = np.zeros(self.HPIX, dtype=int)
+            self._color2_m = np.zeros(self.HPIX, dtype=int)
 
         blobs = ((data[i],data[i+1],data[i+2]) for i in range (1,len(data),3))
         for blob in blobs:

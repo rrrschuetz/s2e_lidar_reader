@@ -90,21 +90,14 @@ class s2eLidarReaderParkingNode(Node):
         self.subscription_h71 = self.create_subscription(
             String,
             'openmv_topic1',
-            self.openmv_h7_callback,
+            self.openmv_h7_callback1,
             qos_profile
         )
 
         self.subscription_h72 = self.create_subscription(
             String,
             'openmv_topic2',
-            self.openmv_h7_callback,
-            qos_profile
-        )
-
-        self.subscription_distance = self.create_subscription(
-            Bool,
-            'line_detector',
-            self.line_detector_callback,
+            self.openmv_h7_callback2,
             qos_profile
         )
 
@@ -176,7 +169,10 @@ class s2eLidarReaderParkingNode(Node):
     def openmv_h7_callback(self, msg):
         #self.get_logger().info('CAM msg received: "%s"' % msg)
         data = msg.data.split(',')
-        cam = int(data[0])
+
+        if data[0] == '240024001951333039373338': cam = 1     # 33001c000851303436373730
+        elif data[0] == '2d0024001951333039373338': cam = 2   # 340046000e51303434373339
+        else: return
         if cam == 1:  self._color1_m = np.zeros(self.HPIX, dtype=int)
         elif cam == 2: self._color2_m = np.zeros(self.HPIX, dtype=int)
         self._cam_online = True
@@ -190,8 +186,11 @@ class s2eLidarReaderParkingNode(Node):
             if color == 4:
                 if cam == 1: self._color1_m[x1:x2] = self.WEIGHT
                 if cam == 2: self._color2_m[x1:x2] = self.WEIGHT
-    def line_detector_callback(self, msg):
-        self.get_logger().info('Distance msg received: "%s"' % msg)
+
+    def openmv_h7_callback1(self, msg):
+        self.openmv_h7_callback(msg)
+    def openmv_h7_callback2(self, msg):
+        self.openmv_h7_callback(msg)
 
 def main(args=None):
     rclpy.init(args=args)
