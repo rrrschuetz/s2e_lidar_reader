@@ -312,7 +312,7 @@ class fullDriveNode(Node):
                 section_means = [np.mean(section) for section in section_data]
                 self._front_dist = section_means[9]
                 self._side_dist = min(section_means[3],section_means[15])
-                self.get_logger().info('Parking Distance: %s,%s ' % (self._front_dist,self._side_dist))
+                #self.get_logger().info('Parking Distance: %s,%s ' % (self._front_dist,self._side_dist))
 
                 if self._tf_parking:
 
