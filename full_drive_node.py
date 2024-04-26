@@ -227,7 +227,7 @@ class fullDriveNode(Node):
                     self._total_heading_change += heading_change
                     self._last_heading = self._current_heading
                     #self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
-                    if abs(self._total_heading_change) > 1170:    #1060
+                    if abs(self._total_heading_change) > 440:    #1150 #1060
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed! Heading change: {self._total_heading_change}")
                         
@@ -344,8 +344,9 @@ class fullDriveNode(Node):
                 elif self._tf_control:
 
                     if self._front_dist < 0.80:
+                        self.get_logger().info('Parking Distance: %s,%s ' % (self._front_dist,self._side_dist))
+                        self.get_logger().info('Heading: %s ' %  (self._sense.gyro['yaw']-self._initial_heading))
 
-                        self.get_logger().info('Parking mode switched')
                         self._tf_control = False
                         self._tf_parking = True
                         self._speed_msg.data = "0"
@@ -360,14 +361,16 @@ class fullDriveNode(Node):
                         self.speed_publisher_.publish(self._speed_msg)
                         time.sleep(5)
 
-                        self._X = -1.0 # left
-                        XX = int(self.servo_neutral+self._X*self.servo_ctl_fwd)
-                        self._pwm.set_pwm(0, 0, XX)
-                        time.sleep(1)
+                        self.stop_race()
 
-                        self._speed_msg.data = "R15"
-                        self.speed_publisher_.publish(self._speed_msg)
-                        time.sleep(1)
+                        #self._X = -1.0 # left
+                        #XX = int(self.servo_neutral+self._X*self.servo_ctl_fwd)
+                        #self._pwm.set_pwm(0, 0, XX)
+                        #time.sleep(1)
+
+                        #self._speed_msg.data = "R15"
+                        #self.speed_publisher_.publish(self._speed_msg)
+                        #time.sleep(1)
 
                     else:
                         try:
