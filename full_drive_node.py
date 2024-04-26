@@ -74,11 +74,6 @@ class fullDriveNode(Node):
 
         # Initialize compass
         self._sense = SenseHat()
-        self._initial_heading = self._sense.gyro['yaw']
-        self._start_heading = self._initial_heading
-        self._last_heading = self._initial_heading
-        self._total_heading_change = 0
-        self.get_logger().info(f"Initial heading: {self._initial_heading} degrees")
 
         # Initialize PCA9685
         self._pwm = PCA9685()
@@ -178,8 +173,13 @@ class fullDriveNode(Node):
     def start_race(self):
         self._state = "RACE"
         self._tf_control = True
-        self._start_heading = self._sense.gyro['yaw']
-        self._last_heading = self._start_heading
+
+        self._initial_heading = self._sense.gyro['yaw']
+        self._start_heading = self._initial_heading
+        self._last_heading = self._initial_heading
+        self._total_heading_change = 0
+        self.get_logger().info(f"Initial heading: {self._initial_heading} degrees")
+
         self._round_start_time = self.get_clock().now()
         self._speed_msg.data = "RESET"
         self.speed_publisher_.publish(self._speed_msg)
@@ -234,14 +234,10 @@ class fullDriveNode(Node):
                         #self._state = "PARK"
                         #msg = String()
                         #msg.data = "Race completed, parking mode"
-                        self._state = "IDLE"
-                        self._speed_msg.data = "0"
-                        self.speed_publisher_.publish(self._speed_msg)
-                        
-                        self._processing = False
+
+                        self.stop_race()
                         return
 
-                #self._clockwise = (self._total_heading_change > 0)
                 self._start_time = self.get_clock().now()
                 self._end_time = self._start_time
 
