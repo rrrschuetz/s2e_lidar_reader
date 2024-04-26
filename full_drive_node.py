@@ -344,20 +344,25 @@ class fullDriveNode(Node):
                 elif self._tf_control:
 
                     if self._front_dist < 0.80:
+                        heading = self._sense.gyro['yaw']-self._initial_heading
                         self.get_logger().info('Parking Distance: %s,%s ' % (self._front_dist,self._side_dist))
-                        self.get_logger().info('Heading: %s ' %  (self._sense.gyro['yaw']-self._initial_heading))
+                        self.get_logger().info(f"Heading: {heading}")
 
                         self._tf_control = False
                         self._tf_parking = True
                         self._speed_msg.data = "0"
                         self.speed_publisher_.publish(self._speed_msg)
 
-                        self._X = 1.0 # right
+                        #self._X = 1.0 # right
+                        self._X = (-30 + heading - 270)/45  * self._side_dist/60
+
                         XX = int(self.servo_neutral+self._X*self.servo_ctl_fwd)
                         self._pwm.set_pwm(0, 0, XX)
                         time.sleep(1)
 
-                        self._speed_msg.data = "R35"
+                        #self._speed_msg.data = "R35"
+                        self._speed_msg.data = "R"+str(35*self._side_dist/60)
+
                         self.speed_publisher_.publish(self._speed_msg)
                         time.sleep(5)
 
