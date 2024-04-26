@@ -63,6 +63,8 @@ while True:
             usb.write(bloblist)
             usb.write("\n")
             #usb.write(jpg)
+            usb.flush()
 
     except Exception as e:
-        usb.write("Failed to capture frame:"+e)
+        pass
+        #usb.write("Failed to capture frame:"+e)
