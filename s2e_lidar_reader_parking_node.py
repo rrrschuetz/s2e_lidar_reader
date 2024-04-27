@@ -36,7 +36,12 @@ class s2eLidarReaderParkingNode(Node):
     col2_m_labels = [f'COL2_M.{i}' for i in range(1, HPIX+1)]
 
     labels = ['X', 'Y'] + scan_labels + col1_m_labels + col2_m_labels
-    labels = ','.join(labels) + '\n'
+    line = ','.join(labels) + '\n'
+
+    filepath = '/home/rrrschuetz/test/file_p.txt'
+    labels = os.path.exists(filepath)
+    with open(filepath, 'a') as f:
+        if not labels: f.write(line)
 
     def __init__(self):
         super().__init__('s2e_lidar_reader_node')
@@ -140,8 +145,6 @@ class s2eLidarReaderParkingNode(Node):
             # Check if 'A' button is pressed - switch on AI steering
             if msg.buttons[0] == 1:
                 self.get_logger().info('data capture started')
-                with open(self.filepath, 'a') as f:
-                    f.write(self.labels)
                 self._capture = True
                 self._sequence_count = 0
 
