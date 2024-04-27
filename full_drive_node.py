@@ -226,10 +226,13 @@ class fullDriveNode(Node):
                     self._last_heading = self._current_heading
                     #self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
 
-                    if self._parking_lot > 50 and abs(self._total_heading_change) > 1150:  #430
+                    if self._parking_lot > 50 and abs(self._total_heading_change) > 1140:  #430
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed! Heading change: {self._total_heading_change}")
                         self.get_logger().info(f"Parking lot detections {self._parking_lot}")
+                        msg = String()
+                        msg.data = "Parking ..."
+                        self.publisher_.publish(msg)
                         self._state = "PARK"
                         self._processing = False
                         return
@@ -413,6 +416,8 @@ class fullDriveNode(Node):
     def touch_button_callback(self, msg):
         ack = String()
         if not self._tf_control:
+            ack.data = "Starting ..."
+            self.publisher_.publish(ack)
             self.get_logger().info('Start button pressed!')
             self.start_race()
         else:
