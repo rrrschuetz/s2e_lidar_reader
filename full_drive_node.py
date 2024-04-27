@@ -325,9 +325,9 @@ class fullDriveNode(Node):
                     self.speed_publisher_.publish(self._speed_msg)
 
                     if not self._clockwise:
-                        self._X = max(-1.0,min(1.0,(30 + heading - 270)/45))
+                        self._X = max(-1.0,min(1.0,(35 + heading - 270)/45))
                     else:
-                        self._X = max(-1.0,min(1.0,(30 + heading + 90)/45))
+                        self._X = max(-1.0,min(1.0,(-35 + heading - 90)/45))
                     self.get_logger().info(f"Steering: {self._X}")
                     #self._X = 1.0 # right
 
