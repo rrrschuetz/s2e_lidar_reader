@@ -56,7 +56,7 @@ class SpeedControlNode(Node):
 
     def reset_pid(self):
         self.pid = PID(0.2, 0.05, 0.00, setpoint=0)   #0.2,0.05,0.00
-        self.pid.sample_time = 0.2
+        self.pid.sample_time = 0.1
 
     def move_to_impulse(self, impulse_goal):
         power = -12 if impulse_goal < 0 else 12   # -10
