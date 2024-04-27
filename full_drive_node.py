@@ -314,38 +314,37 @@ class fullDriveNode(Node):
                 self._side_dist = min(section_means[3],section_means[15])
                 #self.get_logger().info('Parking Distance: %s,%s ' % (self._front_dist,self._side_dist))
 
-                if self._front_dist < 0.80:
+                if self._front_dist < 0.10 and self._side_dist < 0.20:
                     heading = self._sense.gyro['yaw']-self._initial_heading
                     self.get_logger().info('Parking Distance: %s,%s ' % (self._front_dist,self._side_dist))
                     self.get_logger().info(f"Heading: {heading}")
 
-                    self._tf_control = False
-                    self._tf_parking = True
                     self._speed_msg.data = "0"
                     self.speed_publisher_.publish(self._speed_msg)
 
-                    if not self._clockwise:
-                        self._X = max(-1.0,min(1.0,(35 + heading - 270)/45))
-                    else:
-                        self._X = max(-1.0,min(1.0,(-35 + heading - 90)/45))
-                    self.get_logger().info(f"Steering: {self._X}")
+                    #if not self._clockwise:
+                    #    self._X = max(-1.0,min(1.0,(35 + heading - 270)/45))
+                    #else:
+                    #    self._X = max(-1.0,min(1.0,(-35 + heading - 90)/45))
+                    #self.get_logger().info(f"Steering: {self._X}")
                     #self._X = 1.0 # right
 
                     XX = int(self.servo_neutral+self._X*self.servo_ctl_fwd)
                     self._pwm.set_pwm(0, 0, XX)
                     time.sleep(1)
 
-                    self._speed_msg.data = "R"+str(int(35*math.sqrt(0.25+self._side_dist*self._side_dist)))
-                    self.get_logger().info(f"Distance: {self._speed_msg.data}")
+                    #self._speed_msg.data = "R"+str(int(35*math.sqrt(0.25+self._side_dist*self._side_dist)))
+                    #self.get_logger().info(f"Distance: {self._speed_msg.data}")
                     #self._speed_msg.data = "R35"
-                    self.speed_publisher_.publish(self._speed_msg)
-                    time.sleep(5)
+                    #self.speed_publisher_.publish(self._speed_msg)
+                    #time.sleep(5)
 
-                    self._pwm.set_pwm(0, 0, self.servo_neutral)
-                    time.sleep(1)
-                    self._speed_msg.data = "R10"
-                    self.speed_publisher_.publish(self._speed_msg)
-                    time.sleep(1)
+                    #self._pwm.set_pwm(0, 0, self.servo_neutral)
+                    #time.sleep(1)
+                    #self._speed_msg.data = "R10"
+                    #self.speed_publisher_.publish(self._speed_msg)
+                    #time.sleep(1)
+
                     self.get_logger().info('Parking ended ')
                     self.stop_race()
 
