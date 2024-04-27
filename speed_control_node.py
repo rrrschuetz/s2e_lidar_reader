@@ -102,10 +102,6 @@ class SpeedControlNode(Node):
                 self.pid_steering = True
                 new_speedf = float(new_speed)
                 self.pid.setpoint = abs(new_speedf)  # Set PID setpoint to desired speed, including direction.
-                self.pid.output_limits = (0, 20)  # Assuming the output limits go from 0 to 100
-                self.pid.auto_mode = True  # Enable automatic mode
-                self.pid.set_auto_mode(True, last_output=abs(new_speedf))  # Start with an initial output of 30
-
                 self.reverse = (new_speedf < 0)
         except ValueError:
             self.get_logger().error("Received invalid speed setting")
@@ -129,7 +125,10 @@ class SpeedControlNode(Node):
             # self.y_pwm = self.neutral_pulse
             # self.y_pwm = self.min_y if self.reverse else self.max_y
         else:
-            pid_output = self.pid(self.impulse_count)
+            if self.impulse_count == 0:
+                pid_output = self.pid.setpoint
+            else:
+                pid_output = self.pid(self.impulse_count)
             #self.get_logger().info('impulses %s power: %s %s' % (self.impulse_count,pid_output,self.reverse))
             # Determine PWM adjustment based on PID output and desired direction.
             if self.reverse:
