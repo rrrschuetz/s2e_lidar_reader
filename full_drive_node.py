@@ -21,7 +21,6 @@ class fullDriveNode(Node):
     HFOV = 70.8
     num_scan = 1620
     num_scan2 = 810
-    num_scan3 = 405
     scan_min_dist = 0.30
     scan_max_dist = 2.8
     servo_min = 260  # Min pulse length out of 4096
@@ -302,19 +301,12 @@ class fullDriveNode(Node):
             ########################
             elif self._state == 'PARK' and self._tf_control:
 
-                # raw data
-                scan = np.array(msg.ranges[self.num_scan+self.num_scan3:]+msg.ranges[:self.num_scan2+self.num_scan3])
-                scan[:200] = 0
-                #scan[2132:0] = 0
+                scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
 
                 num_sections = 18
                 section_data = np.array_split(scan, num_sections)
                 section_means = [np.mean(section) for section in section_data]
                 self._front_dist = section_means[9]
-                self._side_dist = min(section_means[3],section_means[15])
-                #self.get_logger().info('Parking Distance: %s,%s ' % (self._front_dist,self._side_dist))
-
-                #if self._front_dist < 0.10 and self._side_dist < 0.20:
                 if self._front_dist < 0.15:
 
                     heading = self._sense.gyro['yaw']-self._initial_heading
