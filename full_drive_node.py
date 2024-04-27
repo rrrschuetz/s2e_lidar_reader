@@ -217,6 +217,8 @@ class fullDriveNode(Node):
             ########################
             if self._state == 'RACE' and self._tf_control:
 
+                scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
+
                 # Round completion check
                 self._current_heading = self._sense.gyro['yaw']
                 heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
@@ -226,9 +228,15 @@ class fullDriveNode(Node):
                     self._last_heading = self._current_heading
                     #self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
 
-                    if self._parking_lot > 50 and abs(self._total_heading_change) > 1140:  #430
+                    num_sections = 18
+                    section_data = np.array_split(scan, num_sections)
+                    section_means = [np.mean(section) for section in section_data]
+                    self._front_dist = section_means[9]
+
+                    if self._parking_lot > 50 and abs(self._total_heading_change) > 1130 and self._front_dist < 2.0:  #430
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
-                        self.get_logger().info(f"Race in {duration_in_seconds} sec completed! Heading change: {self._total_heading_change}")
+                        self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
+                        self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
                         self.get_logger().info(f"Parking lot detections {self._parking_lot}")
                         msg = String()
                         msg.data = "Parking ..."
@@ -248,7 +256,6 @@ class fullDriveNode(Node):
 
                 try:
                     # raw data
-                    scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
                     scan[scan == np.inf] = np.nan
                     scan[scan > self.scan_max_dist] = np.nan
 
