@@ -31,8 +31,8 @@ class fullDriveNode(Node):
     motor_ctl = -20
     relay_pin = 17
     WEIGHT = 1
-    FWD_SPEED = "6"      #  "12"
-    REV_SPEED = "-6"
+    FWD_SPEED = "5"      #  "12"
+    REV_SPEED = "-5"
 
 
     def __init__(self):
@@ -244,7 +244,7 @@ class fullDriveNode(Node):
                         self._state = "PARK"
                         self._processing = False
                         return
-                    elif self._parking_lot <= 50 and abs(self._total_heading_change) > 1060 and self._front_dist < 1.5:
+                    elif self._parking_lot <= 50 and abs(self._total_heading_change) > 1050 and self._front_dist < 1.5:
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                         self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
