@@ -29,7 +29,7 @@ def plot_radar_chart(data):
         ax.scatter(extended_angles, extended_line_data)
 
     # Each value represents a fraction of the 180-degree range
-    angles = np.linspace(-np.pi*3/4, np.pi*3/4, len(data[0]), endpoint=False)
+    angles = np.linspace(-np.pi*1/2, np.pi*1/2, len(data[0]), endpoint=False)
 
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
     fig.canvas.mpl_connect('button_press_event', update_chart)

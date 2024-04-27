@@ -102,6 +102,10 @@ class SpeedControlNode(Node):
                 self.pid_steering = True
                 new_speedf = float(new_speed)
                 self.pid.setpoint = abs(new_speedf)  # Set PID setpoint to desired speed, including direction.
+                self.pid.output_limits = (0, 20)  # Assuming the output limits go from 0 to 100
+                self.pid.auto_mode = True  # Enable automatic mode
+                self.pid.set_auto_mode(True, last_output=abs(new_speedf))  # Start with an initial output of 30
+
                 self.reverse = (new_speedf < 0)
         except ValueError:
             self.get_logger().error("Received invalid speed setting")
