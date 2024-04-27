@@ -226,7 +226,7 @@ class fullDriveNode(Node):
                     self._total_heading_change += heading_change
                     self._last_heading = self._current_heading
                     #self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
-                    if abs(self._total_heading_change) > 440:    #1150 #1060
+                    if abs(self._total_heading_change) > 430:    #1150 #1060
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed! Heading change: {self._total_heading_change}")
                         
@@ -307,7 +307,7 @@ class fullDriveNode(Node):
                 section_data = np.array_split(scan, num_sections)
                 section_means = [np.mean(section) for section in section_data]
                 self._front_dist = section_means[9]
-                if self._front_dist < 0.15:
+                if self._front_dist < 0.20:
 
                     heading = self._sense.gyro['yaw']-self._initial_heading
                     self.get_logger().info('Parking Distance: %s,%s ' % (self._front_dist,self._side_dist))
