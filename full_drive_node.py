@@ -314,7 +314,9 @@ class fullDriveNode(Node):
                 self._side_dist = min(section_means[3],section_means[15])
                 #self.get_logger().info('Parking Distance: %s,%s ' % (self._front_dist,self._side_dist))
 
-                if self._front_dist < 0.10 and self._side_dist < 0.20:
+                #if self._front_dist < 0.10 and self._side_dist < 0.20:
+                if self._front_dist < 0.15:
+
                     heading = self._sense.gyro['yaw']-self._initial_heading
                     self.get_logger().info('Parking Distance: %s,%s ' % (self._front_dist,self._side_dist))
                     self.get_logger().info(f"Heading: {heading}")
