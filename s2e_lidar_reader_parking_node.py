@@ -168,7 +168,6 @@ class s2eLidarReaderParkingNode(Node):
 
     def openmv_h7_callback(self, msg):
         try:
-            self.get_logger().info('CAM msg received: "%s"' % msg)
             data = msg.data.split(',')
 
             if data[0] == '240024001951333039373338': cam = 1     # 33001c000851303436373730
