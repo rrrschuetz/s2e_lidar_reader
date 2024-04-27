@@ -447,38 +447,41 @@ class fullDriveNode(Node):
             self.stop_race()
 
     def openmv_h7_callback(self, msg):
-        #self.get_logger().info('cam msg received: "%s"' % msg)
-        data = msg.data.split(',')
+        try:
+            data = msg.data.split(',')
 
-        if data[0] == '240024001951333039373338': cam = 1     # 33001c000851303436373730
-        elif data[0] == '2d0024001951333039373338': cam = 2   # 340046000e51303434373339
-        else: return
+            if data[0] == '240024001951333039373338': cam = 1     # 33001c000851303436373730
+            elif data[0] == '2d0024001951333039373338': cam = 2   # 340046000e51303434373339
+            else: return
 
-        if cam == 1:
-            self._color1_g = np.zeros(self.HPIX, dtype=int)
-            self._color1_r = np.zeros(self.HPIX, dtype=int)
-            self._color1_m = np.zeros(self.HPIX, dtype=int)
-        elif cam == 2:
-            self._color2_g = np.zeros(self.HPIX, dtype=int)
-            self._color2_r = np.zeros(self.HPIX, dtype=int)
-            self._color2_m = np.zeros(self.HPIX, dtype=int)
+            if cam == 1:
+                self._color1_g = np.zeros(self.HPIX, dtype=int)
+                self._color1_r = np.zeros(self.HPIX, dtype=int)
+                self._color1_m = np.zeros(self.HPIX, dtype=int)
+            elif cam == 2:
+                self._color2_g = np.zeros(self.HPIX, dtype=int)
+                self._color2_r = np.zeros(self.HPIX, dtype=int)
+                self._color2_m = np.zeros(self.HPIX, dtype=int)
 
-        blobs = ((data[i],data[i+1],data[i+2]) for i in range (1,len(data),3))
-        for blob in blobs:
-            color, x1, x2 = blob
-            color = int(color)
-            x1 = int(x1)
-            x2 = int(x2)
-            if color == 1:
-                if cam == 1 and not self._clockwise: self._color1_g[x1:x2] = self.WEIGHT
-                if cam == 2 and self._clockwise: self._color2_g[x1:x2] = self.WEIGHT
-            if color == 2:
-                if cam == 1 and not self._clockwise: self._color1_r[x1:x2] = self.WEIGHT
-                if cam == 2 and self._clockwise: self._color2_r[x1:x2] = self.WEIGHT
-            if color == 4:
-                if cam == 1: self._color1_m[x1:x2] = self.WEIGHT
-                if cam == 2: self._color2_m[x1:x2] = self.WEIGHT
-            #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
+            blobs = ((data[i],data[i+1],data[i+2]) for i in range (1,len(data),3))
+            for blob in blobs:
+                color, x1, x2 = blob
+                color = int(color)
+                x1 = int(x1)
+                x2 = int(x2)
+                if color == 1:
+                    if cam == 1 and not self._clockwise: self._color1_g[x1:x2] = self.WEIGHT
+                    if cam == 2 and self._clockwise: self._color2_g[x1:x2] = self.WEIGHT
+                if color == 2:
+                    if cam == 1 and not self._clockwise: self._color1_r[x1:x2] = self.WEIGHT
+                    if cam == 2 and self._clockwise: self._color2_r[x1:x2] = self.WEIGHT
+                if color == 4:
+                    if cam == 1: self._color1_m[x1:x2] = self.WEIGHT
+                    if cam == 2: self._color2_m[x1:x2] = self.WEIGHT
+                #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
+
+        except:
+            self.get_logger().error('Faulty cam msg received: "%s"' % msg)
 
     def openmv_h7_callback1(self, msg):
         self.openmv_h7_callback(msg)
