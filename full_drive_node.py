@@ -306,7 +306,7 @@ class fullDriveNode(Node):
                 num_sections = 18
                 section_data = np.array_split(scan, num_sections)
                 section_means = [np.mean(section) for section in section_data]
-                self._front_dist = min(section_means[9],section_means(6),section_means(12))
+                self._front_dist = min(section_means[9],section_means[6]),section_means[12])
                 if self._front_dist < 0.20:
 
                     heading = self._sense.gyro['yaw']-self._initial_heading
