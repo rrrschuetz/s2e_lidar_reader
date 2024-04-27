@@ -52,7 +52,7 @@ class fullDriveNode(Node):
         self._tf_control = False
         self._clockwise = False
         self._clockwise_def = False
-        self._tf_parking = False
+        self._parking_lot = 0
         self._collision = False
 
         self._X = 0.0 
@@ -66,7 +66,6 @@ class fullDriveNode(Node):
         self._color2_m = np.zeros(self.HPIX, dtype=int)
 
         self._front_dist = np.inf
-        self._side_dist = np.inf
 
         self._speed_msg = String()
         self._speed_msg.data = "0"
@@ -172,6 +171,7 @@ class fullDriveNode(Node):
     def start_race(self):
         self._state = "RACE"
         self._tf_control = True
+        self._parking_lot = 0
 
         self._initial_heading = self._sense.gyro['yaw']
         self._start_heading = self._initial_heading
@@ -188,7 +188,6 @@ class fullDriveNode(Node):
     def stop_race(self):
         self._state = "IDLE"
         self._tf_control = False
-        self._tf_parking = False
         self._processing = False
         self._pwm.set_pwm(0, 0, int(self.servo_neutral))
         self._speed_msg.data = "0"
@@ -226,14 +225,19 @@ class fullDriveNode(Node):
                     self._total_heading_change += heading_change
                     self._last_heading = self._current_heading
                     #self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
-                    if abs(self._total_heading_change) > 430:    #1150 #1060
+
+                    if self._parking_lot > 10 and abs(self._total_heading_change) > 1150:  #430
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed! Heading change: {self._total_heading_change}")
-                        
+                        self.get_logger().info(f"Parking lot detections {self._parking_lot}")
                         self._state = "PARK"
                         self._processing = False
-
-                        #self.stop_race()
+                        return
+                    elif self._parking_lot <= 10 and abs(self._total_heading_change) > 1060:
+                        duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
+                        self.get_logger().info(f"Race in {duration_in_seconds} sec completed! Heading change: {self._total_heading_change}")
+                        self.get_logger().info(f"Parking lot detections {self._parking_lot}")
+                        self.stop_race()
                         return
 
                 self._start_time = self.get_clock().now()
@@ -471,6 +475,7 @@ class fullDriveNode(Node):
                 if color == 4:
                     if cam == 1: self._color1_m[x1:x2] = self.WEIGHT
                     if cam == 2: self._color2_m[x1:x2] = self.WEIGHT
+                    self._parking_lot += 1
                 #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
 
         except:
