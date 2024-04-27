@@ -46,7 +46,7 @@ def read_data(filename):
     color_data = []
 
     for line in lines:
-        scan_values = line.strip().split(',')[2:2432]
+        scan_values = line.strip().split(',')[2:1622]
         scan_data.append(np.array(scan_values, dtype=float))
         color_values = line.strip().split(',')[-640:]
         color_data.append(np.array(color_values, dtype=int))
