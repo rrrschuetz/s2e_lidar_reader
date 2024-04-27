@@ -125,10 +125,7 @@ class SpeedControlNode(Node):
             # self.y_pwm = self.neutral_pulse
             # self.y_pwm = self.min_y if self.reverse else self.max_y
         else:
-            if self.impulse_count == 0:
-                pid_output = self.pid.setpoint
-            else:
-                pid_output = self.pid(self.impulse_count)
+            pid_output = self.pid(self.impulse_count)
             #self.get_logger().info('impulses %s power: %s %s' % (self.impulse_count,pid_output,self.reverse))
             # Determine PWM adjustment based on PID output and desired direction.
             if self.reverse:
