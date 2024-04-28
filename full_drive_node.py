@@ -162,6 +162,13 @@ class fullDriveNode(Node):
         self.get_logger().info('Switch off ESC')
         self.motor_off()
 
+    def get_compass_heading():
+        mag = self._sense.get_compass_raw()
+        x = mag['x']
+        y = mag['y']
+        heading = math.atan2(y, x) * (180 / math.pi)
+        if heading < 0: heading += 360
+    return heading
 
     def motor_off(self):
         GPIO.setmode(GPIO.BCM)
@@ -175,7 +182,8 @@ class fullDriveNode(Node):
         self._parking_lot = 0
         self._gyro_cnt = 0
 
-        self._initial_heading = self._sense.gyro['yaw']
+        #self._initial_heading = self._sense.gyro['yaw']
+        self._initial_heading = self.get_compass_heading()
         self._start_heading = self._initial_heading
         self._last_heading = self._initial_heading
         self._total_heading_change = 0
@@ -225,7 +233,8 @@ class fullDriveNode(Node):
                 self._gyro_cnt += 1
                 if self._gyro_cnt >= 30:
                     self._gyro_cnt = 0
-                    self._current_heading = self._sense.gyro['yaw']
+                    #self._current_heading = self._sense.gyro['yaw']
+                    self._current_heading = self.get_compass_heading()
                     heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
                     #self.get_logger().info("Heading change: %s" % heading_change)
                     self._total_heading_change += heading_change
@@ -327,10 +336,6 @@ class fullDriveNode(Node):
                 section_means = [np.mean(section) for section in section_data]
                 self._front_dist = min(section_means[9],section_means[6],section_means[12])
                 if self._front_dist < 0.20:
-
-                    heading = self._sense.gyro['yaw']-self._initial_heading
-                    self.get_logger().info(f"Parking ended. Distance: {self._front_dist} Heading: {heading}")
-
                     self._speed_msg.data = "0"
                     self.speed_publisher_.publish(self._speed_msg)
                     XX = int(self.servo_neutral+self._X*self.servo_ctl_fwd)
