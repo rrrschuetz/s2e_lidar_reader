@@ -248,7 +248,7 @@ class fullDriveNode(Node):
                         section_means = [np.mean(section) for section in section_data]
                         self._front_dist = section_means[9]
 
-                        if self._parking_lot > 50 and abs(self._total_heading_change) > 1100 and self._parking_lot_detect and self._front_dist < 2.0:  #430
+                        if self._parking_lot > 50 and abs(self._total_heading_change) > 1130 and self._parking_lot_detect and self._front_dist > 1.5:  #430
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                             self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                             self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
