@@ -247,7 +247,7 @@ class fullDriveNode(Node):
                     section_means = [np.mean(section) for section in section_data]
                     self._front_dist = section_means[5]
 
-                    if abs(self._total_heading_change) >= 75 and self._front_dist > 1.0 and self._front_dist < 2.0:
+                    if abs(self._total_heading_change) >= 70 and self._front_dist > 1.0 and self._front_dist < 2.0:
                         self._corner_cnt +=1
                         self.get_logger().info(f"Number of corners {self._corner_cnt} heading {self._total_heading_change}")
                         self._total_heading_change = 0
