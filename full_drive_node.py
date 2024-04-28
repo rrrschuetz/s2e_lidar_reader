@@ -182,6 +182,7 @@ class fullDriveNode(Node):
         self._tf_control = True
         self._parking_lot = 0
         self._gyro_cnt = 0
+        self._corner_cnt = 0
 
         self._initial_heading = self._sense.gyro['yaw']
         #self._initial_heading = self.get_compass_heading()
@@ -241,14 +242,18 @@ class fullDriveNode(Node):
                     if abs(heading_change) > 1:
                         self._total_heading_change += heading_change
                         self._last_heading = self._current_heading
-                        #self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
+
+                        if self._total_heading_change > 80:
+                            self._total_heading_change = 0
+                            self._corner_cnt +=1
+                            self.get_logger().info(f"Number of corners {self._corner_cnt}")
 
                         num_sections = 18
                         section_data = np.array_split(scan, num_sections)
                         section_means = [np.mean(section) for section in section_data]
                         self._front_dist = section_means[9]
 
-                        if self._parking_lot > 50 and abs(self._total_heading_change) > 1130 and self._parking_lot_detect and self._front_dist > 1.5:  #430
+                        if self._parking_lot > 50 and self._corner_cnt == 12 and abs(self._total_heading_change) > 50 and self._parking_lot_detect and self._front_dist < 2.0:  #430
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                             self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                             self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
@@ -259,7 +264,7 @@ class fullDriveNode(Node):
                             self._state = "PARK"
                             self._processing = False
                             return
-                        elif self._parking_lot <= 50 and abs(self._total_heading_change) > 1040 and self._front_dist < 1.5:
+                        elif self._parking_lot <= 50 and self._corner_cnt == 12 and self._front_dist < 1.5:
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                             self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                             self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
