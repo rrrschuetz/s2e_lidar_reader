@@ -53,6 +53,7 @@ class fullDriveNode(Node):
         self._clockwise = False
         self._clockwise_def = False
         self._parking_lot = 0
+        self._parking_lot_detect = False
         self._collision = False
         self._gyro_cnt = 0
 
@@ -231,7 +232,7 @@ class fullDriveNode(Node):
 
                 # Round completion check
                 self._gyro_cnt += 1
-                if self._gyro_cnt >= 30:
+                if self._gyro_cnt >= 10:
                     self._gyro_cnt = 0
                     self._current_heading = self._sense.gyro['yaw']
                     #self._current_heading = self.get_compass_heading()
@@ -246,7 +247,7 @@ class fullDriveNode(Node):
                     section_means = [np.mean(section) for section in section_data]
                     self._front_dist = section_means[9]
 
-                    if self._parking_lot > 50 and abs(self._total_heading_change) > 1130 and self._front_dist < 2.0:  #430
+                    if self._parking_lot > 50 and abs(self._total_heading_change) > 1100 and self._parking_lot_detect and self._front_dist < 2.0:  #430
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                         self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
@@ -458,6 +459,7 @@ class fullDriveNode(Node):
                 self._color2_r = np.zeros(self.HPIX, dtype=int)
                 self._color2_m = np.zeros(self.HPIX, dtype=int)
 
+            self._parking_lot_detect = False
             blobs = ((data[i],data[i+1],data[i+2]) for i in range (1,len(data),3))
             for blob in blobs:
                 color, x1, x2 = blob
@@ -474,6 +476,7 @@ class fullDriveNode(Node):
                     if cam == 1: self._color1_m[x1:x2] = self.WEIGHT
                     if cam == 2: self._color2_m[x1:x2] = self.WEIGHT
                     self._parking_lot += 1
+                    self._parking_lot_detect = True
                 #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
 
         except:
