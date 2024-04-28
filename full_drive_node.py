@@ -232,39 +232,40 @@ class fullDriveNode(Node):
 
                 # Round completion check
                 self._gyro_cnt += 1
-                if self._gyro_cnt >= 10:
+                if self._gyro_cnt >= 1:
                     self._gyro_cnt = 0
                     self._current_heading = self._sense.gyro['yaw']
                     #self._current_heading = self.get_compass_heading()
                     heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
                     #self.get_logger().info("Heading change: %s" % heading_change)
-                    self._total_heading_change += heading_change
-                    self._last_heading = self._current_heading
-                    self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
+                    if abs(heading_change) > 1:
+                        self._total_heading_change += heading_change
+                        self._last_heading = self._current_heading
+                        self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
 
-                    num_sections = 18
-                    section_data = np.array_split(scan, num_sections)
-                    section_means = [np.mean(section) for section in section_data]
-                    self._front_dist = section_means[9]
+                        num_sections = 18
+                        section_data = np.array_split(scan, num_sections)
+                        section_means = [np.mean(section) for section in section_data]
+                        self._front_dist = section_means[9]
 
-                    if self._parking_lot > 50 and abs(self._total_heading_change) > 1100 and self._parking_lot_detect and self._front_dist < 2.0:  #430
-                        duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
-                        self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
-                        self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
-                        self.get_logger().info(f"Parking lot detections {self._parking_lot}")
-                        msg = String()
-                        msg.data = "Parking ..."
-                        self.publisher_.publish(msg)
-                        self._state = "PARK"
-                        self._processing = False
-                        return
-                    elif self._parking_lot <= 50 and abs(self._total_heading_change) > 1040 and self._front_dist < 1.5:
-                        duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
-                        self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
-                        self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
-                        self.get_logger().info(f"Parking lot detections {self._parking_lot}")
-                        self.stop_race()
-                        return
+                        if self._parking_lot > 50 and abs(self._total_heading_change) > 1100 and self._parking_lot_detect and self._front_dist < 2.0:  #430
+                            duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
+                            self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
+                            self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
+                            self.get_logger().info(f"Parking lot detections {self._parking_lot}")
+                            msg = String()
+                            msg.data = "Parking ..."
+                            self.publisher_.publish(msg)
+                            self._state = "PARK"
+                            self._processing = False
+                            return
+                        elif self._parking_lot <= 50 and abs(self._total_heading_change) > 1040 and self._front_dist < 1.5:
+                            duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
+                            self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
+                            self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
+                            self.get_logger().info(f"Parking lot detections {self._parking_lot}")
+                            self.stop_race()
+                            return
 
                 self._start_time = self.get_clock().now()
                 self._end_time = self._start_time
