@@ -54,6 +54,7 @@ class fullDriveNode(Node):
         self._clockwise_def = False
         self._parking_lot = 0
         self._collision = False
+        self._gyro_cnt = 0
 
         self._X = 0.0 
         self._Y = 0.0
@@ -172,6 +173,7 @@ class fullDriveNode(Node):
         self._state = "RACE"
         self._tf_control = True
         self._parking_lot = 0
+        self._gyro_cnt = 0
 
         self._initial_heading = self._sense.gyro['yaw']
         self._start_heading = self._initial_heading
@@ -220,10 +222,12 @@ class fullDriveNode(Node):
                 scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
 
                 # Round completion check
-                self._current_heading = self._sense.gyro['yaw']
-                heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
-                #self.get_logger().info("Heading change: %s" % heading_change)
-                if abs(heading_change) > 0.2:
+                self._gyro_cnt += 1
+                if self._gyro_cnt >= 50:
+                    self._gyro_cnt = 0
+                    self._current_heading = self._sense.gyro['yaw']
+                    heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
+                    #self.get_logger().info("Heading change: %s" % heading_change)
                     self._total_heading_change += heading_change
                     self._last_heading = self._current_heading
                     #self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
@@ -244,7 +248,7 @@ class fullDriveNode(Node):
                         self._state = "PARK"
                         self._processing = False
                         return
-                    elif self._parking_lot <= 50 and abs(self._total_heading_change) > 1030 and self._front_dist < 1.5:
+                    elif self._parking_lot <= 50 and abs(self._total_heading_change) > 1050 and self._front_dist < 1.5:
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                         self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
