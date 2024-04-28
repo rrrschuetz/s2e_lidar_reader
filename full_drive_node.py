@@ -182,8 +182,8 @@ class fullDriveNode(Node):
         self._parking_lot = 0
         self._gyro_cnt = 0
 
-        #self._initial_heading = self._sense.gyro['yaw']
-        self._initial_heading = self.get_compass_heading()
+        self._initial_heading = self._sense.gyro['yaw']
+        #self._initial_heading = self.get_compass_heading()
         self._start_heading = self._initial_heading
         self._last_heading = self._initial_heading
         self._total_heading_change = 0
@@ -233,8 +233,8 @@ class fullDriveNode(Node):
                 self._gyro_cnt += 1
                 if self._gyro_cnt >= 30:
                     self._gyro_cnt = 0
-                    #self._current_heading = self._sense.gyro['yaw']
-                    self._current_heading = self.get_compass_heading()
+                    self._current_heading = self._sense.gyro['yaw']
+                    #self._current_heading = self.get_compass_heading()
                     heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
                     #self.get_logger().info("Heading change: %s" % heading_change)
                     self._total_heading_change += heading_change
