@@ -223,7 +223,7 @@ class fullDriveNode(Node):
 
                 # Round completion check
                 self._gyro_cnt += 1
-                if self._gyro_cnt >= 50:
+                if self._gyro_cnt >= 30:
                     self._gyro_cnt = 0
                     self._current_heading = self._sense.gyro['yaw']
                     heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
@@ -248,7 +248,7 @@ class fullDriveNode(Node):
                         self._state = "PARK"
                         self._processing = False
                         return
-                    elif self._parking_lot <= 50 and abs(self._total_heading_change) > 1050 and self._front_dist < 1.5:
+                    elif self._parking_lot <= 50 and abs(self._total_heading_change) > 1040 and self._front_dist < 1.5:
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                         self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
