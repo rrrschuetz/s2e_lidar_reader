@@ -242,12 +242,12 @@ class fullDriveNode(Node):
                     self._total_heading_change += heading_change
                     self._last_heading = self._current_heading
 
-                    num_sections = 18
+                    num_sections = 9
                     section_data = np.array_split(scan, num_sections)
                     section_means = [np.mean(section) for section in section_data]
-                    self._front_dist = section_means[9]
+                    self._front_dist = section_means[5]
 
-                    if abs(self._total_heading_change) >= 70 and self._front_dist < 1.5:
+                    if abs(self._total_heading_change) >= 75 and self._front_dist < 1.5:
                         self._corner_cnt +=1
                         self.get_logger().info(f"Number of corners {self._corner_cnt} heading {self._total_heading_change}")
                         self._total_heading_change = 0
