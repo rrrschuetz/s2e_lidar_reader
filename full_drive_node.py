@@ -162,7 +162,7 @@ class fullDriveNode(Node):
         self.get_logger().info('Switch off ESC')
         self.motor_off()
 
-    def get_compass_heading():
+    def get_compass_heading(self):
         mag = self._sense.get_compass_raw()
         x = mag['x']
         y = mag['y']
