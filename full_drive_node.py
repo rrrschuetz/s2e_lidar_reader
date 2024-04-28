@@ -241,7 +241,7 @@ class fullDriveNode(Node):
                     if abs(heading_change) > 1:
                         self._total_heading_change += heading_change
                         self._last_heading = self._current_heading
-                        self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
+                        #self.get_logger().info("Current heading: %s degrees, total change: %s degrees" % (self._current_heading,self._total_heading_change))
 
                         num_sections = 18
                         section_data = np.array_split(scan, num_sections)
