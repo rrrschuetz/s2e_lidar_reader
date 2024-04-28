@@ -242,7 +242,7 @@ class fullDriveNode(Node):
                     self._total_heading_change += heading_change
                     self._last_heading = self._current_heading
 
-                    if self._total_heading_change > 80:
+                    if abs(self._total_heading_change) > 80:
                         self._total_heading_change = 0
                         self._corner_cnt +=1
                         self.get_logger().info(f"Number of corners {self._corner_cnt}")
