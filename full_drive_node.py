@@ -168,7 +168,7 @@ class fullDriveNode(Node):
         y = mag['y']
         heading = math.atan2(y, x) * (180 / math.pi)
         if heading < 0: heading += 360
-    return heading
+        return heading
 
     def motor_off(self):
         GPIO.setmode(GPIO.BCM)
