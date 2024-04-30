@@ -253,7 +253,7 @@ class fullDriveNode(Node):
                         self.get_logger().info(f"Number of corners {self._corner_cnt} heading {self._total_heading_change}")
                         self._total_heading_change = 0
 
-                    if self._parking_lot > 50 and self._corner_cnt >= 12 and abs(self._total_heading_change) > 60 and self._parking_lot_detect and self._front_dist < 2.0:  #430
+                    if self._parking_lot > 50 and self._corner_cnt >= 12 and self._parking_lot_detect:  #430
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                         self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
