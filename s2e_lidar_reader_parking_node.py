@@ -32,10 +32,14 @@ class s2eLidarReaderParkingNode(Node):
     filepath = '/home/rrrschuetz/test/file_p.txt'
 
     scan_labels = [f'SCAN.{i}' for i in range(1, num_scan+1)]
+    col1_g_labels = [f'COL1_G.{i}' for i in range(1, HPIX+1)]
+    col2_g_labels = [f'COL2_G.{i}' for i in range(1, HPIX+1)]
+    col1_r_labels = [f'COL1_R.{i}' for i in range(1, HPIX+1)]
+    col2_r_labels = [f'COL2_R.{i}' for i in range(1, HPIX+1)]
     col1_m_labels = [f'COL1_M.{i}' for i in range(1, HPIX+1)]
     col2_m_labels = [f'COL2_M.{i}' for i in range(1, HPIX+1)]
 
-    labels = ['X', 'Y'] + scan_labels + col1_m_labels + col2_m_labels
+    labels = ['X', 'Y'] + scan_labels + col1_g_labels + col2_g_labels + col1_r_labels + col2_r_labels + col1_m_labels + col2_m_labels
     line = ','.join(labels) + '\n'
 
     filepath = '/home/rrrschuetz/test/file_p.txt'
@@ -57,10 +61,15 @@ class s2eLidarReaderParkingNode(Node):
         self._sequence_count = 0
 
         self._scan_interpolated = np.zeros(self.num_scan)
+        self._color1_g = np.zeros(self.HPIX, dtype=int)
+        self._color2_g = np.zeros(self.HPIX, dtype=int)
+        self._color1_r = np.zeros(self.HPIX, dtype=int)
+        self._color2_r = np.zeros(self.HPIX, dtype=int)
         self._color1_m = np.zeros(self.HPIX, dtype=int)
         self._color2_m = np.zeros(self.HPIX, dtype=int)
-        self._cam_online = False
-        self._X = 0.0 
+        self._clockwise = False
+        self._clockwise_def = False
+        self._X = 0.0
         self._Y = 0.0
 
         # Initialize PCA9685
@@ -110,7 +119,6 @@ class s2eLidarReaderParkingNode(Node):
         GPIO.cleanup()
 
     def lidar_callback(self, msg):
-        if not self._cam_online: return
         if not self._capture: return
 
         # Convert the laser scan data to a string
@@ -119,6 +127,14 @@ class s2eLidarReaderParkingNode(Node):
         scan[scan == np.inf] = np.nan
         scan[scan > self.scan_max_dist] = np.nan
         x = np.arange(len(scan))
+
+        if not self._clockwise_def:
+            self._clockwise_def = True
+            sum_first_half = np.nansum(scan[:self.num_scan2])
+            sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
+            self._clockwise = (sum_first_half <= sum_second_half)
+            self.get_logger().info('lidar_callback: clockwise "%s" ' % self._clockwise)
+
         finite_vals = np.isfinite(scan)
         self._scan_interpolated = np.interp(x,x[finite_vals],scan[finite_vals])
 
@@ -128,6 +144,10 @@ class s2eLidarReaderParkingNode(Node):
         #scan_data += ','.join(str(e) for e in scan)
 
         # add color data
+        scan_data += ','.join(str(e) for e in self._color1_g)+','
+        scan_data += ','.join(str(e) for e in self._color2_g)+','
+        scan_data += ','.join(str(e) for e in self._color1_r)+','
+        scan_data += ','.join(str(e) for e in self._color2_r)+','
         scan_data += ','.join(str(e) for e in self._color1_m)+','
         scan_data += ','.join(str(e) for e in self._color2_m)
 
@@ -174,22 +194,38 @@ class s2eLidarReaderParkingNode(Node):
             if data[0] == '240024001951333039373338': cam = 1     # 33001c000851303436373730
             elif data[0] == '2d0024001951333039373338': cam = 2   # 340046000e51303434373339
             else: return
-            if cam == 1:  self._color1_m = np.zeros(self.HPIX, dtype=int)
-            elif cam == 2: self._color2_m = np.zeros(self.HPIX, dtype=int)
-            self._cam_online = True
 
+            if cam == 1:
+                self._color1_g = np.zeros(self.HPIX, dtype=int)
+                self._color1_r = np.zeros(self.HPIX, dtype=int)
+                self._color1_m = np.zeros(self.HPIX, dtype=int)
+            elif cam == 2:
+                self._color2_g = np.zeros(self.HPIX, dtype=int)
+                self._color2_r = np.zeros(self.HPIX, dtype=int)
+                self._color2_m = np.zeros(self.HPIX, dtype=int)
+
+            self._parking_lot_detect = False
             blobs = ((data[i],data[i+1],data[i+2]) for i in range (1,len(data),3))
             for blob in blobs:
                 color, x1, x2 = blob
                 color = int(color)
                 x1 = int(x1)
                 x2 = int(x2)
+                if color == 1:
+                    if cam == 1 and not self._clockwise: self._color1_g[x1:x2] = self.WEIGHT
+                    if cam == 2 and self._clockwise: self._color2_g[x1:x2] = self.WEIGHT
+                if color == 2:
+                    if cam == 1 and not self._clockwise: self._color1_r[x1:x2] = self.WEIGHT
+                    if cam == 2 and self._clockwise: self._color2_r[x1:x2] = self.WEIGHT
                 if color == 4:
                     if cam == 1: self._color1_m[x1:x2] = self.WEIGHT
                     if cam == 2: self._color2_m[x1:x2] = self.WEIGHT
+                    self._parking_lot += 1
+                    self._parking_lot_detect = True
+                #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
 
         except:
-            self.get_logger().error('Faulty CAM msg received: "%s"' % msg)
+            self.get_logger().error('Faulty cam msg received: "%s"' % msg)
 
     def openmv_h7_callback1(self, msg):
         self.openmv_h7_callback(msg)
