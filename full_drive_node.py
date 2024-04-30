@@ -292,7 +292,8 @@ class fullDriveNode(Node):
                     scan_interpolated = np.interp(x, x[finite_vals], scan[finite_vals])
                     scan_interpolated = [1/value if value != 0 else 0 for value in scan_interpolated]
                     scan_interpolated = list(scan_interpolated)
-                    color_data = list(self._color1_g) + list(self._color2_g) + list(self._color1_r) + list(self._color2_r)
+                    color_data = list(self._color1_g) + list(self._color2_g) + list(self._color1_r) + list(self._color2_r) \
+
                     lidar_data = np.reshape(scan_interpolated, (1, -1))               # Reshape LIDAR data
                     color_data_standardized = np.reshape(color_data, (1, -1))         # Reshape COLOR data
                     # Reshape color_data to (1, 1, 1) to match dimensions
@@ -358,7 +359,7 @@ class fullDriveNode(Node):
                         scan_interpolated = np.interp(x, x[finite_vals], scan[finite_vals])
                         scan_interpolated = [1/value if value != 0 else 0 for value in scan_interpolated]
                         scan_interpolated = list(scan_interpolated)
-                        color_data = list(self._color1_m) + list(self._color2_m)
+                        color_data = list(self._color1_g) + list(self._color2_g) + list(self._color1_r) + list(self._color2_r) + list(self._color1_m) + list(self._color2_m)
 
                         lidar_data = np.reshape(scan_interpolated, (1, -1))  # Reshape LIDAR data
                         lidar_data_standardized = self._scaler_p.transform(lidar_data)
