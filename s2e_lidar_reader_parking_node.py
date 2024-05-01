@@ -220,8 +220,6 @@ class s2eLidarReaderParkingNode(Node):
                 if color == 4:
                     if cam == 1: self._color1_m[x1:x2] = self.WEIGHT
                     if cam == 2: self._color2_m[x1:x2] = self.WEIGHT
-                    self._parking_lot += 1
-                    self._parking_lot_detect = True
                 #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
 
         except:
