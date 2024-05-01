@@ -339,10 +339,10 @@ class fullDriveNode(Node):
 
                 scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
 
-                num_sections = 18
+                num_sections = 7
                 section_data = np.array_split(scan, num_sections)
                 section_means = [np.mean(section) for section in section_data]
-                self._front_dist = min(section_means[9],section_means[6],section_means[12])
+                self._front_dist = section_means[4]
                 if self._front_dist < 0.20:
                     self._speed_msg.data = "0"
                     self.speed_publisher_.publish(self._speed_msg)
