@@ -262,6 +262,7 @@ class fullDriveNode(Node):
                         self._state = "PARK"
                         self._processing = False
                         return
+
                     elif self._parking_lot <= 50 and self._corner_cnt >= 12:
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
