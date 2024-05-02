@@ -80,9 +80,7 @@ class fullDriveNode(Node):
         self._pwm.set_pwm_freq(50)  # Set frequency to 50Hz
         self._pwm.set_pwm(0, 0, int(self.servo_neutral))
 
-        self._start_time = self.get_clock().now()
-        self._end_time = self._start_time
-        self._round_start_time = self._start_time
+        self._round_start_time = self.get_clock().now()
 
         self.subscription_lidar = self.create_subscription(
             LaserScan,
@@ -271,9 +269,6 @@ class fullDriveNode(Node):
                         self.get_logger().info(f"Parking lot detections {self._parking_lot}")
                         self.stop_race()
                         return
-
-                self._start_time = self.get_clock().now()
-                self._end_time = self._start_time
 
                 try:
                     # raw data
