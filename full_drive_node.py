@@ -444,6 +444,9 @@ class fullDriveNode(Node):
         else:
             self.get_logger().info('Stop button pressed!')
             self.stop_race()
+            with open('/var/log/ros2_pipe', 'w') as pipe:
+                pipe.write('shutdown')
+
 
     def openmv_h7_callback(self, msg):
         try:
