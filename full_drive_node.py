@@ -442,6 +442,8 @@ class fullDriveNode(Node):
             self.get_logger().info('Start button pressed!')
             self.start_race()
         else:
+            ack.data = "Shutting down ..."
+            self.publisher_.publish(ack)
             self.get_logger().info('Stop button pressed!')
             self.stop_race()
             with open('/var/log/ros2_pipe', 'w') as pipe:
