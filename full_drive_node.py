@@ -206,7 +206,7 @@ class fullDriveNode(Node):
         self.motor_off()
         try:
             with open('/tmp/ros2_pipe', 'w') as pipe:
-                pipe.write('shutdown')
+                pipe.write('shutdown\n')
         except:
             pass
 
