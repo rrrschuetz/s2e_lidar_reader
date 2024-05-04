@@ -182,6 +182,7 @@ class fullDriveNode(Node):
         self._parking_lot = 0
         self._gyro_cnt = 0
         self._corner_cnt = 0
+        self._rounds = 0
 
         self._initial_heading = self._sense.gyro['yaw']
         #self._initial_heading = self.get_compass_heading()
@@ -251,13 +252,17 @@ class fullDriveNode(Node):
                     section_means = [np.mean(section) for section in section_data]
                     self._front_dist = section_means[5]
 
-                    if abs(self._total_heading_change) >= 70 and self._front_dist > 1.0 and self._front_dist < 2.0:
-                        self._corner_cnt +=1
-                        if abs(self._total_heading_change) > 140: self._corner_cnt +=1
-                        self.get_logger().info(f"Number of corners {self._corner_cnt} heading {self._total_heading_change}")
+                    #if abs(self._total_heading_change) >= 80 and self._front_dist > 1.0 and self._front_dist < 2.0:
+                    if abs(self._total_heading_change) >= 340 and self._front_dist > 1.0:
+                        #self._corner_cnt +=1
+                        self._rounds += 1
+                        #if abs(self._total_heading_change) > 140: self._corner_cnt +=1
+                        #self.get_logger().info(f"Number of corners {self._corner_cnt} heading {self._total_heading_change}")
+                        self.get_logger().info(f"Number off rounds {self._rounds} heading {self._total_heading_change}")
                         self._total_heading_change = 0
 
-                    if self._parking_lot > 50 and self._corner_cnt >= 4:
+                    #if self._parking_lot > 50 and self._corner_cnt >= 4:
+                    if self._parking_lot > 50 and self._rounds >= 3:
                         self.get_logger().info(f"Parking lot detected: {self._parking_lot_detect}")
                         if self._parking_lot_detect > 0:
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
@@ -271,7 +276,8 @@ class fullDriveNode(Node):
                             self._processing = False
                             return
 
-                    elif self._parking_lot <= 50 and self._corner_cnt >= 12:
+                    #elif self._parking_lot <= 50 and self._corner_cnt >= 12:
+                    elif self._parking_lot <= 50 and self._rounds >= 3:
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                         self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
