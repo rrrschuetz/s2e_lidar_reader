@@ -39,6 +39,7 @@ class fullDriveNode(Node):
         super().__init__('full_drive_node')
         self.publisher_ = self.create_publisher(String, 'main_logger', 10)
         self.speed_publisher_ = self.create_publisher(String, 'set_speed', 10)
+        self.timer = self.create_timer(0.5,self.timer_callback)
 
         qos_profile = QoSProfile(
                 depth=1, 
@@ -53,7 +54,7 @@ class fullDriveNode(Node):
         self._clockwise = False
         self._clockwise_def = False
         self._parking_lot = 0
-        self._parking_lot_detect = False
+        self._parking_lot_detect = 0
         self._collision = False
         self._gyro_cnt = 0
 
@@ -251,17 +252,19 @@ class fullDriveNode(Node):
                         self.get_logger().info(f"Number of corners {self._corner_cnt} heading {self._total_heading_change}")
                         self._total_heading_change = 0
 
-                    if self._parking_lot > 50 and self._corner_cnt >= 4 and self._parking_lot_detect:  #430
-                        duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
-                        self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
-                        self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
-                        self.get_logger().info(f"Parking lot detections {self._parking_lot}")
-                        msg = String()
-                        msg.data = "Parking ..."
-                        self.publisher_.publish(msg)
-                        self._state = "PARK"
-                        self._processing = False
-                        return
+                    if self._parking_lot > 50 and self._corner_cnt >= 4:
+                        self.get_logger().info(f"Parking lot detected: {self._parking_lot_detect}")
+                        if self._parking_lot_detect > 0:
+                            duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
+                            self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
+                            self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
+                            self.get_logger().info(f"Parking lot detections {self._parking_lot}")
+                            msg = String()
+                            msg.data = "Parking ..."
+                            self.publisher_.publish(msg)
+                            self._state = "PARK"
+                            self._processing = False
+                            return
 
                     elif self._parking_lot <= 50 and self._corner_cnt >= 12:
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
@@ -340,11 +343,11 @@ class fullDriveNode(Node):
 
                 scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
 
-                num_sections = 7
+                num_sections = 21
                 section_data = np.array_split(scan, num_sections)
                 section_means = [np.mean(section) for section in section_data]
-                self._front_dist = section_means[4]
-                if self._front_dist < 0.25:
+                self._front_dist = min(section_means[i] for i in range(7,16))
+                if self._front_dist < 0.15:
                     self.get_logger().info(f"Stop distances: {section_means}")
                     self._speed_msg.data = "-1"
                     self.speed_publisher_.publish(self._speed_msg)
@@ -472,7 +475,6 @@ class fullDriveNode(Node):
                 self._color2_r = np.zeros(self.HPIX, dtype=int)
                 self._color2_m = np.zeros(self.HPIX, dtype=int)
 
-            self._parking_lot_detect = False
             blobs = ((data[i],data[i+1],data[i+2]) for i in range (1,len(data),3))
             for blob in blobs:
                 color, x1, x2 = blob
@@ -489,7 +491,8 @@ class fullDriveNode(Node):
                     if cam == 1: self._color1_m[x1:x2] = self.WEIGHT
                     if cam == 2: self._color2_m[x1:x2] = self.WEIGHT
                     self._parking_lot += 1
-                    self._parking_lot_detect = True
+                    self._parking_lot_detect += 1
+                    #self.get_logger().info(f"Parking lot detected! {self._parking_lot_detect}")
 
                 #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
 
@@ -500,6 +503,9 @@ class fullDriveNode(Node):
         self.openmv_h7_callback(msg)
     def openmv_h7_callback2(self, msg):
         self.openmv_h7_callback(msg)
+
+    def timer_callback(self):
+        self._parking_lot_detect = 0
 
     def collision_callback(self, msg):
         self.get_logger().info('Collision msg received')
