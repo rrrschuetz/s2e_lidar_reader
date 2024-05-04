@@ -204,6 +204,11 @@ class fullDriveNode(Node):
         self._speed_msg.data = "0"
         self.speed_publisher_.publish(self._speed_msg)
         self.motor_off()
+        try:
+            with open('/tmp/ros2_pipe', 'w') as pipe:
+                pipe.write('shutdown')
+        except:
+            pass
 
     def calculate_heading_change(self, start_heading, current_heading):
         # Calculate the raw difference
@@ -454,9 +459,6 @@ class fullDriveNode(Node):
             self.publisher_.publish(ack)
             self.get_logger().info('Stop button pressed!')
             self.stop_race()
-            with open('/var/log/ros2_pipe', 'w') as pipe:
-                pipe.write('shutdown')
-
 
     def openmv_h7_callback(self, msg):
         try:
