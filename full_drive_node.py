@@ -202,7 +202,7 @@ class fullDriveNode(Node):
         self._pwm.set_pwm(0, 0, int(self.servo_neutral))
         self._speed_msg.data = "0"
         self.speed_publisher_.publish(self._speed_msg)
-        #self.motor_off()
+        self.motor_off()
 
     def calculate_heading_change(self, start_heading, current_heading):
         # Calculate the raw difference
@@ -345,7 +345,6 @@ class fullDriveNode(Node):
                     XX = int(self.servo_neutral+self._X*self.servo_ctl_fwd)
                     self._pwm.set_pwm(0, 0, XX)
                     self.stop_race()
-
                 else:
                     try:
                         scan[scan == np.inf] = np.nan
