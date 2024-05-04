@@ -283,6 +283,11 @@ class fullDriveNode(Node):
                         self._clockwise = (sum_first_half <= sum_second_half)
                         self.get_logger().info('lidar_callback: clockwise "%s" ' % self._clockwise)
 
+                        #num_sections = 80
+                        #section_data = np.array_split(scan, num_sections)
+                        #section_means = [np.mean(section) for section in section_data]
+                        #self.get_logger().info('lidar_callback: Distances "%s" ' % section_means)
+
                     x = np.arange(len(scan))
                     finite_vals = np.isfinite(scan)
                     scan_interpolated = np.interp(x, x[finite_vals], scan[finite_vals])
@@ -339,8 +344,9 @@ class fullDriveNode(Node):
                 section_data = np.array_split(scan, num_sections)
                 section_means = [np.mean(section) for section in section_data]
                 self._front_dist = section_means[4]
-                if self._front_dist < 0.20:
-                    self._speed_msg.data = "0"
+                if self._front_dist < 0.25:
+                    self.get_logger().info(f"Stop distances: {section_means}")
+                    self._speed_msg.data = "-1"
                     self.speed_publisher_.publish(self._speed_msg)
                     XX = int(self.servo_neutral+self._X*self.servo_ctl_fwd)
                     self._pwm.set_pwm(0, 0, XX)
