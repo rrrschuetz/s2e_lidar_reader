@@ -71,6 +71,7 @@ class fullDriveNode(Node):
         self._clockwise = False
         self._clockwise_def = False
         self._obstacle_chk = False
+        self._backward = False
         self._parking_lot = 0
         self._parking_lot_detect = 0
         self._collision = False
@@ -328,10 +329,11 @@ class fullDriveNode(Node):
                         wall_dist = max(section_means[76:86])
 
                         if min_far_dist < 0.8 or min_near_dist < 0.2:
+                            self._backward = True
                             self._speed_msg.data = "R"+str(int((2.5 - wall_dist) * 40))
                             self.get_logger().info(f"Obstacle: {min_far_dist}, {min_near_dist}, distance: {wall_dist}, moving backward: {self._speed_msg.data}")
                             self.speed_publisher_.publish(self._speed_msg)
-                            time.sleep(5)
+                            time.sleep(3)
                             self._processing = False
                             return
                         else:
@@ -349,6 +351,15 @@ class fullDriveNode(Node):
                         sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
                         self._clockwise = (sum_first_half <= sum_second_half)
                         self.get_logger().info('lidar_callback: clockwise "%s" ' % self._clockwise)
+
+                        if self._backward:
+                            X = -1.0 if self._clockwise else 1.0
+                            XX = int(self.servo_neutral+X*self.servo_ctl_fwd)
+                            self._pwm.set_pwm(0, 0, XX)
+                            time.sleep(1.0)
+                            self._speed_msg.data = "F10"
+                            self.speed_publisher_.publish(self._speed_msg)
+                            time.sleep(2.0)
 
                         self._speed_msg.data = "RESET"
                         self.speed_publisher_.publish(self._speed_msg)
