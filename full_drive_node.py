@@ -357,7 +357,7 @@ class fullDriveNode(Node):
                             XX = int(self.servo_neutral+X*self.servo_ctl_fwd)
                             self._pwm.set_pwm(0, 0, XX)
                             time.sleep(1.0)
-                            self._speed_msg.data = "F10"
+                            self._speed_msg.data = "F20"
                             self.speed_publisher_.publish(self._speed_msg)
                             time.sleep(2.0)
 
