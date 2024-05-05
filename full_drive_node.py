@@ -301,7 +301,7 @@ class fullDriveNode(Node):
                         self._total_heading_change = 0
 
                     #if self._parking_lot > 50 and self._corner_cnt >= 4:
-                    if self._parking_lot > 50 and self._rounds >= 3:
+                    if self._parking_lot > 50 and self._rounds >= 1:
                         self.get_logger().info(f"Parking lot detected: {self._parking_lot_detect}")
                         if self._parking_lot_detect > 0:
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
