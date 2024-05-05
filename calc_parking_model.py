@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input
-from tensorflow.keras.layers import Concatenate, Layer
+from tensorflow.keras.layers import Concatenate, Layer, Multiply, Activation
 from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense
 from tensorflow.keras.layers import Dropout, BatchNormalization
 from tensorflow.keras.layers import LSTM  # Import LSTM layer
@@ -99,10 +99,20 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     color_path = Flatten()(color_path)
 
     # Concatenation
-    concatenated = WeightedConcatenate(weight_lidar=0.8, weight_color=0.2)([lidar_path, color_path])
+    #concatenated = WeightedConcatenate(weight_lidar=0.8, weight_color=0.2)([lidar_path, color_path])
+    concatenated = Concatenate()([lidar_features, color_features])
+
+    gate = Dense(1, activation='sigmoid')(concatenated)
+    # Apply gates
+    gated_lidar = Multiply()([lidar_path, gate])
+    gated_color = Multiply()([color_path, 1 - gate])
+
+    # Combine gated features
+    combined = Add()([gated_lidar, gated_color])
 
     # Further processing
-    combined = Dense(64, activation='relu')(concatenated)
+    #combined = Dense(64, activation='relu')(concatenated)
+    combined = Dense(64, activation='relu')(combined)
     combined = Dense(64, activation='relu')(combined)
     combined = BatchNormalization()(combined)
     combined = Dense(32, activation='relu')(combined)
