@@ -14,11 +14,10 @@ import pickle
 from Adafruit_PCA9685 import PCA9685
 from sense_hat import SenseHat
 import RPi.GPIO as GPIO
+import usb.core
+import usb.util
 
 class fullDriveNode(Node):
-
-#########################################
-    initial_race = True
 
     OBSTACLE_RACE_PATH_CC = "/home/rrrschuetz/test/model.tflite"
     OBSTACLE_RACE_PATH_CW = "/home/rrrschuetz/test/modelu.tflite"
@@ -32,8 +31,8 @@ class fullDriveNode(Node):
 
     PARKING_PATH = "/home/rrrschuetz/test/model_p.tflite"
     PARKING_SCALER_PATH = '/home/rrrschuetz/test/scaler_p.pkl'
-#########################################
 
+    initial_race = False
     HPIX = 320
     VPIX = 200
     HFOV = 70.8
@@ -146,6 +145,11 @@ class fullDriveNode(Node):
 
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
+        # Look for initial race dongle
+        # ID 2357:012e TP-Link 802.11ac NIC
+        self.initial_race = self.check_usb_device('2357', '012e')
+        self.get_logger().info('Inital race mode activated ...')
+
         if self.initial_race:
             self.RACE_PATH_CC = self.INITIAL_RACE_PATH_CC
             self.RACE_PATH_CW = self.INITIAL_RACE_PATH_CW
@@ -192,19 +196,24 @@ class fullDriveNode(Node):
         self.get_logger().info('Switch off ESC')
         self.motor_off()
 
-    def get_compass_heading(self):
-        mag = self._sense.get_compass_raw()
-        x = mag['x']
-        y = mag['y']
-        heading = math.atan2(y, x) * (180 / math.pi)
-        if heading < 0: heading += 360
-        return heading
-
     def motor_off(self):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.relay_pin, GPIO.OUT)
         GPIO.output(self.relay_pin, GPIO.LOW)
         GPIO.cleanup()
+
+    def check_usb_device(self, vendor_id, product_id):
+        # Convert vendor_id and product_id from hexadecimal string to integer
+        vendor_id = int(vendor_id, 16)
+        product_id = int(product_id, 16)
+        # Find USB device with specific Vendor ID and Product ID
+        device = usb.core.find(idVendor=vendor_id, idProduct=product_id)
+        # Return True if device is found, else False
+        if device is not None:
+            self.get_logger().info('ID Vendor:ID Product = {0}:{1}'.format(hex(dev.idVendor), hex(dev.idProduct)))
+            return True
+        else:
+            return False
 
     def start_race(self):
         self._state = "RACE"
@@ -215,7 +224,6 @@ class fullDriveNode(Node):
         self._rounds = 0
 
         self._initial_heading = self._sense.gyro['yaw']
-        #self._initial_heading = self.get_compass_heading()
         self._start_heading = self._initial_heading
         self._last_heading = self._initial_heading
         self._total_heading_change = 0
@@ -267,7 +275,6 @@ class fullDriveNode(Node):
                 if self._gyro_cnt >= 1:
                     self._gyro_cnt = 0
                     self._current_heading = self._sense.gyro['yaw']
-                    #self._current_heading = self.get_compass_heading()
                     heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
                     #self.get_logger().info("Heading change: %s" % heading_change)
                     self._total_heading_change += heading_change
