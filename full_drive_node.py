@@ -428,9 +428,9 @@ class fullDriveNode(Node):
                 num_sections = 162
                 section_data = np.array_split(scan, num_sections)
                 section_means = [np.mean(section) for section in section_data]
-                self._front_dist = min(section_means[40:121])
+                self._front_dist = min(section_means[60:101])
                 if self._front_dist < 0.2:
-                    self.get_logger().info(f"Stop distances: {section_means}")
+                    self.get_logger().info(f"Parking ended. Stop distance: {self._front_dist}")
                     self._speed_msg.data = "-1"
                     self.speed_publisher_.publish(self._speed_msg)
                     XX = int(self.servo_neutral+self._X*self.servo_ctl_fwd)
