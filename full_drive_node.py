@@ -190,12 +190,8 @@ class fullDriveNode(Node):
         self._last_heading = self._initial_heading
         self._total_heading_change = 0
         self.get_logger().info(f"Initial heading: {self._initial_heading} degrees")
-
         self._round_start_time = self.get_clock().now()
-        self._speed_msg.data = "RESET"
-        self.speed_publisher_.publish(self._speed_msg)
-        self._speed_msg.data = self.FWD_SPEED
-        self.speed_publisher_.publish(self._speed_msg)
+
 
     def stop_race(self):
         self._state = "IDLE"
@@ -292,15 +288,26 @@ class fullDriveNode(Node):
 
                     if not self._clockwise_def:
                         self._clockwise_def = True
+
+                        num_sections = 21
+                        section_data = np.array_split(scan, num_sections)
+                        section_means = [np.mean(section) for section in section_data]
+                        self.get_logger().info('Distances "%s" ' % section_means)
+                        distance = (section_means[10] - 1.0) * 200
+
+                        self._speed_msg.data = "F"+str(distance)
+                        self.get_logger().info(f"Moving forward: {self._speed_msg.data}")
+                        #self.speed_publisher_.publish(self._speed_msg)
+
                         sum_first_half = np.nansum(scan[:self.num_scan2])
                         sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
                         self._clockwise = (sum_first_half <= sum_second_half)
                         self.get_logger().info('lidar_callback: clockwise "%s" ' % self._clockwise)
 
-                        #num_sections = 80
-                        #section_data = np.array_split(scan, num_sections)
-                        #section_means = [np.mean(section) for section in section_data]
-                        #self.get_logger().info('lidar_callback: Distances "%s" ' % section_means)
+                        self._speed_msg.data = "RESET"
+                        self.speed_publisher_.publish(self._speed_msg)
+                        self._speed_msg.data = self.FWD_SPEED
+                        self.speed_publisher_.publish(self._speed_msg)
 
                     x = np.arange(len(scan))
                     finite_vals = np.isfinite(scan)
@@ -438,16 +445,6 @@ class fullDriveNode(Node):
             elif msg.buttons[1] == 1:
                 self.get_logger().info('emergency shutdown initiated by supervisor')
                 self.stop_race()
-
-            # Check if 'Y' button is pressed - switch on AI parking
-            if msg.buttons[3] == 1:
-                self._state = "PARK"
-                self._tf_control = True
-                self._clockwise = False
-                self._speed_msg.data = "RESET"
-                self.speed_publisher_.publish(self._speed_msg)
-                self._speed_msg.data = self.FWD_SPEED
-                self.speed_publisher_.publish(self._speed_msg)
 
         elif hasattr(msg, 'axes') and len(msg.axes) > 5:
             self._X = msg.axes[2]
