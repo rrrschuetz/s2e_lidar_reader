@@ -250,7 +250,7 @@ class fullDriveNode(Node):
         device = usb.core.find(idVendor=vendor_id, idProduct=product_id)
         # Return True if device is found, else False
         if device is not None:
-            self.get_logger().info("Device Found: ID {0}:{1}".format(vendor_id, product_id)
+            self.get_logger().info("Device Found: ID {0}:{1}".format(vendor_id, product_id))
             return True
         else:
             return False
