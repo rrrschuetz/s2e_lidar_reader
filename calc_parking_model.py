@@ -94,6 +94,7 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     color_input = Input(shape=color_input_shape)
     color_path = Dense(64, activation='relu')(color_input)
     color_path = Dropout(0.3)(color_path)  # Use dropout
+    color_path = BatchNormalization()(color_path)
     color_path = Dense(128, activation='relu', kernel_regularizer=l2(0.01))(color_path)  # Regularization
     color_path = Flatten()(color_path)
 
@@ -103,6 +104,7 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     # Further processing
     combined = Dense(64, activation='relu')(concatenated)
     combined = Dense(64, activation='relu')(combined)
+    combined = BatchNormalization()(combined)
     combined = Dense(32, activation='relu')(combined)
     output = Dense(2)(combined)
 
