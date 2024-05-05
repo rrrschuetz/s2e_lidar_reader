@@ -293,11 +293,9 @@ class fullDriveNode(Node):
                         section_data = np.array_split(scan, num_sections)
                         section_means = [np.mean(section) for section in section_data]
                         self.get_logger().info('Distances "%s" ' % section_means)
-                        distance = (section_means[10] - 1.0) * 200
-
-                        self._speed_msg.data = "F"+str(distance)
+                        self._speed_msg.data = "F"+str(int((section_means[10] - 1.0) * 50))
                         self.get_logger().info(f"Moving forward: {self._speed_msg.data}")
-                        #self.speed_publisher_.publish(self._speed_msg)
+                        self.speed_publisher_.publish(self._speed_msg)
 
                         sum_first_half = np.nansum(scan[:self.num_scan2])
                         sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
