@@ -308,7 +308,7 @@ class fullDriveNode(Node):
                             self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                             self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
                             self.get_logger().info(f"Parking lot detections {self._parking_lot}")
-                            self._speed_msg.data = "0"
+                            self._speed_msg.data = "-1"
                             self.speed_publisher_.publish(self._speed_msg)
                             msg = String()
                             msg.data = "Parking ..."
