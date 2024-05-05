@@ -296,6 +296,7 @@ class fullDriveNode(Node):
                         self._speed_msg.data = "F"+str(int((section_means[10] - 1.0) * 50))
                         self.get_logger().info(f"Moving forward: {self._speed_msg.data}")
                         self.speed_publisher_.publish(self._speed_msg)
+                        time.sleep(5)
 
                         sum_first_half = np.nansum(scan[:self.num_scan2])
                         sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
