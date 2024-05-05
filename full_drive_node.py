@@ -336,7 +336,7 @@ class fullDriveNode(Node):
                         num_sections = 162
                         section_data = np.array_split(scan, num_sections)
                         section_means = [np.mean(section) for section in section_data]
-                        self.get_logger().info('Distances "%s" ' % section_means)
+                        #self.get_logger().info('Distances "%s" ' % section_means)
                         min_far_dist = min(section_means[60:101])
                         min_near_dist = min(section_means[40:121])
                         wall_dist = max(section_means[76:86])
