@@ -14,7 +14,6 @@ class DisplayNode(Node):
             'main_logger',
             self.logger_callback,
             10)
-        self.logger_subscription  # prevent unused variable warning
 
         # Initialize the display
         self.display = Adafruit_SSD1306.SSD1306_128_64(rst=None, i2c_address=0x3C)
@@ -33,6 +32,7 @@ class DisplayNode(Node):
 
         # Initialize a list to store lines of text
         self.lines = []
+        self.lines.append('**************')
         self.max_lines = self.height // 15  # Assuming 15 pixels per line of text
 
     def logger_callback(self, msg):
