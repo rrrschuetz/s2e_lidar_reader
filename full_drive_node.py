@@ -350,7 +350,7 @@ class fullDriveNode(Node):
                             self._processing = False
                             return
                         else:
-                            if wall_dist > 1.2:
+                            if wall_dist > 1.3:
                                 self._speed_msg.data = "F"+str(int((wall_dist - 1.0) * 40))
                                 self.get_logger().info(f"Distance: {wall_dist}, moving Forward: {self._speed_msg.data}")
                                 self.speed_publisher_.publish(self._speed_msg)
