@@ -64,7 +64,6 @@ class fullDriveNode(Node):
                 durability=QoSDurabilityPolicy.VOLATILE)
     
         self._state = 'IDLE'
-
         self._processing = False
         self._tf_control = False
         self._clockwise = False
@@ -93,11 +92,13 @@ class fullDriveNode(Node):
 
         # Initialize compass
         self._sense = SenseHat()
+        self.get_logger().info('Sense hat initialized ...')
 
         # Initialize PCA9685
         self._pwm = PCA9685()
         self._pwm.set_pwm_freq(50)  # Set frequency to 50Hz
         self._pwm.set_pwm(0, 0, int(self.servo_neutral))
+        self.get_logger().info('Steering unit initialized ...')
 
         self._round_start_time = self.get_clock().now()
 
@@ -142,6 +143,8 @@ class fullDriveNode(Node):
             self.collision_callback,
             qos_profile
         )
+
+        self.get_logger().info('Messages subscribed ...')
 
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
@@ -192,6 +195,7 @@ class fullDriveNode(Node):
         msg = String()
         msg.data = "Ready!"
         self.publisher_.publish(msg)
+        self.get_logger().info('Ready.')
 
     def __del__(self):
         self.get_logger().info('Switch off ESC')
