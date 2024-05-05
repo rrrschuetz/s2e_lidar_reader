@@ -148,14 +148,15 @@ class fullDriveNode(Node):
         # Look for initial race dongle
         # ID 2357:012e TP-Link 802.11ac NIC
         self.initial_race = self.check_usb_device('2357', '012e')
-        self.get_logger().info('Inital race mode activated ...')
 
         if self.initial_race:
+            self.get_logger().info('Inital race mode activated ...')
             self.RACE_PATH_CC = self.INITIAL_RACE_PATH_CC
             self.RACE_PATH_CW = self.INITIAL_RACE_PATH_CW
             self.SCALER_PATH_CC = self.INITIAL_SCALER_PATH_CC
             self.SCALER_PATH_CW = self.INITIAL_SCALER_PATH_CW
         else:
+            self.get_logger().info('Obstacle race mode activated ...')
             self.RACE_PATH_CC = self.OBSTACLE_RACE_PATH_CC
             self.RACE_PATH_CW = self.OBSTACLE_RACE_PATH_CW
             self.SCALER_PATH_CC = self.OBSTACLE_SCALER_PATH_CC
