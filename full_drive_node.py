@@ -326,15 +326,15 @@ class fullDriveNode(Node):
 
                         if min_dist < 0.8:
                             self._speed_msg.data = "R"+str(int(2.5 - wall_dist) * 40)
-                            self.get_logger().info(f"Obstacle: {min_dist} Moving backward: {self._speed_msg.data}")
+                            self.get_logger().info(f"Obstacle: {min_dist}, distance: {wall_dist}, moving backward: {self._speed_msg.data}")
                             self.speed_publisher_.publish(self._speed_msg)
                             time.sleep(3)
                             self._processing = False
                             return
                         else:
-                            if section_means[81] > 1.2:
+                            if 1.2 < section_means[81] < 2.0:
                                 self._speed_msg.data = "F"+str(int(wall_dist - 1.0) * 40)
-                                self.get_logger().info(f"Distance: {wall_dist} Moving Forward: {self._speed_msg.data}")
+                                self.get_logger().info(f"Distance: {wall_dist}, moving Forward: {self._speed_msg.data}")
                                 self.speed_publisher_.publish(self._speed_msg)
                                 time.sleep(2)
                                 self._processing = False
