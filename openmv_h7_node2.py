@@ -20,9 +20,9 @@ class openmvH7Node(Node):
         self.timer = self.create_timer(0.02, self.timer_callback)  # Adjust the timer callback rate as needed
         self._counter = 0
 
-        msg = String()
-        msg.data = "CAM2 online"
-        self.publisher_log_.publish(msg)
+        #msg = String()
+        #msg.data = "CAM2 online"
+        #self.publisher_log_.publish(msg)
 
     def timer_callback(self):
         try:
