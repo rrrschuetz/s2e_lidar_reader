@@ -18,7 +18,7 @@ import RPi.GPIO as GPIO
 class fullDriveNode(Node):
 
 #########################################
-    inital_race = False
+    initial_race = False
 
     OBSTACLE_RACE_PATH_CC = "/home/rrrschuetz/test/model.tflite"
     OBSTACLE_RACE_PATH_CW = "/home/rrrschuetz/test/modelu.tflite"
@@ -144,7 +144,7 @@ class fullDriveNode(Node):
 
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
-        if self._inital_race:
+        if self.initial_race:
             self.RACE_PATH_CC = self.INITAL_RACE_PATH_CC
             self.RACE_PATH_CW = self.INITAL_RACE_PATH_CW
             self.SCALER_PATH_CC = self.INITIAL_SCALER_PATH_CC
