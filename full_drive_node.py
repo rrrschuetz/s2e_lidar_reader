@@ -279,6 +279,7 @@ class fullDriveNode(Node):
                         self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
                         self.get_logger().info(f"Parking lot detections {self._parking_lot}")
                         self.stop_race()
+                        self._processing = False
                         return
 
                 try:
@@ -297,6 +298,7 @@ class fullDriveNode(Node):
                             self.get_logger().info(f"Moving forward: {self._speed_msg.data}")
                             self.speed_publisher_.publish(self._speed_msg)
                             time.sleep(3)
+                            self._processing = False
                             return
                         else:
                             sum_first_half = np.nansum(scan[:self.num_scan2])
