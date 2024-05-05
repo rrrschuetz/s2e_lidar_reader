@@ -16,6 +16,24 @@ from sense_hat import SenseHat
 import RPi.GPIO as GPIO
 
 class fullDriveNode(Node):
+
+#########################################
+    inital_race = False
+
+    OBSTACLE_RACE_PATH_CC = "/home/rrrschuetz/test/model.tflite"
+    OBSTACLE_RACE_PATH_CW = "/home/rrrschuetz/test/modelu.tflite"
+    INITIAL_RACE_PATH_CC = "/home/rrrschuetz/test/model_i.tflite"
+    INITIAL_RACE_PATH_CW = "/home/rrrschuetz/test/model_iu.tflite"
+
+    OBSTACLE_SCALER_PATH_CC = "/home/rrrschuetz/test/scaler.pkl"
+    OBSTACLE_SCALER_PATH_CW = "/home/rrrschuetz/test/scaleru.pkl"
+    INITIAL_SCALER_PATH_CC = "/home/rrrschuetz/test/scaler_i.pkl"
+    INITIAL_SCALER_PATH_CW = "/home/rrrschuetz/test/scaler_iu.pkl"
+
+    PARKING_PATH = "/home/rrrschuetz/test/model_p.tflite"
+    PARKING_SCALER_PATH = '/home/rrrschuetz/test/scaler_p.pkl'
+#########################################
+
     HPIX = 320
     VPIX = 200
     HFOV = 70.8
@@ -33,7 +51,6 @@ class fullDriveNode(Node):
     WEIGHT = 1
     FWD_SPEED = "5"      #  "12"
     REV_SPEED = "-5"
-
 
     def __init__(self):
         super().__init__('full_drive_node')
@@ -127,27 +144,38 @@ class fullDriveNode(Node):
 
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
+        if self._inital_race:
+            self.RACE_PATH_CC = self.INITAL_RACE_PATH_CC
+            self.RACE_PATH_CW = self.INITAL_RACE_PATH_CW
+            self.SCALER_PATH_CC = self.INITIAL_SCALER_PATH_CC
+            self.SCALER_PATH_CW = self.INITIAL_SCALER_PATH_CW
+        else:
+            self.RACE_PATH_CC = self.OBSTACLE_RACE_PATH_CC
+            self.RACE_PATH_CW = self.OBSTACLE_RACE_PATH_CW
+            self.SCALER_PATH_CC = self.OBSTACLE_SCALER_PATH_CC
+            self.SCALER_PATH_CW = self.OBSTACLE_SCALER_PATH_CW
+
         # Load the trained racing model and the scaler counterclockwise and clockwise
-        with open('/home/rrrschuetz/test/scaler.pkl', 'rb') as f:
+        with open(self.SCALER_PATH_CC, 'rb') as f:
             self._scaler = pickle.load(f)
-        self._interpreter = tf.lite.Interpreter(model_path="/home/rrrschuetz/test/model.tflite")
+        self._interpreter = tf.lite.Interpreter(model_path=self.RACE_PATH_CC)
         self._interpreter.allocate_tensors()
         self._input_details = self._interpreter.get_input_details()
         self._output_details = self._interpreter.get_output_details()
         self.get_logger().info('counterclockwise prediction model loaded')
 
-        with open('/home/rrrschuetz/test/scaleru.pkl', 'rb') as f:
+        with open(self.SCALER_PATH_CW, 'rb') as f:
             self._scaleru = pickle.load(f)
-        self._interpreteru = tf.lite.Interpreter(model_path="/home/rrrschuetz/test/modelu.tflite")
+        self._interpreteru = tf.lite.Interpreter(self.RACE_PATH_CW)
         self._interpreteru.allocate_tensors()
         self._input_detailsu = self._interpreter.get_input_details()
         self._output_detailsu = self._interpreter.get_output_details()
         self.get_logger().info('clockwise prediction model loaded')
 
         # Load the trained parking model and the scaler
-        with open('/home/rrrschuetz/test/scaler_p.pkl', 'rb') as f:
+        with open(self.PARKING_SCALER_PATH, 'rb') as f:
             self._scaler_p = pickle.load(f)
-        self._interpreter_p = tf.lite.Interpreter(model_path="/home/rrrschuetz/test/model_p.tflite")
+        self._interpreter_p = tf.lite.Interpreter(model_path=self.PARKING_PATH)
         self._interpreter_p.allocate_tensors()
         # Get input and output tensors information
         self._input_details_p = self._interpreter_p.get_input_details()
@@ -293,7 +321,7 @@ class fullDriveNode(Node):
                         section_data = np.array_split(scan, num_sections)
                         section_means = [np.mean(section) for section in section_data]
                         self.get_logger().info('Distances "%s" ' % section_means)
-                        if section_means[10] > 1.0:
+                        if section_means[10] > 1.1:
                             self._speed_msg.data = "F"+str(int((section_means[10] - 1.0) * 40))
                             self.get_logger().info(f"Moving forward: {self._speed_msg.data}")
                             self.speed_publisher_.publish(self._speed_msg)
