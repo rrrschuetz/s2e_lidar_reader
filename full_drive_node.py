@@ -329,7 +329,7 @@ class fullDriveNode(Node):
                             self._speed_msg.data = "R"+str(int((2.5 - wall_dist) * 40))
                             self.get_logger().info(f"Obstacle: {min_far_dist}, {min_near_dist}, distance: {wall_dist}, moving backward: {self._speed_msg.data}")
                             self.speed_publisher_.publish(self._speed_msg)
-                            time.sleep(3)
+                            time.sleep(5)
                             self._processing = False
                             return
                         else:
