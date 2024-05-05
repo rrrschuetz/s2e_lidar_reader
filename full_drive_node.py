@@ -287,26 +287,28 @@ class fullDriveNode(Node):
                     scan[scan > self.scan_max_dist] = np.nan
 
                     if not self._clockwise_def:
-                        self._clockwise_def = True
 
                         num_sections = 21
                         section_data = np.array_split(scan, num_sections)
                         section_means = [np.mean(section) for section in section_data]
                         self.get_logger().info('Distances "%s" ' % section_means)
-                        self._speed_msg.data = "F"+str(int((section_means[10] - 1.0) * 50))
-                        self.get_logger().info(f"Moving forward: {self._speed_msg.data}")
-                        self.speed_publisher_.publish(self._speed_msg)
-                        time.sleep(5)
+                        if section_means[10] > 1.0:
+                            self._speed_msg.data = "F"+str(int((section_means[10] - 1.0) * 40))
+                            self.get_logger().info(f"Moving forward: {self._speed_msg.data}")
+                            self.speed_publisher_.publish(self._speed_msg)
+                            time.sleep(3)
+                            return
+                        else
+                            sum_first_half = np.nansum(scan[:self.num_scan2])
+                            sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
+                            self._clockwise = (sum_first_half <= sum_second_half)
+                            self._clockwise_def = True
+                            self.get_logger().info('lidar_callback: clockwise "%s" ' % self._clockwise)
 
-                        sum_first_half = np.nansum(scan[:self.num_scan2])
-                        sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
-                        self._clockwise = (sum_first_half <= sum_second_half)
-                        self.get_logger().info('lidar_callback: clockwise "%s" ' % self._clockwise)
-
-                        self._speed_msg.data = "RESET"
-                        self.speed_publisher_.publish(self._speed_msg)
-                        self._speed_msg.data = self.FWD_SPEED
-                        self.speed_publisher_.publish(self._speed_msg)
+                            self._speed_msg.data = "RESET"
+                            self.speed_publisher_.publish(self._speed_msg)
+                            self._speed_msg.data = self.FWD_SPEED
+                            self.speed_publisher_.publish(self._speed_msg)
 
                     x = np.arange(len(scan))
                     finite_vals = np.isfinite(scan)
