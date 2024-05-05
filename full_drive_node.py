@@ -70,6 +70,7 @@ class fullDriveNode(Node):
         self._tf_control = False
         self._clockwise = False
         self._clockwise_def = False
+        self._obstacle_chk = False
         self._parking_lot = 0
         self._parking_lot_detect = 0
         self._collision = False
@@ -315,7 +316,8 @@ class fullDriveNode(Node):
                     scan[scan == np.inf] = np.nan
                     scan[scan > self.scan_max_dist] = np.nan
 
-                    if not self._clockwise_def:
+                    if not self._obstacle_chk:
+                        self._obstacle_chk = True
 
                         num_sections = 162
                         section_data = np.array_split(scan, num_sections)
@@ -333,24 +335,25 @@ class fullDriveNode(Node):
                             self._processing = False
                             return
                         else:
-                            if 1.2 < wall_dist < 1.8:
+                            if wall_dist > 1.2:
                                 self._speed_msg.data = "F"+str(int((wall_dist - 1.0) * 40))
                                 self.get_logger().info(f"Distance: {wall_dist}, moving Forward: {self._speed_msg.data}")
                                 self.speed_publisher_.publish(self._speed_msg)
                                 time.sleep(2)
                                 self._processing = False
                                 return
-                            else:
-                                sum_first_half = np.nansum(scan[:self.num_scan2])
-                                sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
-                                self._clockwise = (sum_first_half <= sum_second_half)
-                                self._clockwise_def = True
-                                self.get_logger().info('lidar_callback: clockwise "%s" ' % self._clockwise)
 
-                                self._speed_msg.data = "RESET"
-                                self.speed_publisher_.publish(self._speed_msg)
-                                self._speed_msg.data = self.FWD_SPEED
-                                self.speed_publisher_.publish(self._speed_msg)
+                    elif not self._clockwise_def:
+                        self._clockwise_def = True
+                        sum_first_half = np.nansum(scan[:self.num_scan2])
+                        sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
+                        self._clockwise = (sum_first_half <= sum_second_half)
+                        self.get_logger().info('lidar_callback: clockwise "%s" ' % self._clockwise)
+
+                        self._speed_msg.data = "RESET"
+                        self.speed_publisher_.publish(self._speed_msg)
+                        self._speed_msg.data = self.FWD_SPEED
+                        self.speed_publisher_.publish(self._speed_msg)
 
                     x = np.arange(len(scan))
                     finite_vals = np.isfinite(scan)
