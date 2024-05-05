@@ -48,7 +48,6 @@ class fullDriveNode(Node):
     motor_ctl = -20
     relay_pin = 17
     WEIGHT = 1
-    FWD_SPEED = "5"      #  "12"
     REV_SPEED = "-5"
 
     def __init__(self):
@@ -158,12 +157,14 @@ class fullDriveNode(Node):
             self.RACE_PATH_CW = self.INITIAL_RACE_PATH_CW
             self.SCALER_PATH_CC = self.INITIAL_SCALER_PATH_CC
             self.SCALER_PATH_CW = self.INITIAL_SCALER_PATH_CW
+            FWD_SPEED = "10"
         else:
             self.get_logger().info('Obstacle race mode activated ...')
             self.RACE_PATH_CC = self.OBSTACLE_RACE_PATH_CC
             self.RACE_PATH_CW = self.OBSTACLE_RACE_PATH_CW
             self.SCALER_PATH_CC = self.OBSTACLE_SCALER_PATH_CC
             self.SCALER_PATH_CW = self.OBSTACLE_SCALER_PATH_CW
+            FWD_SPEED = "5"
 
         # Load the trained racing model and the scaler counterclockwise and clockwise
         with open(self.SCALER_PATH_CC, 'rb') as f:
