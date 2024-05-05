@@ -18,7 +18,7 @@ import RPi.GPIO as GPIO
 class fullDriveNode(Node):
 
 #########################################
-    initial_race = False
+    initial_race = True
 
     OBSTACLE_RACE_PATH_CC = "/home/rrrschuetz/test/model.tflite"
     OBSTACLE_RACE_PATH_CW = "/home/rrrschuetz/test/modelu.tflite"
@@ -147,8 +147,8 @@ class fullDriveNode(Node):
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
         if self.initial_race:
-            self.RACE_PATH_CC = self.INITAL_RACE_PATH_CC
-            self.RACE_PATH_CW = self.INITAL_RACE_PATH_CW
+            self.RACE_PATH_CC = self.INITIAL_RACE_PATH_CC
+            self.RACE_PATH_CW = self.INITIAL_RACE_PATH_CW
             self.SCALER_PATH_CC = self.INITIAL_SCALER_PATH_CC
             self.SCALER_PATH_CW = self.INITIAL_SCALER_PATH_CW
         else:
@@ -328,7 +328,7 @@ class fullDriveNode(Node):
                         min_near_dist = min(section_means[40:121])
                         wall_dist = max(section_means[76:86])
 
-                        if min_far_dist < 0.8 or min_near_dist < 0.2:
+                        if not self.initial_race and (min_far_dist < 0.8 or min_near_dist < 0.2):
                             self._backward = True
                             self._speed_msg.data = "R"+str(int((2.5 - wall_dist) * 40))
                             self.get_logger().info(f"Obstacle: {min_far_dist}, {min_near_dist}, distance: {wall_dist}, moving backward: {self._speed_msg.data}")
