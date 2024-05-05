@@ -298,7 +298,7 @@ class fullDriveNode(Node):
                             self.speed_publisher_.publish(self._speed_msg)
                             time.sleep(3)
                             return
-                        else
+                        else:
                             sum_first_half = np.nansum(scan[:self.num_scan2])
                             sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
                             self._clockwise = (sum_first_half <= sum_second_half)
