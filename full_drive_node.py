@@ -292,7 +292,7 @@ class fullDriveNode(Node):
                     self._front_dist = section_means[5]
 
                     #if abs(self._total_heading_change) >= 80 and self._front_dist > 1.0 and self._front_dist < 2.0:
-                    if abs(self._total_heading_change) >= 340 and self._front_dist > 1.0:
+                    if abs(self._total_heading_change) >= 340 and self._front_dist > 1.5:
                         #self._corner_cnt +=1
                         self._rounds += 1
                         #if abs(self._total_heading_change) > 140: self._corner_cnt +=1
@@ -308,6 +308,8 @@ class fullDriveNode(Node):
                             self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                             self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
                             self.get_logger().info(f"Parking lot detections {self._parking_lot}")
+                            self._speed_msg.data = "0"
+                            self.speed_publisher_.publish(self._speed_msg)
                             msg = String()
                             msg.data = "Parking ..."
                             self.publisher_.publish(msg)
