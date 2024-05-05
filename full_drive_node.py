@@ -342,20 +342,20 @@ class fullDriveNode(Node):
                         #self.get_logger().info('Distances "%s" ' % section_means)
                         min_far_dist = min(section_means[60:101])
                         min_near_dist = min(section_means[40:121])
-                        wall_dist = max(section_means[76:86])
+                        self._front_dist = max(section_means[76:86])
 
                         if not self.initial_race and (min_far_dist < 0.8 or min_near_dist < 0.2):
                             self._backward = True
-                            self._speed_msg.data = "R"+str(int((2.5 - wall_dist) * 40))
-                            self.get_logger().info(f"Obstacle: {min_far_dist}, {min_near_dist}, distance: {wall_dist}, moving backward: {self._speed_msg.data}")
+                            self._speed_msg.data = "R"+str(int((2.5 - self._front_dist) * 40))
+                            self.get_logger().info(f"Obstacle: {min_far_dist}, {min_near_dist}, distance: {self._front_dist}, moving backward: {self._speed_msg.data}")
                             self.speed_publisher_.publish(self._speed_msg)
                             time.sleep(3)
                             self._processing = False
                             return
                         else:
-                            if wall_dist > 1.3:
-                                self._speed_msg.data = "F"+str(int((wall_dist - 1.0) * 40))
-                                self.get_logger().info(f"Distance: {wall_dist}, moving Forward: {self._speed_msg.data}")
+                            if self._front_dist > 1.3:
+                                self._speed_msg.data = "F"+str(int((self._front_dist - 1.0) * 40))
+                                self.get_logger().info(f"Distance: {self._front_dist}, moving Forward: {self._speed_msg.data}")
                                 self.speed_publisher_.publish(self._speed_msg)
                                 time.sleep(2)
                                 self._processing = False
