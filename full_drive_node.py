@@ -158,7 +158,7 @@ class fullDriveNode(Node):
             self.RACE_PATH_CW = self.INITIAL_RACE_PATH_CW
             self.SCALER_PATH_CC = self.INITIAL_SCALER_PATH_CC
             self.SCALER_PATH_CW = self.INITIAL_SCALER_PATH_CW
-            self.FWD_SPEED = "10"
+            self.FWD_SPEED = "12"
         else:
             self.get_logger().info('Obstacle race mode activated ...')
             self.RACE_PATH_CC = self.OBSTACLE_RACE_PATH_CC
@@ -301,7 +301,7 @@ class fullDriveNode(Node):
                         self._total_heading_change = 0
 
                     #if self._parking_lot > 50 and self._corner_cnt >= 4:
-                    if self._parking_lot > 50 and self._rounds >= 3:
+                    if self._parking_lot > 50 and self._rounds >= 1:
                         self.get_logger().info(f"Parking lot detected: {self._parking_lot_detect}")
                         if self._parking_lot_detect > 0:
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
