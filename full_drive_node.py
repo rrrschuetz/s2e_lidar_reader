@@ -202,19 +202,6 @@ class fullDriveNode(Node):
         GPIO.output(self.relay_pin, GPIO.LOW)
         GPIO.cleanup()
 
-    def check_usb_device(self, vendor_id, product_id):
-        # Convert vendor_id and product_id from hexadecimal string to integer
-        vendor_id = int(vendor_id, 16)
-        product_id = int(product_id, 16)
-        # Find USB device with specific Vendor ID and Product ID
-        device = usb.core.find(idVendor=vendor_id, idProduct=product_id)
-        # Return True if device is found, else False
-        if device is not None:
-            self.get_logger().info('ID Vendor:ID Product = {0}:{1}'.format(hex(dev.idVendor), hex(dev.idProduct)))
-            return True
-        else:
-            return False
-
     def start_race(self):
         self._state = "RACE"
         self._tf_control = True
@@ -229,7 +216,6 @@ class fullDriveNode(Node):
         self._total_heading_change = 0
         self.get_logger().info(f"Initial heading: {self._initial_heading} degrees")
         self._round_start_time = self.get_clock().now()
-
 
     def stop_race(self):
         self._state = "IDLE"
@@ -255,6 +241,19 @@ class fullDriveNode(Node):
             return raw_diff + 360
         else:
             return raw_diff
+
+    def check_usb_device(self, vendor_id, product_id):
+        # Convert vendor_id and product_id from hexadecimal string to integer
+        vendor_id = int(vendor_id, 16)
+        product_id = int(product_id, 16)
+        # Find USB device with specific Vendor ID and Product ID
+        device = usb.core.find(idVendor=vendor_id, idProduct=product_id)
+        # Return True if device is found, else False
+        if device is not None:
+            self.get_logger().info("Device Found: ID {0}:{1}".format(vendor_id, product_id)
+            return True
+        else:
+            return False
 
     def lidar_callback(self, msg):
         if self._processing:
