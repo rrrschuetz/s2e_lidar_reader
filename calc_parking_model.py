@@ -126,15 +126,16 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
 
     color_input = Input(shape=color_input_shape)
 
-    #color_path = Dense(64, activation='relu')(color_input)
-    #color_path = Dropout(0.3)(color_path)
-    #color_path = BatchNormalization()(color_path)
-    #color_path = Dense(128, activation='relu', kernel_regularizer=l2(0.01))(color_path)
+    color_path = Dense(64, activation='relu')(color_input)
+    color_path = Dropout(0.3)(color_path)
+    color_path = BatchNormalization()(color_path)
+    color_path = Activation('relu')(color_path)
+    color_path = Dense(128, activation='relu', kernel_regularizer=l2(0.01))(color_path)
 
-    color_path = Conv1D(64, kernel_size=5, activation='relu', dilation_rate=8)(color_input)
-    color_path = MaxPooling1D(pool_size=2)(color_path)
-    color_path = Conv1D(128, kernel_size=5, activation='relu', dilation_rate=8, kernel_regularizer=l2(0.01))(color_path)
-    color_path = MaxPooling1D(pool_size=2)(color_path)
+    #color_path = Conv1D(64, kernel_size=5, activation='relu', dilation_rate=8)(color_input)
+    #color_path = MaxPooling1D(pool_size=2)(color_path)
+    #color_path = Conv1D(128, kernel_size=5, activation='relu', dilation_rate=8, kernel_regularizer=l2(0.01))(color_path)
+    #color_path = MaxPooling1D(pool_size=2)(color_path)
 
     color_path = Flatten()(color_path)
 
