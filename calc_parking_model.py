@@ -117,8 +117,8 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
 
     lidar_path = Conv1D(64, kernel_size=5, activation='relu', dilation_rate=2)(lidar_input) #5
     lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
-    lidar_path = Conv1D(128, kernel_size=5, activation='relu', dilation_rate=4, kernel_regularizer=l2(0.01))(lidar_path) #5
-    lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
+    lidar_path = Conv1D(64, kernel_size=3, activation='relu', dilation_rate=2)(lidar_path)
+    lidar_path = MaxPooling1D(pool_size=25(lidar_path)
 
     lidar_path = Flatten()(lidar_path)
 
