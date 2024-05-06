@@ -6,14 +6,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input
-from tensorflow.keras.layers import Concatenate, Layer, Multiply, Activation
+from tensorflow.keras.layers import Concatenate, Layer, Multiply, Activate
 from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense
-from tensorflow.keras.layers import Dropout, BatchNormalization, Attention
-from tensorflow.keras.layers import LSTM  # Import LSTM layer
+from tensorflow.keras.layers import Dropout, BatchNormalization, Add
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.callbacks import TensorBoard
 import pickle  # For saving the scaler
+import keras.backend as K
 
 def make_column_names_unique(df):
     cols = pd.Series(df.columns)
@@ -81,6 +81,61 @@ class WeightedConcatenate(Layer):
     def call(self, inputs):
          lidar, color = inputs
          return tf.concat([self.weight_lidar * lidar, self.weight_color * color], axis=-1)
+
+
+class Attention(Layer):
+    def __init__(self, **kwargs):
+        super(Attention, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        self.W = self.add_weight(name="att_weight", shape=(input_shape[1], 1),
+                                 initializer="normal")
+        self.b = self.add_weight(name="att_bias", shape=(input_shape[1],),
+                                 initializer="zeros")
+        super(Attention, self).build(input_shape)
+
+    def call(self, x):
+        e = K.tanh(K.dot(x, self.W) + self.b)
+        a = K.softmax(e, axis=1)
+        output = x * a
+        return K.sum(output, axis=1)
+
+    def compute_output_shape(self, input_shape):
+        return (input_shape[0], input_shape[2])
+
+# Now using the custom Attention layer in your CNN model
+def create_cnn_model(lidar_input_shape, color_input_shape):
+    lidar_input = Input(shape=lidar_input_shape)
+    lidar_path = Conv1D(64, kernel_size=5, activation='relu')(lidar_input)
+    lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
+    lidar_path = Conv1D(128, kernel_size=5, activation='relu', kernel_regularizer=l2(0.01))(lidar_path)
+    lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
+    lidar_path = Attention()(lidar_path)
+    lidar_path = Flatten()(lidar_path)
+
+    color_input = Input(shape=color_input_shape)
+    color_path = Dense(64, activation='relu')(color_input)
+    color_path = Dropout(0.3)(color_path)
+    color_path = BatchNormalization()(color_path)
+    color_path = Dense(128, activation='relu', kernel_regularizer=l2(0.01))(color_path)
+    color_path = Flatten()(color_path)
+
+    concatenated = Concatenate()([lidar_path, color_path])
+
+    combined = Dense(64, activation='relu')(concatenated)
+    combined = Dense(64, activation='relu')(combined)
+    combined = BatchNormalization()(combined)
+    combined = Dense(32, activation='relu')(combined)
+    output = Dense(2)(combined)
+
+    model = Model(inputs=[lidar_input, color_input], outputs=output)
+    model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
+    return model
+
+# Model summary
+model = create_cnn_model((100, 1), (10,))
+model.summary()
+
 
 def create_cnn_model(lidar_input_shape, color_input_shape):
     # LIDAR data path
