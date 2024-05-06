@@ -8,7 +8,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input
 from tensorflow.keras.layers import Concatenate, Layer, Multiply, Activation
 from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense
-from tensorflow.keras.layers import Dropout, BatchNormalization
+from tensorflow.keras.layers import Dropout, BatchNormalization, Attention
 from tensorflow.keras.layers import LSTM  # Import LSTM layer
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.callbacks import EarlyStopping
@@ -89,6 +89,7 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
     lidar_path = Conv1D(128, kernel_size=5, activation='relu', kernel_regularizer=l2(0.01))(lidar_path)
     lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
+    lidar_path = Attention(lidar_path)
     lidar_path = Flatten()(lidar_path)
 
     color_input = Input(shape=color_input_shape)
