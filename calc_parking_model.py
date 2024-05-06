@@ -8,7 +8,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input
 from tensorflow.keras.layers import Concatenate, Layer, Multiply
 from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense
-from tensorflow.keras.layers import Dropout, BatchNormalization, Add
+from tensorflow.keras.layers import Dropout, BatchNormalization, Add, Reshape
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.callbacks import TensorBoard
@@ -122,9 +122,20 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     color_path = Dense(128, activation='relu', kernel_regularizer=l2(0.01))(color_path)
     color_path = Flatten()(color_path)
 
+    lidar_path = Dense(128, activation='relu')(lidar_path)
+    color_path = Dense(128, activation='relu')(color_path)
     concatenated = Concatenate()([lidar_path, color_path])
+    # Learn gates for each feature stream
+    gate = Dense(1, activation='sigmoid')(concatenated)
+    # Apply gates
+    gated_lidar = Multiply()([lidar_path, gate])
+    gated_color = Multiply()([color_path, 1 - gate])
+    # Combine gated features
+    print("Shape of gated_lidar:", K.int_shape(gated_lidar))
+    print("Shape of gated_color:", K.int_shape(gated_color))
+    combined = Add()([gated_lidar, gated_color])
 
-    combined = Dense(64, activation='relu')(concatenated)
+    combined = Dense(64, activation='relu')(combined)
     combined = Dense(64, activation='relu')(combined)
     combined = BatchNormalization()(combined)
     combined = Dense(32, activation='relu')(combined)
