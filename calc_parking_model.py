@@ -115,9 +115,9 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     #attention_layer = Attention()  # Instantiate the layer
     #lidar_path = attention_layer(lidar_path)  # Call the layer on the input tensor
 
-    lidar_path = Conv1D(64, kernel_size=5, activation='relu', dilation_rate=2)(lidar_input)
+    lidar_path = Conv1D(64, kernel_size=5, activation='relu', dilation_rate=2)(lidar_input) #5
     lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
-    lidar_path = Conv1D(128, kernel_size=5, activation='relu', dilation_rate=4, kernel_regularizer=l2(0.01))(lidar_path)
+    lidar_path = Conv1D(128, kernel_size=5, activation='relu', dilation_rate=4, kernel_regularizer=l2(0.01))(lidar_path) #5
     lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
 
     lidar_path = Flatten()(lidar_path)
@@ -129,9 +129,9 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     #color_path = BatchNormalization()(color_path)
     #color_path = Dense(128, activation='relu', kernel_regularizer=l2(0.01))(color_path)
 
-    color_path = Conv1D(64, kernel_size=5, activation='relu', dilation_rate=2)(color_input)
+    color_path = Conv1D(64, kernel_size=5, activation='relu', dilation_rate=8)(color_input)
     color_path = MaxPooling1D(pool_size=2)(color_path)
-    color_path = Conv1D(128, kernel_size=5, activation='relu', dilation_rate=4, kernel_regularizer=l2(0.01))(color_path)
+    color_path = Conv1D(128, kernel_size=5, activation='relu', dilation_rate=8, kernel_regularizer=l2(0.01))(color_path)
     color_path = MaxPooling1D(pool_size=2)(color_path)
 
     color_path = Flatten()(color_path)
