@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input
-from tensorflow.keras.layers import Concatenate, Layer, Multiply, Activate
+from tensorflow.keras.layers import Concatenate, Layer, Multiply
 from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense
 from tensorflow.keras.layers import Dropout, BatchNormalization, Add
 from tensorflow.keras.regularizers import l2
@@ -82,28 +82,29 @@ class WeightedConcatenate(Layer):
          lidar, color = inputs
          return tf.concat([self.weight_lidar * lidar, self.weight_color * color], axis=-1)
 
-
 class Attention(Layer):
     def __init__(self, **kwargs):
         super(Attention, self).__init__(**kwargs)
 
     def build(self, input_shape):
-        self.W = self.add_weight(name="att_weight", shape=(input_shape[1], 1),
-                                 initializer="normal")
+        # Adjust this to match the last dimension of the input shape
+        self.W = self.add_weight(name="att_weight", shape=(input_shape[-1], 1),
+                                 initializer="glorot_uniform")
         self.b = self.add_weight(name="att_bias", shape=(input_shape[1],),
                                  initializer="zeros")
         super(Attention, self).build(input_shape)
 
     def call(self, x):
+        # Ensure that the matrix multiplication aligns properly
+        # x should be reshaped or transposed appropriately if necessary
         e = K.tanh(K.dot(x, self.W) + self.b)
         a = K.softmax(e, axis=1)
         output = x * a
         return K.sum(output, axis=1)
 
     def compute_output_shape(self, input_shape):
-        return (input_shape[0], input_shape[2])
+        return (input_shape[0], input_shape[-1])
 
-# Now using the custom Attention layer in your CNN model
 def create_cnn_model(lidar_input_shape, color_input_shape):
     lidar_input = Input(shape=lidar_input_shape)
     lidar_path = Conv1D(64, kernel_size=5, activation='relu')(lidar_input)
