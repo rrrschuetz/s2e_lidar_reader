@@ -115,22 +115,11 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     #attention_layer = Attention()  # Instantiate the layer
     #lidar_path = attention_layer(lidar_path)  # Call the layer on the input tensor
 
-    # Convolutional Block 1
-    lidar_path = Conv1D(64, kernel_size=5, dilation_rate=2, kernel_regularizer=l2(0.01))(lidar_input)
-    lidar_path = BatchNormalization()(lidar_path)
-    lidar_path = Activation('relu')(lidar_path)
+    lidar_path = Conv1D(64, kernel_size=5, dilation_rate=2)(lidar_input)
     lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
-
-    # Convolutional Block 2
-    lidar_path = Conv1D(64, kernel_size=5, dilation_rate=2, kernel_regularizer=l2(0.01))(lidar_path)
-    lidar_path = BatchNormalization()(lidar_path)
-    lidar_path = Activation('relu')(lidar_path)
-    lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
-
-    # Convolutional Block 3
-    lidar_path = Conv1D(64, kernel_size=5, dilation_rate=4, kernel_regularizer=l2(0.01))(lidar_path)
-    lidar_path = BatchNormalization()(lidar_path)
-    lidar_path = Activation('relu')(lidar_path)
+    lidar_path = Conv1D(128, kernel_size=5, dilation_rate=4, kernel_regularizer=l2(0.01))(lidar_path)
+    #lidar_path = BatchNormalization()(lidar_path)
+    #lidar_path = Activation('relu')(lidar_path)
     lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
 
     lidar_path = Flatten()(lidar_path)
@@ -162,7 +151,7 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     #print("Shape of gated_color:", K.int_shape(gated_color))
     #combined = Add()([gated_lidar, gated_color])
 
-    concatenated = WeightedConcatenate(weight_lidar=0.8, weight_color=0.2)([lidar_path, color_path])
+    concatenated = WeightedConcatenate(weight_lidar=0.97, weight_color=0.3)([lidar_path, color_path])
 
     combined = Dense(64, activation='relu')(concatenated)
     combined = Dense(64, activation='relu')(combined)
