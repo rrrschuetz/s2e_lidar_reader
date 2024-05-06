@@ -134,51 +134,6 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
     return model
 
-# Model summary
-model = create_cnn_model((100, 1), (10,))
-model.summary()
-
-
-def create_cnn_model(lidar_input_shape, color_input_shape):
-    # LIDAR data path
-    lidar_input = Input(shape=lidar_input_shape)
-    lidar_path = Conv1D(64, kernel_size=5, activation='relu')(lidar_input)
-    lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
-    lidar_path = Conv1D(128, kernel_size=5, activation='relu', kernel_regularizer=l2(0.01))(lidar_path)
-    lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
-    lidar_path = Attention(lidar_path)
-    lidar_path = Flatten()(lidar_path)
-
-    color_input = Input(shape=color_input_shape)
-    color_path = Dense(64, activation='relu')(color_input)
-    color_path = Dropout(0.3)(color_path)  # Use dropout
-    color_path = BatchNormalization()(color_path)
-    color_path = Dense(128, activation='relu', kernel_regularizer=l2(0.01))(color_path)  # Regularization
-    color_path = Flatten()(color_path)
-
-    # Concatenation
-    #concatenated = WeightedConcatenate(weight_lidar=0.8, weight_color=0.2)([lidar_path, color_path])
-    concatenated = Concatenate()([lidar_features, color_features])
-
-    gate = Dense(1, activation='sigmoid')(concatenated)
-    # Apply gates
-    gated_lidar = Multiply()([lidar_path, gate])
-    gated_color = Multiply()([color_path, 1 - gate])
-
-    # Combine gated features
-    combined = Add()([gated_lidar, gated_color])
-
-    # Further processing
-    #combined = Dense(64, activation='relu')(concatenated)
-    combined = Dense(64, activation='relu')(combined)
-    combined = Dense(64, activation='relu')(combined)
-    combined = BatchNormalization()(combined)
-    combined = Dense(32, activation='relu')(combined)
-    output = Dense(2)(combined)
-
-    model = Model(inputs=[lidar_input, color_input], outputs=output)
-    model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
-    return model
 
 # Create EarlyStopping callback
 early_stopping_callback = EarlyStopping(monitor='val_loss', patience=3)
