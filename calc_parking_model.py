@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input
-from tensorflow.keras.layers import Concatenate, Layer, Multiply
+from tensorflow.keras.layers import Concatenate, Layer, Multiply, Activation
 from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense
 from tensorflow.keras.layers import Dropout, BatchNormalization, Add, Reshape
 from tensorflow.keras.regularizers import l2
@@ -115,10 +115,23 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     #attention_layer = Attention()  # Instantiate the layer
     #lidar_path = attention_layer(lidar_path)  # Call the layer on the input tensor
 
-    lidar_path = Conv1D(64, kernel_size=5, activation='relu', dilation_rate=2)(lidar_input) #5
+    # Convolutional Block 1
+    lidar_path = Conv1D(64, kernel_size=5, dilation_rate=2, kernel_regularizer=l2(0.01))(lidar_input)
+    lidar_path = BatchNormalization()(lidar_path)
+    lidar_path = Activation('relu')(lidar_path)
     lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
-    lidar_path = Conv1D(64, kernel_size=3, activation='relu', dilation_rate=2)(lidar_path)
-    lidar_path = MaxPooling1D(pool_size=25(lidar_path)
+
+    # Convolutional Block 2
+    lidar_path = Conv1D(64, kernel_size=5, dilation_rate=2, kernel_regularizer=l2(0.01))(lidar_path)
+    lidar_path = BatchNormalization()(lidar_path)
+    lidar_path = Activation('relu')(lidar_path)
+    lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
+
+    # Convolutional Block 3
+    lidar_path = Conv1D(64, kernel_size=5, dilation_rate=4, kernel_regularizer=l2(0.01))(lidar_path)
+    lidar_path = BatchNormalization()(lidar_path)
+    lidar_path = Activation('relu')(lidar_path)
+    lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
 
     lidar_path = Flatten()(lidar_path)
 
