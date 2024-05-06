@@ -111,8 +111,8 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
     lidar_path = Conv1D(128, kernel_size=5, activation='relu', kernel_regularizer=l2(0.01))(lidar_path)
     lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
-    attention_layer = Attention()  # Instantiate the layer
-    lidar_path = attention_layer(lidar_path)  # Call the layer on the input tensor
+    #attention_layer = Attention()  # Instantiate the layer
+    #lidar_path = attention_layer(lidar_path)  # Call the layer on the input tensor
     lidar_path = Flatten()(lidar_path)
 
     color_input = Input(shape=color_input_shape)
@@ -122,20 +122,22 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     color_path = Dense(128, activation='relu', kernel_regularizer=l2(0.01))(color_path)
     color_path = Flatten()(color_path)
 
-    lidar_path = Dense(128, activation='relu')(lidar_path)
-    color_path = Dense(128, activation='relu')(color_path)
-    concatenated = Concatenate()([lidar_path, color_path])
-    # Learn gates for each feature stream
-    gate = Dense(1, activation='sigmoid')(concatenated)
-    # Apply gates
-    gated_lidar = Multiply()([lidar_path, gate])
-    gated_color = Multiply()([color_path, 1 - gate])
-    # Combine gated features
-    print("Shape of gated_lidar:", K.int_shape(gated_lidar))
-    print("Shape of gated_color:", K.int_shape(gated_color))
-    combined = Add()([gated_lidar, gated_color])
+    #lidar_path = Dense(128, activation='relu')(lidar_path)
+    #color_path = Dense(128, activation='relu')(color_path)
+    #concatenated = Concatenate()([lidar_path, color_path])
+    ## Learn gates for each feature stream
+    #gate = Dense(1, activation='sigmoid')(concatenated)
+    ## Apply gates
+    #gated_lidar = Multiply()([lidar_path, gate])
+    #gated_color = Multiply()([color_path, 1 - gate])
+    ## Combine gated features
+    #print("Shape of gated_lidar:", K.int_shape(gated_lidar))
+    #print("Shape of gated_color:", K.int_shape(gated_color))
+    #combined = Add()([gated_lidar, gated_color])
 
-    combined = Dense(64, activation='relu')(combined)
+    concatenated = WeightedConcatenate(weight_lidar=0.95, weight_color=0.5)([lidar_path, color_path])
+
+    combined = Dense(64, activation='relu')(concatenated)
     combined = Dense(64, activation='relu')(combined)
     combined = BatchNormalization()(combined)
     combined = Dense(32, activation='relu')(combined)
