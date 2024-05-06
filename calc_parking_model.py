@@ -111,7 +111,8 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
     lidar_path = Conv1D(128, kernel_size=5, activation='relu', kernel_regularizer=l2(0.01))(lidar_path)
     lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
-    lidar_path = Attention()(lidar_path)
+    attention_layer = Attention()  # Instantiate the layer
+    lidar_path = attention_layer(lidar_path)  # Call the layer on the input tensor
     lidar_path = Flatten()(lidar_path)
 
     color_input = Input(shape=color_input_shape)
