@@ -315,11 +315,11 @@ class fullDriveNode(Node):
                             msg.data = "Parking ..."
                             self.publisher_.publish(msg)
 
-                            if not self._clockwise and self._left_dist < 0.4: X = -1.0
-                            elif self._clockwise and self._right_dist < 0.4: X = 1.0
+                            if not self._clockwise and self._left_dist <= self._right_dist: X = -1.0
+                            elif self._clockwise and self._right_dist <= self._left_dist: X = 1.0
                             else: X = 0.0
                             self.steer(X)
-                            self.move("F3")
+                            self.move("F5")
                             self.steer(0)
                             self.move("F5")
                             X = -1.0 if self._clockwise else 1.0
