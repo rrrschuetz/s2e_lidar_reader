@@ -29,9 +29,6 @@ class fullDriveNode(Node):
     INITIAL_SCALER_PATH_CC = "/home/rrrschuetz/test/scaler_i.pkl"
     INITIAL_SCALER_PATH_CW = "/home/rrrschuetz/test/scaler_iu.pkl"
 
-    PARKING_PATH = "/home/rrrschuetz/test/model_p.tflite"
-    PARKING_SCALER_PATH = '/home/rrrschuetz/test/scaler_p.pkl'
-
     initial_race = False
     HPIX = 320
     VPIX = 200
@@ -182,16 +179,6 @@ class fullDriveNode(Node):
         self._output_detailsu = self._interpreter.get_output_details()
         self.get_logger().info('clockwise prediction model loaded')
 
-        # Load the trained parking model and the scaler
-        with open(self.PARKING_SCALER_PATH, 'rb') as f:
-            self._scaler_p = pickle.load(f)
-        self._interpreter_p = tf.lite.Interpreter(model_path=self.PARKING_PATH)
-        self._interpreter_p.allocate_tensors()
-        # Get input and output tensors information
-        self._input_details_p = self._interpreter_p.get_input_details()
-        self._output_details_p = self._interpreter_p.get_output_details()
-        self.get_logger().info('parking prediction model loaded')
-
         msg = String()
         msg.data = "Ready!"
         self.publisher_.publish(msg)
@@ -273,6 +260,8 @@ class fullDriveNode(Node):
             if self._state == 'RACE' and self._tf_control:
 
                 scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
+                scan[scan == np.inf] = np.nan
+                scan[scan > self.scan_max_dist] = np.nan
 
                 # Round completion check
                 self._gyro_cnt += 1
@@ -300,7 +289,7 @@ class fullDriveNode(Node):
 
                     #if self._parking_lot > 50 and self._corner_cnt >= 4:
                     if self._parking_lot > 50 and self._rounds >= 1:
-                        if sum(self._color2_m) > 10 and self._front_dist < 1.5:
+                        if ((not self._clockwise and sum(self._color2_m) > 10) or (self._clockwise and sum(self._color1_m) > 10)) and self._front_dist < 1.5:
 
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                             self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
@@ -308,11 +297,18 @@ class fullDriveNode(Node):
                             self.get_logger().info(f"Parking lot detections {self._parking_lot}")
                             self._speed_msg.data = "0"
                             self.speed_publisher_.publish(self._speed_msg)
-                            #time.sleep(2)
                             msg = String()
                             msg.data = "Parking ..."
                             self.publisher_.publish(msg)
-                            #self._state = "PARK"
+
+                            X = -1.0 if self._clockwise else 1.0
+                            XX = int(self.servo_neutral+X*self.servo_ctl_fwd)
+                            self._pwm.set_pwm(0, 0, XX)
+                            time.sleep(1.0)
+                            self._speed_msg.data = "F20"
+                            self.speed_publisher_.publish(self._speed_msg)
+                            time.sleep(2.0)
+
                             self._state = "IDLE"
                             self._processing = False
                             return
@@ -328,10 +324,6 @@ class fullDriveNode(Node):
                         return
 
                 try:
-                    # raw data
-                    scan[scan == np.inf] = np.nan
-                    scan[scan > self.scan_max_dist] = np.nan
-
                     if not self._obstacle_chk:
                         self._obstacle_chk = True
 
