@@ -334,9 +334,6 @@ class fullDriveNode(Node):
                             self.move("F5")
                             self.move("F5")
                             self.move("F5")
-                            if (not self._clockwise and self._left_dist <= self._right_dist) or (self._clockwise and self._right_dist <= self._left_dist):
-                                self.steer(0)
-                                self.move("F5")
 
                             self._state = "IDLE"
                             self._processing = False
