@@ -305,27 +305,41 @@ class fullDriveNode(Node):
                             msg.data = "Parking ..."
                             self.publisher_.publish(msg)
 
-                            XX = int(self.servo_neutral)
-                            self._pwm.set_pwm(0, 0, XX)
-                            time.sleep(1.0)
-                            self._speed_msg.data = "F5"
-                            self.speed_publisher_.publish(self._speed_msg)
-                            time.sleep(2.0)
-                            X = -1.0 if self._clockwise else 1.0
+                            if (not self._clockwise and self._left_dist < 0.4): X = 0.5
+                            elif or (self._clockwise and self._right_dist < 0.4): X = -0.5
+                            else: X = 0
                             XX = int(self.servo_neutral+X*self.servo_ctl_fwd)
                             self._pwm.set_pwm(0, 0, XX)
                             time.sleep(1.0)
-                            self._speed_msg.data = "F20"
+
+                            self._speed_msg.data = "F3"
                             self.speed_publisher_.publish(self._speed_msg)
                             time.sleep(2.0)
+
+                            XX = int(self.servo_neutral)
+                            self._pwm.set_pwm(0, 0, XX)
+                            time.sleep(1.0)
+
                             self._speed_msg.data = "F5"
                             self.speed_publisher_.publish(self._speed_msg)
                             time.sleep(2.0)
 
-                            if (not self._clockwise and self._left_dist < 0.25) or (self._clockwise and self._right_dist < 0.25):
+                            X = -1.0 if self._clockwise else 1.0
+                            XX = int(self.servo_neutral+X*self.servo_ctl_fwd)
+                            self._pwm.set_pwm(0, 0, XX)
+                            time.sleep(1.0)
+
+                            self._speed_msg.data = "F20"
+                            self.speed_publisher_.publish(self._speed_msg)
+                            time.sleep(2.0)
+
+                            if (not self._clockwise and self._left_dist < 0.4) or (self._clockwise and self._right_dist < 0.4):
                                 XX = int(self.servo_neutral)
                                 self._pwm.set_pwm(0, 0, XX)
                                 time.sleep(1.0)
+                                self._speed_msg.data = "F5"
+                                self.speed_publisher_.publish(self._speed_msg)
+                                time.sleep(2.0)
 
                             self._state = "IDLE"
                             self._processing = False
