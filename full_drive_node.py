@@ -305,8 +305,8 @@ class fullDriveNode(Node):
                             msg.data = "Parking ..."
                             self.publisher_.publish(msg)
 
-                            if not self._clockwise and self._left_dist < 0.4: X = 0.5
-                            elif self._clockwise and self._right_dist < 0.4: X = -0.5
+                            if not self._clockwise and self._left_dist < 0.4: X = -0.5
+                            elif self._clockwise and self._right_dist < 0.4: X = 0.5
                             else: X = 0
                             XX = int(self.servo_neutral+X*self.servo_ctl_fwd)
                             self._pwm.set_pwm(0, 0, XX)
