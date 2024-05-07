@@ -303,18 +303,21 @@ class fullDriveNode(Node):
                     #if self._parking_lot > 50 and self._corner_cnt >= 4:
                     if self._parking_lot > 50 and self._rounds >= 1:
                         self.get_logger().info(f"Parking lot detected: {self._parking_lot_detect}")
-                        if self._parking_lot_detect > 0:
+                        #if self._parking_lot_detect > 0:
+                        if sum(self._color2_m) > 10 and self._front_dist < 1.5:
+
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                             self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                             self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
                             self.get_logger().info(f"Parking lot detections {self._parking_lot}")
                             self._speed_msg.data = "0"
                             self.speed_publisher_.publish(self._speed_msg)
-                            time.sleep(2)
+                            #time.sleep(2)
                             msg = String()
                             msg.data = "Parking ..."
                             self.publisher_.publish(msg)
-                            self._state = "PARK"
+                            #self._state = "PARK"
+                            self._state = "IDLE"
                             self._processing = False
                             return
 

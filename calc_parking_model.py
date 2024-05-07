@@ -116,7 +116,7 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     #lidar_path = attention_layer(lidar_path)  # Call the layer on the input tensor
 
     lidar_path = Conv1D(64, kernel_size=5, dilation_rate=2)(lidar_input)
-    lidar_path = MaxPooling1D(pool_size=2)(lidar_path)
+    lidar_path = MaxPooling1D(pool_size=4)(lidar_path)
     lidar_path = Conv1D(128, kernel_size=5, dilation_rate=4, kernel_regularizer=l2(0.01))(lidar_path)
     #lidar_path = BatchNormalization()(lidar_path)
     #lidar_path = Activation('relu')(lidar_path)
@@ -152,13 +152,20 @@ def create_cnn_model(lidar_input_shape, color_input_shape):
     #print("Shape of gated_color:", K.int_shape(gated_color))
     #combined = Add()([gated_lidar, gated_color])
 
-    concatenated = WeightedConcatenate(weight_lidar=0.97, weight_color=0.3)([lidar_path, color_path])
+    concatenated = WeightedConcatenate(weight_lidar=0.1, weight_color=0.9)([lidar_path, color_path])
 
-    combined = Dense(64, activation='relu')(concatenated)
-    combined = Dense(64, activation='relu')(combined)
-    combined = BatchNormalization()(combined)
-    combined = Dense(32, activation='relu')(combined)
-    output = Dense(2)(combined)
+    dense_layer1 = Dense(128, activation='relu')(concatenated)  # Broader first dense layer
+    #dense_layer1 = Dropout(0.3)(dense_layer1)  # Adding dropout for regularization
+    dense_layer2 = Dense(128, activation='relu')(dense_layer1)  # Second dense layer with the same broadness
+    #dense_layer2 = Dropout(0.3)(dense_layer2)  # Adding dropout for regularization
+    #output = Dense(2, activation='softmax')(dense_layer2)
+    output = Dense(2)(dense_layer2)
+
+    #combined = Dense(64, activation='relu')(concatenated)
+    #combined = Dense(64, activation='relu')(combined)
+    #combined = BatchNormalization()(combined)
+    #combined = Dense(32, activation='relu')(combined)
+    #output = Dense(2)(combined)
 
     model = Model(inputs=[lidar_input, color_input], outputs=output)
     model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
