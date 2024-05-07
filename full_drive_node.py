@@ -194,6 +194,16 @@ class fullDriveNode(Node):
         GPIO.output(self.relay_pin, GPIO.LOW)
         GPIO.cleanup()
 
+    def steer(self,X):
+        XX = int(self.servo_neutral+X*self.servo_ctl_fwd)
+        self._pwm.set_pwm(0, 0, XX)
+        time.sleep(1.0)
+
+    def move(self, dist):
+        self._speed_msg.data = "F3"
+        self.speed_publisher_.publish(self._speed_msg)
+        time.sleep(2.0)
+
     def start_race(self):
         self._state = "RACE"
         self._tf_control = True
@@ -305,41 +315,19 @@ class fullDriveNode(Node):
                             msg.data = "Parking ..."
                             self.publisher_.publish(msg)
 
-                            if not self._clockwise and self._left_dist < 0.4: X = -0.5
-                            elif self._clockwise and self._right_dist < 0.4: X = 0.5
-                            else: X = 0
-                            XX = int(self.servo_neutral+X*self.servo_ctl_fwd)
-                            self._pwm.set_pwm(0, 0, XX)
-                            time.sleep(1.0)
-
-                            self._speed_msg.data = "F3"
-                            self.speed_publisher_.publish(self._speed_msg)
-                            time.sleep(2.0)
-
-                            XX = int(self.servo_neutral)
-                            self._pwm.set_pwm(0, 0, XX)
-                            time.sleep(1.0)
-
-                            self._speed_msg.data = "F5"
-                            self.speed_publisher_.publish(self._speed_msg)
-                            time.sleep(2.0)
-
+                            if not self._clockwise and self._left_dist < 0.4: X = -1.0
+                            elif self._clockwise and self._right_dist < 0.4: X = 1.0
+                            else: X = 0.0
+                            self.steer(X)
+                            self.move("F3")
+                            self.steer(0)
+                            self.move("F5")
                             X = -1.0 if self._clockwise else 1.0
-                            XX = int(self.servo_neutral+X*self.servo_ctl_fwd)
-                            self._pwm.set_pwm(0, 0, XX)
-                            time.sleep(1.0)
-
-                            self._speed_msg.data = "F20"
-                            self.speed_publisher_.publish(self._speed_msg)
-                            time.sleep(2.0)
-
+                            self.steer(X)
+                            self.move("F20")
                             if (not self._clockwise and self._left_dist < 0.4) or (self._clockwise and self._right_dist < 0.4):
-                                XX = int(self.servo_neutral)
-                                self._pwm.set_pwm(0, 0, XX)
-                                time.sleep(1.0)
-                                self._speed_msg.data = "F5"
-                                self.speed_publisher_.publish(self._speed_msg)
-                                time.sleep(2.0)
+                                self.steer(0)
+                                self.move("F5")
 
                             self._state = "IDLE"
                             self._processing = False
@@ -393,12 +381,8 @@ class fullDriveNode(Node):
 
                         if self._backward:
                             X = -1.0 if self._clockwise else 1.0
-                            XX = int(self.servo_neutral+X*self.servo_ctl_fwd)
-                            self._pwm.set_pwm(0, 0, XX)
-                            time.sleep(1.0)
-                            self._speed_msg.data = "F20"
-                            self.speed_publisher_.publish(self._speed_msg)
-                            time.sleep(2.0)
+                            self.steer(X)
+                            self.move("F20")
 
                         self._speed_msg.data = "RESET"
                         self.speed_publisher_.publish(self._speed_msg)
