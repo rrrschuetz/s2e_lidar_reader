@@ -277,6 +277,8 @@ class fullDriveNode(Node):
                     section_data = np.array_split(scan, num_sections)
                     section_means = [np.mean(section) for section in section_data]
                     self._front_dist = max(section_means[60:101])
+                    self._left_dist = min(section_means[0:10])
+                    self._right_dist = min(section_means[151:161])
 
                     #if abs(self._total_heading_change) >= 80 and self._front_dist > 1.0 and self._front_dist < 2.0:
                     if abs(self._total_heading_change) >= 340 and self._front_dist > 1.5:
@@ -289,12 +291,14 @@ class fullDriveNode(Node):
 
                     #if self._parking_lot > 50 and self._corner_cnt >= 4:
                     if self._parking_lot > 50 and self._rounds >= 1:
-                        if ((not self._clockwise and sum(self._color2_m) > 10) or (self._clockwise and sum(self._color1_m) > 10)) and self._front_dist < 1.5:
+                        if ((not self._clockwise and sum(self._color2_m) > 10) or (self._clockwise and sum(self._color1_m) > 10)) and self._front_dist < 1.4:
 
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                             self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                             self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
+                            self.get_logger().info(f"Left distance: {self._left_dist} right distance: {self._right_dist}")
                             self.get_logger().info(f"Parking lot detections {self._parking_lot}")
+
                             self._speed_msg.data = "0"
                             self.speed_publisher_.publish(self._speed_msg)
                             msg = String()
@@ -304,16 +308,24 @@ class fullDriveNode(Node):
                             XX = int(self.servo_neutral)
                             self._pwm.set_pwm(0, 0, XX)
                             time.sleep(1.0)
-                            self._speed_msg.data = "F10"
+                            self._speed_msg.data = "F5"
                             self.speed_publisher_.publish(self._speed_msg)
                             time.sleep(2.0)
                             X = -1.0 if self._clockwise else 1.0
                             XX = int(self.servo_neutral+X*self.servo_ctl_fwd)
                             self._pwm.set_pwm(0, 0, XX)
                             time.sleep(1.0)
-                            self._speed_msg.data = "F25"
+                            self._speed_msg.data = "F20"
                             self.speed_publisher_.publish(self._speed_msg)
                             time.sleep(2.0)
+                            self._speed_msg.data = "F5"
+                            self.speed_publisher_.publish(self._speed_msg)
+                            time.sleep(2.0)
+
+                            if (not self._clockwise and self._left_dist < 0.25) or (self._clockwise and self._right_dist < 0.25):
+                                XX = int(self.servo_neutral)
+                                self._pwm.set_pwm(0, 0, XX)
+                                time.sleep(1.0)
 
                             self._state = "IDLE"
                             self._processing = False
