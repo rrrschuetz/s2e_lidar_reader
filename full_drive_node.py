@@ -55,7 +55,6 @@ class fullDriveNode(Node):
         super().__init__('full_drive_node')
         self.publisher_ = self.create_publisher(String, 'main_logger', 10)
         self.speed_publisher_ = self.create_publisher(String, 'set_speed', 10)
-        self.timer = self.create_timer(0.5,self.timer_callback)
 
         qos_profile = QoSProfile(
                 depth=1, 
@@ -71,7 +70,6 @@ class fullDriveNode(Node):
         self._obstacle_chk = False
         self._backward = False
         self._parking_lot = 0
-        self._parking_lot_detect = 0
         self._collision = False
         self._gyro_cnt = 0
 
@@ -289,7 +287,7 @@ class fullDriveNode(Node):
                     num_sections = 162
                     section_data = np.array_split(scan, num_sections)
                     section_means = [np.mean(section) for section in section_data]
-                    self._front_dist = max(section_means[76:86])
+                    self._front_dist = max(section_means[60:101])
 
                     #if abs(self._total_heading_change) >= 80 and self._front_dist > 1.0 and self._front_dist < 2.0:
                     if abs(self._total_heading_change) >= 340 and self._front_dist > 1.5:
@@ -302,8 +300,6 @@ class fullDriveNode(Node):
 
                     #if self._parking_lot > 50 and self._corner_cnt >= 4:
                     if self._parking_lot > 50 and self._rounds >= 1:
-                        self.get_logger().info(f"Parking lot detected: {self._parking_lot_detect}")
-                        #if self._parking_lot_detect > 0:
                         if sum(self._color2_m) > 10 and self._front_dist < 1.5:
 
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
@@ -431,77 +427,6 @@ class fullDriveNode(Node):
 
 
             ########################
-            # PARK
-            ########################
-            elif self._state == 'PARK' and self._tf_control:
-
-                scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
-
-                num_sections = 162
-                section_data = np.array_split(scan, num_sections)
-                section_means = [np.mean(section) for section in section_data]
-                self._front_dist = min(section_means[60:101])
-                if self._front_dist < 0.2:
-                    self.get_logger().info(f"Parking ended. Stop distance: {self._front_dist}")
-                    self._speed_msg.data = "-1"
-                    self.speed_publisher_.publish(self._speed_msg)
-                    XX = int(self.servo_neutral+self._X*self.servo_ctl_fwd)
-                    self._pwm.set_pwm(0, 0, XX)
-                    self.stop_race()
-                else:
-                    try:
-                        scan[scan == np.inf] = np.nan
-                        scan[scan > self.scan_max_dist] = np.nan
-                        x = np.arange(len(scan))
-                        finite_vals = np.isfinite(scan)
-                        scan_interpolated = np.interp(x, x[finite_vals], scan[finite_vals])
-                        scan_interpolated = [1/value if value != 0 else 0 for value in scan_interpolated]
-                        scan_interpolated = list(scan_interpolated)
-                        color_data = list(self._color1_g) + list(self._color2_g) + list(self._color1_r) + list(self._color2_r) + list(self._color1_m) + list(self._color2_m)
-
-                        lidar_data = np.reshape(scan_interpolated, (1, -1))  # Reshape LIDAR data
-                        lidar_data_standardized = self._scaler_p.transform(lidar_data)
-                        color_data_standardized = np.reshape(color_data, (1, -1))         # Reshape COLOR data
-
-                        lidar_data_standardized = np.reshape(lidar_data_standardized, (1, lidar_data_standardized.shape[1], 1)).astype(np.float32)
-                        color_data_standardized = np.reshape(color_data_standardized, (1, color_data_standardized.shape[1], 1)).astype(np.float32)
-     
-                        self._interpreter_p.set_tensor(self._input_details_p[0]['index'], lidar_data_standardized)
-                        self._interpreter_p.set_tensor(self._input_details_p[1]['index'], color_data_standardized)
-
-                        # Run inference
-                        self._interpreter_p.invoke()
-                        # Retrieve the output of the model
-                        predictions = self._interpreter_p.get_tensor(self._output_details_p[0]['index'])
-                        self._X = predictions[0, 0]
-                        self._Y = predictions[0, 1]
-                        #self.get_logger().info('Steering, power: %s, %s ' % (self._X,self._Y))
-
-                        if self._collision:
-                            self.get_logger().info('Collision: STOP ')
-                            self._collision = False
-                            self._tf_control = False
-                            self._state = "IDLE"
-                            self._speed_msg.data = "STOP"
-                        else:
-                            if self._Y >= 0:
-                                XX = int(self.servo_neutral+self._X*self.servo_ctl_rev)
-                                self._speed_msg.data = self.REV_SPEED
-                                #self.get_logger().info('Reverse: %s / %s ' % (self._Y,self._speed_msg.data))
-                            else:
-                                XX = int(self.servo_neutral+self._X*self.servo_ctl_fwd)
-                                self._speed_msg.data = self.FWD_SPEED
-                                #self.get_logger().info('Forward: %s / %s ' % (self._Y,self._speed_msg.data))
-                            self._pwm.set_pwm(0, 0, XX)
-
-                        self.speed_publisher_.publish(self._speed_msg)
-             
-                    except ValueError as e:
-                        self.get_logger().error('Model rendered nan: %s' % str(e))
-                    except IOError as e:
-                        self.get_logger().error('IOError I2C occurred: %s' % str(e))
-
-            ########################
             # IDLE
             ########################
             elif self._state == 'IDLE':
@@ -572,8 +497,6 @@ class fullDriveNode(Node):
                     if cam == 1: self._color1_m[x1:x2] = self.WEIGHT
                     if cam == 2: self._color2_m[x1:x2] = self.WEIGHT
                     self._parking_lot += 1
-                    self._parking_lot_detect += 1
-                    #self.get_logger().info(f"Parking lot detected! {self._parking_lot_detect}")
 
                 #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
 
@@ -584,9 +507,6 @@ class fullDriveNode(Node):
         self.openmv_h7_callback(msg)
     def openmv_h7_callback2(self, msg):
         self.openmv_h7_callback(msg)
-
-    def timer_callback(self):
-        self._parking_lot_detect = 0
 
     def collision_callback(self, msg):
         self.get_logger().info('Collision msg received')
