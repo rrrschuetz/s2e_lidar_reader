@@ -289,6 +289,8 @@ class fullDriveNode(Node):
                     self._front_dist = max(section_means[60:101])
                     self._left_dist = max(section_means[0:20])
                     self._right_dist = max(section_means[141:161])
+                    if self._left_dist == np.nan: self._left_dist = self.scan_max_dist
+                    if self._right_dist == np.nan: self._right_dist = self.scan_max_dist
 
                     #if abs(self._total_heading_change) >= 80 and self._front_dist > 1.0 and self._front_dist < 2.0:
                     if abs(self._total_heading_change) >= 340 and self._front_dist > 1.5:
