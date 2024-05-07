@@ -287,8 +287,8 @@ class fullDriveNode(Node):
                     section_data = np.array_split(scan, num_sections)
                     section_means = [np.mean(section) for section in section_data]
                     self._front_dist = max(section_means[60:101])
-                    self._left_dist = min(section_means[0:10])
-                    self._right_dist = min(section_means[151:161])
+                    self._left_dist = max(section_means[0:40])
+                    self._right_dist = max(section_means[121:161])
 
                     #if abs(self._total_heading_change) >= 80 and self._front_dist > 1.0 and self._front_dist < 2.0:
                     if abs(self._total_heading_change) >= 340 and self._front_dist > 1.5:
