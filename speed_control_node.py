@@ -59,7 +59,7 @@ class SpeedControlNode(Node):
         self.pid.sample_time = 0.1
 
     def move_to_impulse(self, impulse_goal):
-        power = -12 if impulse_goal < 0 else 12   # -10
+        power = -12 if impulse_goal < 0 else 13   # -10
         self.impulse_history.clear()
         self.impulse_count = 0
 

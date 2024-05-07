@@ -287,8 +287,8 @@ class fullDriveNode(Node):
                     section_data = np.array_split(scan, num_sections)
                     section_means = [np.mean(section) for section in section_data]
                     self._front_dist = max(section_means[60:101])
-                    self._left_dist = max(section_means[0:20])
-                    self._right_dist = max(section_means[141:161])
+                    self._left_dist = max(section_means[0:10])
+                    self._right_dist = max(section_means[151:161])
                     if self._left_dist == np.nan: self._left_dist = self.scan_max_dist
                     if self._right_dist == np.nan: self._right_dist = self.scan_max_dist
 
