@@ -289,7 +289,7 @@ class fullDriveNode(Node):
 
                     #if self._parking_lot > 50 and self._corner_cnt >= 4:
                     if self._parking_lot > 50 and self._rounds >= 1:
-                        if ((not self._clockwise and sum(self._color2_m) > 10) or (self._clockwise and sum(self._color1_m) > 10)) and self._front_dist < 1.3:
+                        if ((not self._clockwise and sum(self._color2_m) > 10) or (self._clockwise and sum(self._color1_m) > 10)) and self._front_dist < 1.5:
 
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                             self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
@@ -301,6 +301,12 @@ class fullDriveNode(Node):
                             msg.data = "Parking ..."
                             self.publisher_.publish(msg)
 
+                            XX = int(self.servo_neutral)
+                            self._pwm.set_pwm(0, 0, XX)
+                            time.sleep(1.0)
+                            self._speed_msg.data = "F10"
+                            self.speed_publisher_.publish(self._speed_msg)
+                            time.sleep(2.0)
                             X = -1.0 if self._clockwise else 1.0
                             XX = int(self.servo_neutral+X*self.servo_ctl_fwd)
                             self._pwm.set_pwm(0, 0, XX)
