@@ -294,7 +294,7 @@ class fullDriveNode(Node):
                         self._total_heading_change = 0
 
                     if self._parking_lot > 50 and self._rounds >= 1:
-                        if ((not self._clockwise and sum(self._color2_m) > 10) or (self._clockwise and sum(self._color1_m) > 10)) and self._front_dist < 1.6:
+                        if ((not self._clockwise and sum(self._color2_m) > 10) or (self._clockwise and sum(self._color1_m) > 10)) and self._front_dist < 1.4:
 
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                             self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
@@ -418,7 +418,7 @@ class fullDriveNode(Node):
                 num_sections = 162
                 section_data = np.array_split(scan, num_sections)
                 section_means = [np.mean(section) for section in section_data]
-                self._front_dist = max(section_means[60:101])
+                self._front_dist = min(section_means[60:101])
                 self._current_heading = self._sense.gyro['yaw']
                 heading_change = abs(self.calculate_heading_change(self._last_heading, self._current_heading))
 
