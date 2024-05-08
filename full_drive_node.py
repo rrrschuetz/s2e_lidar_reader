@@ -287,65 +287,26 @@ class fullDriveNode(Node):
                     section_data = np.array_split(scan, num_sections)
                     section_means = [np.mean(section) for section in section_data]
                     self._front_dist = max(section_means[60:101])
-                    self._left_dist = max(section_means[0:10])
-                    self._right_dist = max(section_means[151:161])
-                    if self._left_dist == np.nan: self._left_dist = self.scan_max_dist
-                    if self._right_dist == np.nan: self._right_dist = self.scan_max_dist
 
-                    #if abs(self._total_heading_change) >= 80 and self._front_dist > 1.0 and self._front_dist < 2.0:
                     if abs(self._total_heading_change) >= 340 and self._front_dist > 1.5:
-                        #self._corner_cnt +=1
                         self._rounds += 1
-                        #if abs(self._total_heading_change) > 140: self._corner_cnt +=1
-                        #self.get_logger().info(f"Number of corners {self._corner_cnt} heading {self._total_heading_change}")
                         self.get_logger().info(f"Number off rounds {self._rounds} heading {self._total_heading_change}")
                         self._total_heading_change = 0
 
-                    #if self._parking_lot > 50 and self._corner_cnt >= 4:
                     if self._parking_lot > 50 and self._rounds >= 1:
                         if ((not self._clockwise and sum(self._color2_m) > 10) or (self._clockwise and sum(self._color1_m) > 10)) and self._front_dist < 1.6:
 
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                             self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                             self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
-                            self.get_logger().info(f"Left distance: {self._left_dist} right distance: {self._right_dist}")
                             self.get_logger().info(f"Parking lot detections {self._parking_lot}")
-
-                            self._speed_msg.data = "0"
-                            self.speed_publisher_.publish(self._speed_msg)
                             msg = String()
                             msg.data = "Parking ..."
                             self.publisher_.publish(msg)
-
-                            if not self._clockwise and self._left_dist <= self._right_dist:
-                                X = -1.0
-                                Y1 = "F4"
-                                Y2 = "F5"
-                            elif self._clockwise and self._right_dist <= self._left_dist:
-                                X = 1.0
-                                Y1 = "F4"
-                                Y2 = "F5"
-                            else:
-                                X = 0.0
-                                Y1 = "F0"
-                                Y2 = "F3"
-                            self.get_logger().info(f"Parking commands {X} {Y1} {Y2}")
-                            self.steer(X)
-                            self.move(Y1)
-                            self.get_logger().info("Step 1 executed")
-                            X = -1.0 if self._clockwise else 1.0
-                            self.steer(X)
-                            self.move(Y2)
-                            self.move(Y2)
-                            self.move(Y2)
-                            self.move(Y2)
-                            self.get_logger().info("Step 2 executed")
-
-                            self._state = "IDLE"
+                            self._state = "PARK"
                             self._processing = False
                             return
 
-                    #elif self._parking_lot <= 50 and self._corner_cnt >= 12:
                     elif self._parking_lot <= 50 and self._rounds >= 3:
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
@@ -445,6 +406,32 @@ class fullDriveNode(Node):
                 except IOError as e:
                     self.get_logger().error('IOError I2C occurred: %s' % str(e))
 
+            ########################
+            # PARK
+            ########################
+           elif self._state == 'PARK':
+
+                scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
+                scan[scan == np.inf] = np.nan
+                scan[scan > self.scan_max_dist] = np.nan
+
+                num_sections = 162
+                section_data = np.array_split(scan, num_sections)
+                section_means = [np.mean(section) for section in section_data]
+                self._front_dist = max(section_means[60:101])
+                #self._left_dist = max(section_means[0:10])
+                #self._right_dist = max(section_means[151:161])
+                #if self._left_dist == np.nan: self._left_dist = self.scan_max_dist
+                #if self._right_dist == np.nan: self._right_dist = self.scan_max_dist
+                #self.get_logger().info(f"Left distance: {self._left_dist} right distance: {self._right_dist}")
+                self.get_logger().info(f"Distance: {self._front_dist}")
+
+                X = -1.0 if self._clockwise else 1.0
+                self.steer(X)
+
+                if self._front_dist <= 0.15:
+                    self.stop_race()
+                    self._state = "IDLE"
 
             ########################
             # IDLE
