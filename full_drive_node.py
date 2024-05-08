@@ -329,6 +329,7 @@ class fullDriveNode(Node):
                             self.get_logger().info(f"Parking commands X,Y {X} {Y}")
                             self.steer(X)
                             self.move(Y)
+                            self.get_logger().info("Step 1 executed")
                             X = -1.0 if self._clockwise else 1.0
                             self.steer(X)
                             self.move("F5")
@@ -336,6 +337,7 @@ class fullDriveNode(Node):
                             self.move("F5")
                             self.move("F5")
                             self.move("F5")
+                            self.get_logger().info("Step 2 executed")
 
                             self._state = "IDLE"
                             self._processing = False
