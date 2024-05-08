@@ -303,7 +303,7 @@ class fullDriveNode(Node):
 
                     #if self._parking_lot > 50 and self._corner_cnt >= 4:
                     if self._parking_lot > 50 and self._rounds >= 1:
-                        if ((not self._clockwise and sum(self._color2_m) > 10) or (self._clockwise and sum(self._color1_m) > 10)) and self._front_dist < 1.4:
+                        if ((not self._clockwise and sum(self._color2_m) > 10) or (self._clockwise and sum(self._color1_m) > 10)) and self._front_dist < 1.6:
 
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                             self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
@@ -328,10 +328,9 @@ class fullDriveNode(Node):
                                 Y = "F0"
                             self.steer(X)
                             self.move(Y)
-                            self.steer(0)
-                            self.move("F3")
                             X = -1.0 if self._clockwise else 1.0
                             self.steer(X)
+                            self.move("F5")
                             self.move("F5")
                             self.move("F5")
                             self.move("F5")
