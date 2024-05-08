@@ -200,7 +200,7 @@ class fullDriveNode(Node):
         time.sleep(1.0)
 
     def move(self, dist):
-        self._speed_msg.data = "F3"
+        self._speed_msg.data = dist
         self.speed_publisher_.publish(self._speed_msg)
         time.sleep(2.0)
 
