@@ -326,6 +326,7 @@ class fullDriveNode(Node):
                             else:
                                 X = 0.0
                                 Y = "F0"
+                            self.get_logger().info(f"Parking commands X,Y {X} {Y}")
                             self.steer(X)
                             self.move(Y)
                             X = -1.0 if self._clockwise else 1.0
