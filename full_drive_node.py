@@ -294,7 +294,7 @@ class fullDriveNode(Node):
                         self._total_heading_change = 0
 
                     if self._parking_lot > 50 and self._rounds >= 1:
-                        if ((not self._clockwise and sum(self._color2_m) > 5) or (self._clockwise and sum(self._color1_m) > 5)) and self._front_dist < 1.5:
+                        if ((not self._clockwise and sum(self._color2_m) > 5) or (self._clockwise and sum(self._color1_m) > 5)) and self._front_dist < 1.4:
 
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                             self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
