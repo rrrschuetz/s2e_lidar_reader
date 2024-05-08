@@ -319,17 +319,17 @@ class fullDriveNode(Node):
 
                             if not self._clockwise and self._left_dist <= self._right_dist:
                                 X = -1.0
-                                Y = "F5"
+                                Y = "F3"
                             elif self._clockwise and self._right_dist <= self._left_dist:
                                 X = 1.0
-                                Y = "F5"
+                                Y = "F3"
                             else:
                                 X = 0.0
                                 Y = "F0"
                             self.steer(X)
                             self.move(Y)
                             self.steer(0)
-                            self.move("F5")
+                            self.move("F3")
                             X = -1.0 if self._clockwise else 1.0
                             self.steer(X)
                             self.move("F5")
