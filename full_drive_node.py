@@ -329,7 +329,7 @@ class fullDriveNode(Node):
                                 X = 0.0
                                 Y1 = "F1"
                                 Y2 = "F3"
-                            self.get_logger().info(f"Parking commands X,Y {X} {Y}")
+                            self.get_logger().info(f"Parking commands {X} {Y1} {Y2}")
                             self.steer(X)
                             self.move(Y1)
                             self.get_logger().info("Step 1 executed")
