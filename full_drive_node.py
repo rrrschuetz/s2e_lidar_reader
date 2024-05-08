@@ -418,13 +418,13 @@ class fullDriveNode(Node):
                 num_sections = 162
                 section_data = np.array_split(scan, num_sections)
                 section_means = [np.mean(section) for section in section_data]
-                self._front_dist = min(section_means[60:101])
+                self._front_dist = min(section_means[70:91])
                 self._current_heading = self._sense.gyro['yaw']
                 heading_change = abs(self.calculate_heading_change(self._last_heading, self._current_heading))
 
                 self.get_logger().info(f"Distance: {self._front_dist}, heading change: {heading_change}")
 
-                if self._front_dist < 1.4 or heading_change < 90:
+                if self._front_dist < 1.3 or heading_change < 90:
                     X = -1.0 if self._clockwise else 1.0
                 else:
                     X = 0.0
