@@ -96,11 +96,11 @@ class SpeedControlNode(Node):
                 self.reset_pid()
             elif new_speed.startswith('F'):
                 self.pid_steering = False
-                self.get_logger().info("Received move forward command")
+                self.get_logger().info(f"Received move forward command {new_speed}" )
                 self.move_to_impulse(int(new_speed[1:]))
             elif new_speed.startswith('R'):
                 self.pid_steering = False
-                self.get_logger().info("Received move backward command")
+                self.get_logger().info(f"Received move backward command {new_speed}")
                 self.move_to_impulse(-int(new_speed[1:]))
             else:
                 self.pid_steering = True
