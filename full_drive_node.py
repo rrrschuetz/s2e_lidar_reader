@@ -409,7 +409,7 @@ class fullDriveNode(Node):
             ########################
             # PARK
             ########################
-           elif self._state == 'PARK':
+            elif self._state == 'PARK':
 
                 scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
                 scan[scan == np.inf] = np.nan
