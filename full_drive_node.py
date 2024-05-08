@@ -319,15 +319,15 @@ class fullDriveNode(Node):
 
                             if not self._clockwise and self._left_dist <= self._right_dist:
                                 X = -1.0
-                                Y1 = "F3"
+                                Y1 = "F4"
                                 Y2 = "F5"
                             elif self._clockwise and self._right_dist <= self._left_dist:
                                 X = 1.0
-                                Y1 = "F3"
+                                Y1 = "F4"
                                 Y2 = "F5"
                             else:
                                 X = 0.0
-                                Y1 = "F1"
+                                Y1 = "F0"
                                 Y2 = "F3"
                             self.get_logger().info(f"Parking commands {X} {Y1} {Y2}")
                             self.steer(X)
@@ -335,7 +335,6 @@ class fullDriveNode(Node):
                             self.get_logger().info("Step 1 executed")
                             X = -1.0 if self._clockwise else 1.0
                             self.steer(X)
-                            self.move(Y2)
                             self.move(Y2)
                             self.move(Y2)
                             self.move(Y2)
