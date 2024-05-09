@@ -410,7 +410,7 @@ class fullDriveNode(Node):
                 num_sections = 21
                 section_data = np.array_split(scan, num_sections)
                 section_means = [np.nanmean(section) for section in section_data]
-                self._front_dist = section_means[10]
+                self._front_dist = max(section_means[9:11])
 
                 self._current_heading = self._sense.gyro['yaw']
                 heading_change = abs(self.calculate_heading_change(self._last_heading, self._current_heading))
