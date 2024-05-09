@@ -270,7 +270,7 @@ class fullDriveNode(Node):
 
             num_sections = 161
             section_data = np.array_split(scan, num_sections)
-            section_means = [np.nanmean(section) for section in section_data]
+            section_means = [np.mean(section) for section in section_data]
             self._front_dist = max(section_means[78:83])
             min_far_dist = min(section_means[60:101])
             min_near_dist = min(section_means[40:121])
@@ -297,7 +297,7 @@ class fullDriveNode(Node):
                         self._total_heading_change = 0
 
                     if self._parking_lot > 50 and self._rounds >= 1:
-                        if ((not self._clockwise and sum(self._color2_m) > 10) or (self._clockwise and sum(self._color1_m) > 10)) and self._front_dist < 1.5:
+                        if ((not self._clockwise and sum(self._color2_m) > 4) or (self._clockwise and sum(self._color1_m) > 4)):
 
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                             self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
@@ -411,15 +411,16 @@ class fullDriveNode(Node):
                 self._current_heading = self._sense.gyro['yaw']
                 heading_change = abs(self.calculate_heading_change(self._last_heading, self._current_heading))
 
-                self.get_logger().info(f"Distance: {self._front_dist}, heading change: {heading_change}")
+                dist = min(section_means)
 
-                if self._front_dist < 1.3 and heading_change < 90:
+                if heading_change < 20:
                     X = -1.0 if self._clockwise else 1.0
                 else:
                     X = 0.0
                 self.steer(X,False)
+                self.get_logger().info(f"Side Distance: {dist}, heading change: {heading_change}, X: {X}")
 
-                if self._front_dist < 0.20:
+                if dist < 0.20:
                     self.stop_race()
                     self._state = "IDLE"
 
