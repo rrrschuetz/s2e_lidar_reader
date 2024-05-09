@@ -63,7 +63,7 @@ class SpeedControlNode(Node):
         if impulse_goal == 0:
             self.get_logger().info("move_to_impulse: No move!")
             return
-        power = -12 if impulse_goal < 0 else 13   # -10
+        power = -12 if impulse_goal < 0 else 12   # -10
         self.impulse_history.clear()
         self.impulse_count = 0
 
