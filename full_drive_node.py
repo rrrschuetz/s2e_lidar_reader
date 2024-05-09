@@ -323,11 +323,9 @@ class fullDriveNode(Node):
                         self._obstacle_chk = True
 
                         if not self.initial_race and (min_far_dist < 0.8 or min_near_dist < 0.2):
-                            X = -0.5 if not self._clockwise else 0.5
-                            M = "R"+str(int((2.5 - self._front_dist) * 40))
                             self.get_logger().info(f"Obstacle: {min_far_dist}, {min_near_dist}, distance: {self._front_dist}, moving backward: {X} {M}")
-                            self.steer(X,True)
-                            self.move(M)
+                            self.steer(-1.0 if not self._clockwise else 1.0,True)
+                            self.move("R15")
                             H = -45 if not self._clockwise else 45
                             self._last_heading += H
                             self._total_heading_change += H
