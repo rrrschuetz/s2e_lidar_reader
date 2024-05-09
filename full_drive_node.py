@@ -418,7 +418,7 @@ class fullDriveNode(Node):
 
                 self.get_logger().info(f"Distance: {self._front_dist}, heading change: {heading_change}")
 
-                if self._front_dist < 1.6 and heading_change < 90:
+                if self._front_dist < 1.3 and heading_change < 90:
                     X = -1.0 if self._clockwise else 1.0
                 else:
                     X = 0.0
