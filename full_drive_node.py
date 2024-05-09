@@ -352,7 +352,7 @@ class fullDriveNode(Node):
                         if self._backward:
                             X = -1.0 if self._clockwise else 1.0
                             self.steer(X,True)
-                            self.move("F20")
+                            self.move("F15")
 
                         self._speed_msg.data = "RESET"
                         self.speed_publisher_.publish(self._speed_msg)
