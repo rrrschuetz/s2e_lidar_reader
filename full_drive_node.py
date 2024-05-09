@@ -194,10 +194,10 @@ class fullDriveNode(Node):
         GPIO.output(self.relay_pin, GPIO.LOW)
         GPIO.cleanup()
 
-    def steer(self,X):
+    def steer(self,X,sleep):
         XX = int(self.servo_neutral+X*self.servo_ctl_fwd)
         self._pwm.set_pwm(0, 0, XX)
-        time.sleep(1.0)
+        if sleep: time.sleep(1.0)
 
     def move(self, dist):
         self._speed_msg.data = dist
@@ -350,7 +350,7 @@ class fullDriveNode(Node):
 
                         if self._backward:
                             X = -1.0 if self._clockwise else 1.0
-                            self.steer(X)
+                            self.steer(X,True)
                             self.move("F20")
 
                         self._speed_msg.data = "RESET"
@@ -411,7 +411,7 @@ class fullDriveNode(Node):
                 section_data = np.array_split(scan, num_sections)
                 section_means = [np.nanmean(section) for section in section_data]
                 self._front_dist = min(self._front_dist,max(section_means[6:15]))
-                self.get_logger().info(f"Distances: {section_means}")
+                #self.get_logger().info(f"Distances: {section_means}")
 
                 self._current_heading = self._sense.gyro['yaw']
                 heading_change = abs(self.calculate_heading_change(self._last_heading, self._current_heading))
@@ -422,7 +422,7 @@ class fullDriveNode(Node):
                     X = -1.0 if self._clockwise else 1.0
                 else:
                     X = 0.0
-                self.steer(X)
+                self.steer(X,False)
 
                 if self._front_dist < 0.20:
                     self.stop_race()
