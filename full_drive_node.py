@@ -268,6 +268,15 @@ class fullDriveNode(Node):
             scan[scan == np.inf] = np.nan
             scan[scan > self.scan_max_dist] = np.nan
 
+            num_sections = 21
+            section_data = np.array_split(scan, num_sections)
+            section_means = [np.nanmean(section) for section in section_data]
+            self._front_dist = max(self._front_dist,max(section_means[6:15]))
+            min_far_dist = min(section_means[8:13])
+            min_near_dist = min(section_means[6:15])
+
+            #self.get_logger().info(f"Distances: {section_means}")
+
             ########################
             # RACE
             ########################
@@ -282,11 +291,6 @@ class fullDriveNode(Node):
                     #self.get_logger().info("Heading change: %s" % heading_change)
                     self._total_heading_change += heading_change
                     self._last_heading = self._current_heading
-
-                    num_sections = 21
-                    section_data = np.array_split(scan, num_sections)
-                    section_means = [np.mean(section) for section in section_data]
-                    self._front_dist = max(section_means[6:15])
 
                     if abs(self._total_heading_change) >= 340 and self._front_dist > 1.5:
                         self._rounds += 1
@@ -320,9 +324,7 @@ class fullDriveNode(Node):
                     if not self._obstacle_chk:
                         self._obstacle_chk = True
 
-                        min_far_dist = min(section_means[8:13])
-                        min_near_dist = min(section_means[6:15])
-                        self._front_dist = section_means[10]
+                        #self._front_dist = section_means[10]
 
                         if not self.initial_race and (min_far_dist < 0.8 or min_near_dist < 0.2):
                             self._backward = True
@@ -406,12 +408,6 @@ class fullDriveNode(Node):
             # PARK
             ########################
             elif self._state == 'PARK':
-
-                num_sections = 21
-                section_data = np.array_split(scan, num_sections)
-                section_means = [np.nanmean(section) for section in section_data]
-                self._front_dist = min(self._front_dist,max(section_means[6:15]))
-                #self.get_logger().info(f"Distances: {section_means}")
 
                 self._current_heading = self._sense.gyro['yaw']
                 heading_change = abs(self.calculate_heading_change(self._last_heading, self._current_heading))
