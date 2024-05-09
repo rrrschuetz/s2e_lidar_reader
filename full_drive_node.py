@@ -296,7 +296,7 @@ class fullDriveNode(Node):
                         self.get_logger().info(f"Number off rounds {self._rounds} heading {self._total_heading_change}")
                         self._total_heading_change = 0
 
-                    if self._parking_lot > 50 and self._rounds >= 1:
+                    if self._parking_lot > 50 and self._rounds >= 3:
                         if ((not self._clockwise and sum(self._color2_m) > 4) or (self._clockwise and sum(self._color1_m) > 4)):
 
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
