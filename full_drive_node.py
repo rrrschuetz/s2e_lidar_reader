@@ -268,12 +268,12 @@ class fullDriveNode(Node):
             scan[scan == np.inf] = np.nan
             scan[scan > self.scan_max_dist] = np.nan
 
-            num_sections = 21
+            num_sections = 161
             section_data = np.array_split(scan, num_sections)
             section_means = [np.nanmean(section) for section in section_data]
-            self._front_dist = max(section_means[6:15])
-            min_far_dist = min(section_means[8:13])
-            min_near_dist = min(section_means[6:15])
+            self._front_dist = max(section_means[78:83])
+            min_far_dist = min(section_means[60:101])
+            min_near_dist = min(section_means[40:121])
             #self.get_logger().info(f"Distances: {section_means}")
 
             ########################
