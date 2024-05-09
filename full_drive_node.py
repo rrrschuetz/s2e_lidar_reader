@@ -328,12 +328,9 @@ class fullDriveNode(Node):
                             self.get_logger().info(f"Obstacle: {min_far_dist}, {min_near_dist}, distance: {self._front_dist}, moving backward: {X} {M}")
                             self.steer(X,True)
                             self.move(M)
-                            self._current_heading = self._sense.gyro['yaw']
-                            self.get_logger().info(f"Headings: last {self._last_heading}, current {self._current_heading}")
-                            heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
-                            self._total_heading_change -= heading_change
-                            self._last_heading = self._current_heading
-                            self.get_logger().info("Heading correction: %s" % heading_change)
+                            H = -45 if not self._clockwise else 45
+                            self._last_heading += H
+                            self._total_heading_change += H
                             self._processing = False
                             return
                         else:
@@ -344,7 +341,7 @@ class fullDriveNode(Node):
                                 self._processing = False
                                 return
 
-                    elif not self._clockwise_def:
+                    elif not self._clockwise_def:d
                         self._clockwise_def = True
                         sum_first_half = np.nansum(scan[:self.num_scan2])
                         sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
