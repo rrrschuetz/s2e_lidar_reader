@@ -80,7 +80,7 @@ class fullDriveNode(Node):
         self._color1_m = np.zeros(self.HPIX, dtype=int)
         self._color2_m = np.zeros(self.HPIX, dtype=int)
 
-        self._front_dist = np.inf
+        self._front_dist = 0
 
         self._speed_msg = String()
         self._speed_msg.data = "0"
@@ -271,11 +271,10 @@ class fullDriveNode(Node):
             num_sections = 21
             section_data = np.array_split(scan, num_sections)
             section_means = [np.nanmean(section) for section in section_data]
-            self._front_dist = max(self._front_dist,max(section_means[6:15]))
+            self._front_dist = max(section_means[6:15])
             min_far_dist = min(section_means[8:13])
             min_near_dist = min(section_means[6:15])
-
-            #self.get_logger().info(f"Distances: {section_means}")
+            self.get_logger().info(f"Distances: {section_means}")
 
             ########################
             # RACE
