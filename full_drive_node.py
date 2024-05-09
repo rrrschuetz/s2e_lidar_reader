@@ -354,6 +354,8 @@ class fullDriveNode(Node):
                             self.steer(X,True)
                             self.move("F3")
                             self.move("F3")
+                            heading_change = 80 if not self._clockwise else -80
+                            self._total_heading_change -= heading_change
 
                         self._speed_msg.data = "RESET"
                         self.speed_publisher_.publish(self._speed_msg)
