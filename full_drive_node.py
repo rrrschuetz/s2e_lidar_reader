@@ -65,7 +65,6 @@ class fullDriveNode(Node):
         self._clockwise = False
         self._clockwise_def = False
         self._obstacle_chk = False
-        self._backward = False
         self._parking_lot = 0
         self._collision = False
         self._gyro_cnt = 0
@@ -323,22 +322,24 @@ class fullDriveNode(Node):
                     if not self._obstacle_chk:
                         self._obstacle_chk = True
 
-                        #self._front_dist = section_means[10]
-
                         if not self.initial_race and (min_far_dist < 0.8 or min_near_dist < 0.2):
-                            self._backward = True
-                            self._speed_msg.data = "R"+str(int((2.5 - self._front_dist) * 40))
-                            self.get_logger().info(f"Obstacle: {min_far_dist}, {min_near_dist}, distance: {self._front_dist}, moving backward: {self._speed_msg.data}")
-                            self.speed_publisher_.publish(self._speed_msg)
-                            time.sleep(3)
+                            X = -0.3 if self._clockwise else 0.3
+                            M = "R"+str(int((2.5 - self._front_dist) * 40))
+                            self.get_logger().info(f"Obstacle: {min_far_dist}, {min_near_dist}, distance: {self._front_dist}, moving backward: {X} {M}")
+                            self.steer(X,True)
+                            self.move(M)
+                            self._current_heading = self._sense.gyro['yaw']
+                            heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
+                            self._total_heading_change -= heading_change
+                            self._last_heading = self._current_heading
+                            self.get_logger().info("Heading correction: %s" % heading_change)
                             self._processing = False
                             return
                         else:
                             if self._front_dist > 1.3:
-                                self._speed_msg.data = "F"+str(int((self._front_dist - 1.0) * 40))
-                                self.get_logger().info(f"Distance: {self._front_dist}, moving Forward: {self._speed_msg.data}")
-                                self.speed_publisher_.publish(self._speed_msg)
-                                time.sleep(2)
+                                M = "F"+str(int((self._front_dist - 1.0) * 40))
+                                self.get_logger().info(f"Distance: {self._front_dist}, moving forward: {M}")
+                                self.move(M)
                                 self._processing = False
                                 return
 
@@ -348,18 +349,6 @@ class fullDriveNode(Node):
                         sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
                         self._clockwise = (sum_first_half <= sum_second_half)
                         self.get_logger().info('lidar_callback: clockwise "%s" ' % self._clockwise)
-
-                        if self._backward:
-                            X = -1.0 if self._clockwise else 1.0
-                            self.steer(X,True)
-                            self.move("F3")
-                            self.move("F3")
-
-                            self._current_heading = self._sense.gyro['yaw']
-                            heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
-                            self._total_heading_change -= heading_change
-                            self._last_heading = self._current_heading
-                            self.get_logger().info("Heading change: %s" % heading_change)
 
                         self._speed_msg.data = "RESET"
                         self.speed_publisher_.publish(self._speed_msg)
