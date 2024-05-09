@@ -274,7 +274,7 @@ class fullDriveNode(Node):
             self._front_dist = max(section_means[6:15])
             min_far_dist = min(section_means[8:13])
             min_near_dist = min(section_means[6:15])
-            self.get_logger().info(f"Distances: {section_means}")
+            #self.get_logger().info(f"Distances: {section_means}")
 
             ########################
             # RACE
