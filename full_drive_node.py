@@ -286,9 +286,9 @@ class fullDriveNode(Node):
                     self._gyro_cnt = 0
                     self._current_heading = self._sense.gyro['yaw']
                     heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
-                    self.get_logger().info("Heading change: %s" % heading_change)
                     self._total_heading_change += heading_change
                     self._last_heading = self._current_heading
+                    self.get_logger().info(f"Heading change: {heading_change}, total heading change: {self._total_heading_change}")
 
                     if abs(self._total_heading_change) >= 340 and self._front_dist > 1.5:
                         self._rounds += 1
