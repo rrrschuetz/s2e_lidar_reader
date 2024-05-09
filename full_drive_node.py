@@ -264,14 +264,19 @@ class fullDriveNode(Node):
         else:
             self._processing = True
 
+            scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
+            scan[scan == np.inf] = np.nan
+            scan[scan > self.scan_max_dist] = np.nan
+
+            num_sections = 162
+            section_data = np.array_split(scan, num_sections)
+            section_means = [np.mean(section) for section in section_data]
+            self._front_dist = max(section_means[60:101])
+
             ########################
             # RACE
             ########################
             if self._state == 'RACE' and self._tf_control:
-
-                scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
-                scan[scan == np.inf] = np.nan
-                scan[scan > self.scan_max_dist] = np.nan
 
                 # Round completion check
                 self._gyro_cnt += 1
@@ -282,11 +287,6 @@ class fullDriveNode(Node):
                     #self.get_logger().info("Heading change: %s" % heading_change)
                     self._total_heading_change += heading_change
                     self._last_heading = self._current_heading
-
-                    num_sections = 162
-                    section_data = np.array_split(scan, num_sections)
-                    section_means = [np.mean(section) for section in section_data]
-                    self._front_dist = max(section_means[60:101])
 
                     if abs(self._total_heading_change) >= 340 and self._front_dist > 1.5:
                         self._rounds += 1
@@ -320,10 +320,6 @@ class fullDriveNode(Node):
                     if not self._obstacle_chk:
                         self._obstacle_chk = True
 
-                        num_sections = 162
-                        section_data = np.array_split(scan, num_sections)
-                        section_means = [np.mean(section) for section in section_data]
-                        #self.get_logger().info('Distances "%s" ' % section_means)
                         min_far_dist = min(section_means[60:101])
                         min_near_dist = min(section_means[40:121])
                         self._front_dist = max(section_means[76:86])
@@ -411,14 +407,6 @@ class fullDriveNode(Node):
             ########################
             elif self._state == 'PARK':
 
-                scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
-                scan[scan == np.inf] = np.nan
-                scan[scan > self.scan_max_dist] = np.nan
-
-                num_sections = 162
-                section_data = np.array_split(scan, num_sections)
-                section_means = [np.mean(section) for section in section_data]
-                self._front_dist = max(section_means[70:91])
                 self._current_heading = self._sense.gyro['yaw']
                 heading_change = abs(self.calculate_heading_change(self._last_heading, self._current_heading))
 
