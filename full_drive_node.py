@@ -268,11 +268,6 @@ class fullDriveNode(Node):
             scan[scan == np.inf] = np.nan
             scan[scan > self.scan_max_dist] = np.nan
 
-            num_sections = 162
-            section_data = np.array_split(scan, num_sections)
-            section_means = [np.mean(section) for section in section_data]
-            self._front_dist = max(section_means[60:101])
-
             ########################
             # RACE
             ########################
@@ -287,6 +282,11 @@ class fullDriveNode(Node):
                     #self.get_logger().info("Heading change: %s" % heading_change)
                     self._total_heading_change += heading_change
                     self._last_heading = self._current_heading
+
+                    num_sections = 162
+                    section_data = np.array_split(scan, num_sections)
+                    section_means = [np.mean(section) for section in section_data]
+                    self._front_dist = max(section_means[60:101])
 
                     if abs(self._total_heading_change) >= 340 and self._front_dist > 1.5:
                         self._rounds += 1
@@ -406,6 +406,11 @@ class fullDriveNode(Node):
             # PARK
             ########################
             elif self._state == 'PARK':
+
+                num_sections = 9
+                section_data = np.array_split(scan, num_sections)
+                section_means = [np.nanmean(section) for section in section_data]
+                self._front_dist = section_means[5]
 
                 self._current_heading = self._sense.gyro['yaw']
                 heading_change = abs(self.calculate_heading_change(self._last_heading, self._current_heading))
