@@ -285,7 +285,7 @@ class fullDriveNode(Node):
 
                     num_sections = 21
                     section_data = np.array_split(scan, num_sections)
-                    section_means = [np.nanmean(section) for section in section_data]
+                    section_means = [np.mean(section) for section in section_data]
                     self._front_dist = max(section_means[6:15])
 
                     if abs(self._total_heading_change) >= 340 and self._front_dist > 1.5:
@@ -322,7 +322,7 @@ class fullDriveNode(Node):
 
                         min_far_dist = min(section_means[8:13])
                         min_near_dist = min(section_means[6:15])
-                        self._front_dist = max(section_means[10])
+                        self._front_dist = section_means[10]
 
                         if not self.initial_race and (min_far_dist < 0.8 or min_near_dist < 0.2):
                             self._backward = True
@@ -363,7 +363,7 @@ class fullDriveNode(Node):
                     scan_interpolated = np.interp(x, x[finite_vals], scan[finite_vals])
                     scan_interpolated = [1/value if value != 0 else 0 for value in scan_interpolated]
                     scan_interpolated = list(scan_interpolated)
-                    color_data = list(self._color1_g) + list(self._color2_g) + list(self._color1_r) + list(self._color2_r) \
+                    color_data = list(self._color1_g) + list(self._color2_g) + list(self._color1_r) + list(self._color2_r)
 
                     lidar_data = np.reshape(scan_interpolated, (1, -1))               # Reshape LIDAR data
                     color_data_standardized = np.reshape(color_data, (1, -1))         # Reshape COLOR data
