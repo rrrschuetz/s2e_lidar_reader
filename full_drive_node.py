@@ -329,6 +329,7 @@ class fullDriveNode(Node):
                             self.steer(X,True)
                             self.move(M)
                             self._current_heading = self._sense.gyro['yaw']
+                            self.get_logger().info(f"Headings: last {self._last_heading}, current {self._current_heading}")
                             heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
                             self._total_heading_change -= heading_change
                             self._last_heading = self._current_heading
