@@ -288,7 +288,7 @@ class fullDriveNode(Node):
                     heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
                     self._total_heading_change += heading_change
                     self._last_heading = self._current_heading
-                    self.get_logger().info(f"Heading change: {heading_change}, total heading change: {self._total_heading_change}")
+                    #self.get_logger().info(f"Heading change: {heading_change}, total heading change: {self._total_heading_change}")
 
                     if abs(self._total_heading_change) >= 340 and self._front_dist > 1.5:
                         self._rounds += 1
@@ -328,7 +328,6 @@ class fullDriveNode(Node):
                             self.move("R15")
                             H = -45 if not self._clockwise else 45
                             self._last_heading += H
-                            self._total_heading_change += H
                             self._processing = False
                             return
                         else:
