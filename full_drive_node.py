@@ -299,7 +299,8 @@ class fullDriveNode(Node):
                     self._last_heading = self._current_heading
                     #self.get_logger().info(f"Heading change: {heading_change}, total heading change: {self._total_heading_change}")
 
-                    if abs(self._cal_left/self._cal_right -1) < 0.01:
+                    calibration = abs(self._cal_left/self._cal_right -1)
+                    if calibration < 0.01:
                         self.get_logger().info(f"Calibration")
                         G = 180 if self._clockwise else -180
                         self._race_heading_change = self._section*G + self._total_heading_change
@@ -322,7 +323,7 @@ class fullDriveNode(Node):
                             self._processing = False
                             return
 
-                    elif self._parking_lot <= 50 and self._section >= 6 and abs(self._race_heading_change) > 1070 and self._front_dist < 1.6:
+                    elif self._parking_lot <= 50 and self._section >= 6 and abs(self._race_heading_change) > 1070 and calibration < 0.2 and self._front_dist < 1.6:
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                         self.get_logger().info(f"Race heading change: {self._race_heading_change}, round heading change: {self._total_heading_change}Distance: {self._front_dist}")
