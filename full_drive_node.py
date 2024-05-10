@@ -97,6 +97,7 @@ class fullDriveNode(Node):
         self.get_logger().info('Steering unit initialized ...')
 
         self._round_start_time = self.get_clock().now()
+        self._button_time = self.get_clock().now()
 
         self.subscription_lidar = self.create_subscription(
             LaserScan,
@@ -458,15 +459,18 @@ class fullDriveNode(Node):
     def touch_button_callback(self, msg):
         ack = String()
         if not self._tf_control:
+            self._button_time = self.get_clock().now()
             ack.data = "Starting ..."
             self.publisher_.publish(ack)
             self.get_logger().info('Start button pressed!')
             self.start_race()
         else:
-            ack.data = "Shutting down ..."
-            self.publisher_.publish(ack)
-            self.get_logger().info('Stop button pressed!')
-            self.stop_race()
+            duration_in_seconds = (self.get_clock().now() - self._button_time).nanoseconds * 1e-9
+            if duration_in seconds > 5:
+                ack.data = "Shutting down ..."
+                self.publisher_.publish(ack)
+                self.get_logger().info('Stop button pressed!')
+                self.stop_race()
 
     def openmv_h7_callback(self, msg):
         try:
