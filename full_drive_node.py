@@ -350,7 +350,7 @@ class fullDriveNode(Node):
                             return
                         else:
                             if self._front_dist > 1.3:
-                                M = "F"+str(int((self._front_dist - 1.0) * 40))
+                                M = "F"+str(int((self._front_dist - 1.3) * 40))
                                 self.get_logger().info(f"Distance: {self._front_dist}, moving forward: {M}")
                                 self.move(M)
                                 self._processing = False
