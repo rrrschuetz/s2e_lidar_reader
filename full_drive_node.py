@@ -277,6 +277,8 @@ class fullDriveNode(Node):
             section_data = np.array_split(scan, num_sections)
             section_means = [np.mean(section) for section in section_data]
             self._front_dist = max(section_means[78:83])
+            self._cal_left = section_means[70]
+            self._cal_right = section_means[91]
             min_far_dist = min(section_means[60:101])
             min_near_dist = min(section_means[40:121])
             #self.get_logger().info(f"Distances: {section_means}")
@@ -296,6 +298,10 @@ class fullDriveNode(Node):
                     self._race_heading_change += heading_change
                     self._last_heading = self._current_heading
                     #self.get_logger().info(f"Heading change: {heading_change}, total heading change: {self._total_heading_change}")
+
+                    if self._cal_left/self._cal_right < 0.01:
+                        self.get_logger().info(f"Calibration")
+                        self._race_heading_change = self._rounds*360 + self._total_heading_change
 
                     if abs(self._total_heading_change) >= 340 and self._front_dist > 1.5:
                         self._rounds += 1
@@ -359,6 +365,7 @@ class fullDriveNode(Node):
                             self.move("F2")
                             self.move("F2")
                             self.move("F2")
+                            self.move("R2")
 
                         self._speed_msg.data = "RESET"
                         self.speed_publisher_.publish(self._speed_msg)
