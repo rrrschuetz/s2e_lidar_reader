@@ -15,7 +15,7 @@ class SpeedControlNode(Node):
     base_rev = -4
     gpio_pin = 22
     relay_pin = 17
-    pid_output_max = 8
+    pid_output_max = 6
     impulse_count_max = 20
 
     def __init__(self):
@@ -151,7 +151,7 @@ class SpeedControlNode(Node):
             #self.publisher_.publish(self._msg)
 
         try:
-            self.get_logger().info(f"'y_pwm {self.y_pwm} pid_output {pid_output}")
+            #self.get_logger().info(f"'y_pwm {self.y_pwm} pid_output {pid_output}")
             self.pwm.set_pwm(1, 0, self.y_pwm)
         except IOError as e:
             self.get_logger().error("IOError I2C occurred: %s" % str(e))
