@@ -214,7 +214,7 @@ class fullDriveNode(Node):
         self._parking_lot = 0
         self._gyro_cnt = 0
         self._corner_cnt = 0
-        self._rounds = 0
+        self._section = 0
 
         self._initial_heading = self._sense.gyro['yaw']
         self._start_heading = self._initial_heading
@@ -301,14 +301,14 @@ class fullDriveNode(Node):
 
                     if abs(self._cal_left/self._cal_right -1) < 0.01:
                         self.get_logger().info(f"Calibration")
-                        self._race_heading_change = self._rounds*360 + self._total_heading_change
+                        self._race_heading_change = self._section*180 + self._total_heading_change
 
-                    if abs(self._total_heading_change) >= 340 and self._front_dist > 1.5:
-                        self._rounds += 1
-                        self.get_logger().info(f"Number off rounds {self._rounds}, race heading change: {self._race_heading_change}, round heading change: {self._total_heading_change}, Distance: {self._front_dist}")
+                    if abs(self._total_heading_change) >= 170 and self._front_dist > 1.5:
+                        self._section += 1
+                        self.get_logger().info(f"Number of sections {self._section}, race heading change: {self._race_heading_change}, round heading change: {self._total_heading_change}, Distance: {self._front_dist}")
                         self._total_heading_change = 0
 
-                    if self._parking_lot > 50 and self._rounds >= 3:
+                    if self._parking_lot > 50 and self._section >= 6:
                         if ((not self._clockwise and sum(self._color2_m) > 4) or (self._clockwise and sum(self._color1_m) > 4)):
 
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
@@ -322,8 +322,7 @@ class fullDriveNode(Node):
                             self._processing = False
                             return
 
-                    #elif self._parking_lot <= 50 and (self._rounds >= 3 or self._race_heading_change > 1050) and self._front_dist < 1.5:
-                    elif self._parking_lot <= 50 and self._rounds >= 3 and abs(self._race_heading_change) > 1050:
+                    elif self._parking_lot <= 50 and self._section >= 6 and abs(self._race_heading_change) > 1070:
 
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
