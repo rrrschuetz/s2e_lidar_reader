@@ -80,6 +80,7 @@ class fullDriveNode(Node):
         self._color2_m = np.zeros(self.HPIX, dtype=int)
 
         self._front_dist = 0
+        self._backward = False
 
         self._speed_msg = String()
         self._speed_msg.data = "0"
@@ -322,12 +323,11 @@ class fullDriveNode(Node):
                     if not self._obstacle_chk:
                         self._obstacle_chk = True
 
+                        self.get_logger().info(f"Obstacle: {min_far_dist}, {min_near_dist}, distance: {self._front_dist}")
                         if not self.initial_race and (min_far_dist < 0.8 or min_near_dist < 0.2):
-                            self.get_logger().info(f"Obstacle: {min_far_dist}, {min_near_dist}, distance: {self._front_dist}")
-                            self.steer(-1.0 if not self._clockwise else 1.0,True)
-                            self.move("R15")
-                            H = -45 if not self._clockwise else 45
-                            self._last_heading += H
+                            self._backward = True
+                            M = "R"+str(int((2.5 - self._front_dist) * 40))
+                            self.move(M)
                             self._processing = False
                             return
                         else:
@@ -344,6 +344,12 @@ class fullDriveNode(Node):
                         sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
                         self._clockwise = (sum_first_half <= sum_second_half)
                         self.get_logger().info('lidar_callback: clockwise "%s" ' % self._clockwise)
+
+                        if self._backward:
+                            self._backward = False
+                            self.steer(-1.0 if self._clockwise else 1.0,True)
+                            self.move("F3")
+                            self.move("F3")
 
                         self._speed_msg.data = "RESET"
                         self.speed_publisher_.publish(self._speed_msg)
