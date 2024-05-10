@@ -73,7 +73,7 @@ data_raw = apply_reciprocal_to_scan(data_raw)
 lidar_cols = data_raw.filter(regex='^SCAN').columns
 noisy_data = data_raw.copy()
 for col in lidar_cols:
-    noisy_data[col] = add_gaussian_noise(data_raw[col], mean=0.0, stddev=0.05)
+    noisy_data[col] = add_gaussian_noise(data_raw[col], mean=0.0, stddev=0.01)
 data_raw = pd.concat([data_raw, noisy_data], axis=0).reset_index(drop=True)
 print("Raw data columns:", data_raw.columns)
 print("Raw data shape:", data_raw.shape)
