@@ -315,7 +315,7 @@ class fullDriveNode(Node):
                             self._processing = False
                             return
 
-                    elif self._parking_lot <= 50 and (self._rounds >= 3 or self._race_heading_change > 1080) and self._front_dist < 1.5:
+                    elif self._parking_lot <= 50 and (self._rounds >= 3 or self._race_heading_change > 1050) and self._front_dist < 1.5:
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                         self.get_logger().info(f"Race heading change: {self._race_heading_change}, round heading change: {self._total_heading_change}Distance: {self._front_dist}")
