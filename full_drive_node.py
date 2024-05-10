@@ -299,7 +299,7 @@ class fullDriveNode(Node):
                     self._last_heading = self._current_heading
                     #self.get_logger().info(f"Heading change: {heading_change}, total heading change: {self._total_heading_change}")
 
-                    if self._cal_left/self._cal_right < 0.01:
+                    if abs(self._cal_left/self._cal_right -1) < 0.01:
                         self.get_logger().info(f"Calibration")
                         self._race_heading_change = self._rounds*360 + self._total_heading_change
 
