@@ -67,7 +67,7 @@ def apply_dropout(data, dropout_rate=0.1):
     return data_with_dropout
 
 # 1. Preprocess data
-data_raw = pd.read_csv(file_path)
+data_raw = pd.read_csv("~/test/file.txt")
 make_column_names_unique(data_raw)
 data_raw = apply_reciprocal_to_scan(data_raw)
 lidar_cols = data_raw.filter(regex='^SCAN').columns
