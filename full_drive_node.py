@@ -530,7 +530,7 @@ class fullDriveNode(Node):
         self.steer(0.0,True)
         self.move("R15")
         self.reset()
-        self._tf_control = False
+        self._tf_control = True
         return
 
 def main(args=None):
