@@ -46,6 +46,7 @@ class fullDriveNode(Node):
     relay_pin = 17
     WEIGHT = 1
     FWD_SPEED = "5"
+    FWD_SPEEDU = "5"
     REV_SPEED = "-5"
 
     def __init__(self):
@@ -154,6 +155,7 @@ class fullDriveNode(Node):
             self.SCALER_PATH_CC = self.INITIAL_SCALER_PATH_CC
             self.SCALER_PATH_CW = self.INITIAL_SCALER_PATH_CW
             self.FWD_SPEED = "12"
+            self.FWD_SPEEDU = "10"
         else:
             self.get_logger().info('Obstacle race mode activated ...')
             self.RACE_PATH_CC = self.OBSTACLE_RACE_PATH_CC
@@ -161,6 +163,7 @@ class fullDriveNode(Node):
             self.SCALER_PATH_CC = self.OBSTACLE_SCALER_PATH_CC
             self.SCALER_PATH_CW = self.OBSTACLE_SCALER_PATH_CW
             self.FWD_SPEED = "5"
+            self.FWD_SPEEDU = "5"
 
         # Load the trained racing model and the scaler counterclockwise and clockwise
         with open(self.SCALER_PATH_CC, 'rb') as f:
@@ -354,7 +357,7 @@ class fullDriveNode(Node):
                         self._speed_msg.data = "RESET"
                         self.speed_publisher_.publish(self._speed_msg)
                         # lower speed for clockwise race, speed measurement at inner wheel !
-                        self._speed_msg.data = self.FWD_SPEED if not self._clockwise else self.FWD_SPEED-2
+                        self._speed_msg.data = self.FWD_SPEED if not self._clockwise else self.FWD_SPEEDU
                         self.speed_publisher_.publish(self._speed_msg)
 
                     x = np.arange(len(scan))
