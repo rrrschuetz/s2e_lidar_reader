@@ -146,6 +146,8 @@ class SpeedControlNode(Node):
         if abs(pid_output) > self.pid_output_max:
             self.get_logger().error("Track blocked: %s" % pid_output)
             self.y_pwm = self.neutral_pulse
+            self.impulse_history.clear()
+            self.reset_pid()
             self._msg.data = "COLLISION"
             self.publisher_.publish(self._msg)
 
