@@ -304,7 +304,7 @@ class fullDriveNode(Node):
                         G = 180 if self._clockwise else -180
                         self._race_heading_change = self._section*G + self._total_heading_change
 
-                    if abs(self._total_heading_change) >= 170 and self._front_dist > 1.5:
+                    if abs(self._total_heading_change) >= 160:
                         self._section += 1
                         self.get_logger().info(f"Number of sections {self._section}, race heading change: {self._race_heading_change}, round heading change: {self._total_heading_change}, Distance: {self._front_dist}")
                         self._total_heading_change = 0
