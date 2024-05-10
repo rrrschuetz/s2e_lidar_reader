@@ -298,7 +298,7 @@ class fullDriveNode(Node):
 
                     if abs(self._total_heading_change) >= 340 and self._front_dist > 1.5:
                         self._rounds += 1
-                        self.get_logger().info(f"Number off rounds {self._rounds} heading {self._total_heading_change}")
+                        self.get_logger().info(f"Number off rounds {self._rounds}, race heading change: {self._race_heading_change}, round heading change: {self._total_heading_change}, Distance: {self._front_dist}")
                         self._total_heading_change = 0
 
                     if self._parking_lot > 50 and self._rounds >= 3:
