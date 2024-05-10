@@ -15,6 +15,7 @@ class SpeedControlNode(Node):
     base_rev = -4
     gpio_pin = 22
     relay_pin = 17
+    pid_output_max = 8
     impulse_count_max = 20
 
     def __init__(self):
@@ -42,7 +43,6 @@ class SpeedControlNode(Node):
         self.reverse_p = False
         self.impulse_count = 0
         self.impulse_count_p = 0
-        self.pid_output_max = 10
         self.rolling_avg_size = 100  # Number of measurements for the rolling average
         self.impulse_history = collections.deque(maxlen=self.rolling_avg_size)
         self.reset_pid()
