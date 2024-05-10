@@ -143,12 +143,12 @@ class SpeedControlNode(Node):
             
         self.impulse_history.clear()  # Clear history after each measurement
 
-        if abs(pid_output) > self.pid_output_max and self.impulse_count_p > 0 and self.impulse_count == 0:
+        if abs(pid_output) > self.pid_output_max:
             self.get_logger().error("Track blocked: %s" % pid_output)
-            self.reset_pid()
-            self.y_pwm = self.neutral_pulse
-            self._msg.data = "COLLISION"
-            self.publisher_.publish(self._msg)
+            #self.reset_pid()
+            #self.y_pwm = self.neutral_pulse
+            #self._msg.data = "COLLISION"
+            #self.publisher_.publish(self._msg)
 
         try:
             #self.get_logger().info('y_pwm %s ' % y_pwm)
