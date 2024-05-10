@@ -353,7 +353,8 @@ class fullDriveNode(Node):
 
                         self._speed_msg.data = "RESET"
                         self.speed_publisher_.publish(self._speed_msg)
-                        self._speed_msg.data = self.FWD_SPEED
+                        # lower speed for clockwise race, speed measurement at inner wheel !
+                        self._speed_msg.data = self.FWD_SPEED if not self._clockwise else self.FWD_SPEED-2
                         self.speed_publisher_.publish(self._speed_msg)
 
                     x = np.arange(len(scan))
