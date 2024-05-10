@@ -197,6 +197,13 @@ class fullDriveNode(Node):
         GPIO.output(self.relay_pin, GPIO.LOW)
         GPIO.cleanup()
 
+    def reset(self):
+        self._speed_msg.data = "RESET"
+        self.speed_publisher_.publish(self._speed_msg)
+        # lower speed for clockwise race, speed measurement at inner wheel !
+        self._speed_msg.data = self.FWD_SPEED if not self._clockwise else self.FWD_SPEEDU
+        self.speed_publisher_.publish(self._speed_msg)
+
     def steer(self,X,sleep):
         XX = int(self.servo_neutral+X*self.servo_ctl_fwd)
         self._pwm.set_pwm(0, 0, XX)
@@ -212,7 +219,6 @@ class fullDriveNode(Node):
         self._tf_control = True
         self._parking_lot = 0
         self._gyro_cnt = 0
-        self._corner_cnt = 0
         self._section = 0
 
         self._initial_heading = self._sense.gyro['yaw']
@@ -365,11 +371,7 @@ class fullDriveNode(Node):
                             self.move("F2")
                             self.move("R2")
 
-                        self._speed_msg.data = "RESET"
-                        self.speed_publisher_.publish(self._speed_msg)
-                        # lower speed for clockwise race, speed measurement at inner wheel !
-                        self._speed_msg.data = self.FWD_SPEED if not self._clockwise else self.FWD_SPEEDU
-                        self.speed_publisher_.publish(self._speed_msg)
+                        self.reset()
 
                     x = np.arange(len(scan))
                     finite_vals = np.isfinite(scan)
@@ -525,6 +527,7 @@ class fullDriveNode(Node):
         self.get_logger().info('Collision msg received')
         self.steer(0.0,True)
         self.move("R15")
+        self.reset()
         return
 
 def main(args=None):
