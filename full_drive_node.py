@@ -67,7 +67,6 @@ class fullDriveNode(Node):
         self._clockwise_def = False
         self._obstacle_chk = False
         self._parking_lot = 0
-        self._collision = False
         self._gyro_cnt = 0
 
         self._X = 0.0 
@@ -524,9 +523,9 @@ class fullDriveNode(Node):
 
     def collision_callback(self, msg):
         self.get_logger().info('Collision msg received')
-        self._collision = True
+        self.steer(0.0,True)
+        self.move("R15")
         return
-
 
 def main(args=None):
     rclpy.init(args=args)
