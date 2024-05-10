@@ -466,7 +466,7 @@ class fullDriveNode(Node):
             self.start_race()
         else:
             duration_in_seconds = (self.get_clock().now() - self._button_time).nanoseconds * 1e-9
-            if duration_in seconds > 5:
+            if duration_in_seconds > 5:
                 ack.data = "Shutting down ..."
                 self.publisher_.publish(ack)
                 self.get_logger().info('Stop button pressed!')
