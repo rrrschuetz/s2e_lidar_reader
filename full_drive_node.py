@@ -525,9 +525,12 @@ class fullDriveNode(Node):
 
     def collision_callback(self, msg):
         self.get_logger().info('Collision msg received')
+        self._processing = False
+        self._tf_control = False
         self.steer(0.0,True)
         self.move("R15")
         self.reset()
+        self._tf_control = False
         return
 
 def main(args=None):
