@@ -34,10 +34,47 @@ def apply_reciprocal_to_scan(df):
         df[col] = df[col].apply(lambda x: 1/x if x != 0 else 0)
     return df
 
+def add_gaussian_noise(data, mean=0.0, stddev=1.0):
+    """
+    Adds Gaussian noise to the data.
+
+    Parameters:
+        data (numpy.array): The original data.
+        mean (float): Mean of the Gaussian noise.
+        stddev (float): Standard deviation of the Gaussian noise.
+
+    Returns:
+        numpy.array: The data with added Gaussian noise.
+    """
+    noise = np.random.normal(mean, stddev, size=data.shape)
+    noisy_data = data + noise
+    return noisy_data
+
+def apply_dropout(data, dropout_rate=0.1):
+    """
+    Applies dropout to the data by setting a fraction of the data points to zero.
+
+    Parameters:
+        data (numpy.array): The original data.
+        dropout_rate (float): Probability of setting each data point to zero.
+
+    Returns:
+        numpy.array: Data with dropout applied.
+    """
+    # Create a mask where some elements are set to zero
+    mask = np.random.binomial(1, 1 - dropout_rate, size=data.shape)
+    data_with_dropout = data * mask
+    return data_with_dropout
+
 # 1. Preprocess data
-data_raw = pd.read_csv('~/test/file.txt')
+data_raw = pd.read_csv(file_path)
 make_column_names_unique(data_raw)
 data_raw = apply_reciprocal_to_scan(data_raw)
+lidar_cols = data_raw.filter(regex='^SCAN').columns
+noisy_data = data_raw.copy()
+for col in lidar_cols:
+    noisy_data[col] = add_gaussian_noise(data_raw[col], mean=0.0, stddev=0.05)
+data_raw = pd.concat([data_raw, noisy_data], axis=0).reset_index(drop=True)
 print("Raw data columns:", data_raw.columns)
 print("Raw data shape:", data_raw.shape)
 
