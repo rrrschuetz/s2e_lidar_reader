@@ -219,6 +219,7 @@ class fullDriveNode(Node):
         self._start_heading = self._initial_heading
         self._last_heading = self._initial_heading
         self._total_heading_change = 0
+        self._race_heading_change = 0
         self.get_logger().info(f"Initial heading: {self._initial_heading} degrees")
         self._round_start_time = self.get_clock().now()
 
@@ -291,6 +292,7 @@ class fullDriveNode(Node):
                     self._current_heading = self._sense.gyro['yaw']
                     heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
                     self._total_heading_change += heading_change
+                    self._race_heading_change += heading_change
                     self._last_heading = self._current_heading
                     #self.get_logger().info(f"Heading change: {heading_change}, total heading change: {self._total_heading_change}")
 
@@ -313,10 +315,10 @@ class fullDriveNode(Node):
                             self._processing = False
                             return
 
-                    elif self._parking_lot <= 50 and self._rounds >= 3 and self._front_dist < 1.5:
+                    elif self._parking_lot <= 50 and (self._rounds >= 3 or self._race_heading_change > 1080) and self._front_dist < 1.5:
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
-                        self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
+                        self.get_logger().info(f"Race heading change: {self._race_heading_change}, round heading change: {self._total_heading_change}Distance: {self._front_dist}")
                         self.get_logger().info(f"Parking lot detections {self._parking_lot}")
                         self.stop_race()
                         self._processing = False
