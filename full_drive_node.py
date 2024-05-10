@@ -306,7 +306,7 @@ class fullDriveNode(Node):
 
                     calibration = abs(self._cal_left/self._cal_right -1)
                     if calibration < 0.01:
-                        self.get_logger().info(f"Calibration")
+                        #self.get_logger().info(f"Calibration")
                         G = 180 if self._clockwise else -180
                         self._race_heading_change = self._section*G + self._total_heading_change
 
