@@ -20,9 +20,9 @@ class openmvH7Node(Node):
 
         with open("/home/rrrschuetz/ros2_ws4/src/s2e_lidar_reader/s2e_lidar_reader/h7_cam_exec.py", 'rb') as file:
             script_data = file.read()
-            self.serial_port.write("{db_gain}\n".encode('utf-8'))
-            self.serial_port.write("{gamma_corr}\n".encode('utf-8'))
-            self.serial_port.write(script_data)
+            header_data = f"{db_gain}\n{gamma_corr}\n".encode('utf-8')
+            self.serial_port.write(header_data + script_data)
+            self.get_logger().info('OpenMV H7 1 script sent' )
             self.get_logger().info('OpenMV H7 2 script sent' )
         #time.sleep(10)
         self.serial_port.reset_input_buffer()
