@@ -37,7 +37,7 @@ class DisplayNode(Node):
 
         self.get_logger().info(f"Display dimensions: {self.width} x {self.height}")
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)  # Clear the display area
-        self.draw.rectangle(10, 0, 20, self.height, outline=255, fill=255)
+        self.draw.rectangle((10, 0, 20, self.height), outline=255, fill=255)
 
     def logger_callback(self, msg):
         self.get_logger().info(f'Display message received: {msg.data}')
@@ -46,7 +46,7 @@ class DisplayNode(Node):
         if data[0] == '*':
             data = msg.data.split(',')
             color = 255 if data[3]=='G' else 525
-            self.draw.rectangle(int(int(data[1])*self.width/320), 0, int(int(data[2])*self.width/320), self.height, outline=color, fill=color)
+            self.draw.rectangle((int(int(data[1])*self.width/320), 0, int(int(data[2])*self.width/320) self.height), outline=color, fill=color)
         else:
             self.lines.append(f'{msg.data}')
             if len(self.lines) > self.max_lines:
