@@ -2,6 +2,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 import serial, time
+import configparser
 
 class openmvH7Node(Node):
     def __init__(self):
@@ -10,6 +11,12 @@ class openmvH7Node(Node):
         self.publisher_log_ = self.create_publisher(String, 'main_logger', 10)
         self.serial_port = serial.Serial('/dev/ttyACM0', 115200, timeout=5)  # 115200
         self.get_logger().info('OpenMV H7 2 connected' )
+
+        config = configparser.ConfigParser()
+        config.read('/home/rrrschuetz/ros2_ws4/config.ini')
+        db_gain = config['Camera']['db_gain'])
+        self.get_logger().info(f"Settings: db_gain {db_gain}, gamma_corr {gamma_corr}")
+
         with open("/home/rrrschuetz/ros2_ws4/src/s2e_lidar_reader/s2e_lidar_reader/h7_cam_exec.py", 'rb') as file:
             script_data = file.read()
             self.serial_port.write(script_data)
