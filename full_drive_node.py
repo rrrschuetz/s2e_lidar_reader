@@ -537,7 +537,7 @@ class fullDriveNode(Node):
                     if cam == 2: self._color2_m[ix1:ix2] = self.WEIGHT
                     self._parking_lot += 1
 
-                #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
+                self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
 
         except:
             self.get_logger().error('Faulty cam msg received: "%s"' % msg)
