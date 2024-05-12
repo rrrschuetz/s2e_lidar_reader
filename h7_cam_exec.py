@@ -1,6 +1,8 @@
 import sensor, image, time, math, pyb, os
 import machine
 
+global db_gain, gamma_corr
+
 # Get the unique machine ID
 unique_id = machine.unique_id()
 unique_id_hex = ''.join(['{:02x}'.format(byte) for byte in unique_id])
@@ -18,7 +20,7 @@ sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
 
-sensor.set_auto_gain(False, gain_db = 20) # must be turned off for color tracking
+sensor.set_auto_gain(False, gain_db = db_gain) # must be turned off for color tracking
 sensor.set_auto_whitebal(False, (1.5,1.5,1.0)) # must be turned off for color tracking
 sensor.set_saturation(3)
 sensor.skip_frames(time = 2000)
@@ -42,7 +44,7 @@ while True:
         #time.sleep(0.05)
         img = sensor.snapshot()
         img.lens_corr(strength=2.6, zoom=1.0)
-        img.gamma_corr(gamma = 1.2)
+        img.gamma_corr(gamma = gamma_corr)
         #img.laplacian(2, sharpen=True)
 
         blob_entries = []
