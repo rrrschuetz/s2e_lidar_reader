@@ -38,7 +38,7 @@ def receive_script(filename):
             elif not gamma_corr_set:
                 char = usb.recv(1).decode()
                 if char == '\n':
-                    params["gamma_corr"] = float(gamma_line)
+                    params["gamma_corr"] = gamma_line.strip()
                     gamma_corr_set = True
                 else:
                     gamma_line += char
