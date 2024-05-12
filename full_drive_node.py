@@ -513,25 +513,25 @@ class fullDriveNode(Node):
                 color = int(color)
                 ix1 = int(x1)
                 ix2 = int(x2)
-                msg = String()
+                ack = String()
                 if color == 1:
                     if cam == 1 and not self._clockwise:
                         self._color1_g[ix1:ix2] = self.WEIGHT
-                        msg = '*,'+x1+','+x2+',G'
-                        self.publisher_.publish(msg)
+                        ack.data = '*,'+x1+','+x2+',G'
+                        self.publisher_.publish(ack)
                     if cam == 2 and self._clockwise:
                         self._color2_g[ix1:ix2] = self.WEIGHT
-                        msg = '*,'+x1+','+x2+',G'
-                        self.publisher_.publish(msg)
+                        ack.data = '*,'+x1+','+x2+',G'
+                        self.publisher_.publish(ack)
                 if color == 2:
                     if cam == 1 and not self._clockwise:
                         self._color1_r[ix1:ix2] = self.WEIGHT
-                        msg = '*,'+x1+','+x2+',R'
-                        self.publisher_.publish(msg)
+                        ack.data = '*,'+x1+','+x2+',R'
+                        self.publisher_.publish(ack)
                     if cam == 2 and self._clockwise:
                         self._color2_r[ix1:i^x2] = self.WEIGHT
-                        msg = '*,'+x1+','+x2+',R'
-                        self.publisher_.publish(msg)
+                        ack.data = '*,'+x1+','+x2+',R'
+                        self.publisher_.publish(ack)
                 if color == 4:
                     if cam == 1: self._color1_m[ix1:ix2] = self.WEIGHT
                     if cam == 2: self._color2_m[ix1:ix2] = self.WEIGHT
