@@ -37,11 +37,10 @@ class DisplayNode(Node):
 
         self.get_logger().info(f"Display dimensions: {self.width} x {self.height}")
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)  # Clear the display area
-        self.draw.rectangle((10, 0, 20, self.height), outline=255, fill=255)
 
     def logger_callback(self, msg):
         self.get_logger().info(f'Display message received: {msg.data}')
-        #self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)  # Clear the display area
+        self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)  # Clear the display area
         data = msg.data.split(',')
         if data[0] == '*':
             data = msg.data.split(',')
