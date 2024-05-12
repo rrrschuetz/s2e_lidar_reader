@@ -82,6 +82,18 @@ class fullDriveNode(Node):
         self._front_dist = 0
         self._backward = False
 
+        config = configparser.ConfigParser()
+        config.read('/home/rrrschuetz/ros2_ws4/config.ini')
+        # Accessing the data from the configuration file
+        FWD_SPEED_initial = config['Speed']['forward_initial_counterclockwise']
+        FWD_SPEEDU_initial = config['Speed']['forward_initial_clockwise']
+        FWD_SPEED_obstacle = config['Speed']['forward_obstacle_counterclockwise']
+        FWD_SPEEDU_obstacle = config['Speed']['forward_obstacle_clockwise']
+        self.REV_SPEED = config['Speed']['reverse_all']
+        self.get_logger().info(f"Speed settings initial race: {FWD_SPEEDU_initial}/{FWD_SPEEDU_initial}")
+        self.get_logger().info(f"Speed settings obstacle race: {FWD_SPEED_obstacle}/{FWD_SPEEDU_obstacle}")
+        self.get_logger().info(f"Reverse speed: {self.REV_SPEED}")
+
         self._speed_msg = String()
         self._speed_msg.data = "0"
 
@@ -154,16 +166,16 @@ class fullDriveNode(Node):
             self.RACE_PATH_CW = self.INITIAL_RACE_PATH_CW
             self.SCALER_PATH_CC = self.INITIAL_SCALER_PATH_CC
             self.SCALER_PATH_CW = self.INITIAL_SCALER_PATH_CW
-            self.FWD_SPEED = "7"
-            self.FWD_SPEEDU = "7"
+            self.FWD_SPEED = FWD_SPEED_initial
+            self.FWD_SPEEDU = FWD_SPEEDU_initial
         else:
             self.get_logger().info('Obstacle race mode activated ...')
             self.RACE_PATH_CC = self.OBSTACLE_RACE_PATH_CC
             self.RACE_PATH_CW = self.OBSTACLE_RACE_PATH_CW
             self.SCALER_PATH_CC = self.OBSTACLE_SCALER_PATH_CC
             self.SCALER_PATH_CW = self.OBSTACLE_SCALER_PATH_CW
-            self.FWD_SPEED = "5"
-            self.FWD_SPEEDU = "5"
+            self.FWD_SPEED = FWD_SPEED_obstacle
+            self.FWD_SPEEDU = FWD_SPEEDU_obstacle
 
         # Load the trained racing model and the scaler counterclockwise and clockwise
         with open(self.SCALER_PATH_CC, 'rb') as f:
