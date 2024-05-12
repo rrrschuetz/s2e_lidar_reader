@@ -42,6 +42,7 @@ class USBReceiver:
 if __name__ == '__main__':
     usb = pyb.USB_VCP()
     receiver = USBReceiver(usb)
-    params = receiver.receive_script('/h7_cam_exec.py')
+    new_script_filename = '/h7_cam_exec.py'
+    params = receiver.receive_script(new_script_filename)
     globals().update(params)
     exec(open(new_script_filename).read(), globals())
