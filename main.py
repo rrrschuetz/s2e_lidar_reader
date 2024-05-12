@@ -41,7 +41,7 @@ def receive_script(filename):
                     params["gamma_corr"] = float(gamma_line)
                     gamma_corr_set = True
                 else:
-                    ganna_line += char
+                    gamma_line += char
             else:
                 data = usb.recv(4096)  # Receive 64 bytes at a time
                 file.write(data)
