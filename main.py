@@ -1,68 +1,56 @@
-import pyb, time
-import os
+import time, pyb
 
-usb = pyb.USB_VCP()
-red_led = pyb.LED(1)
-green_led = pyb.LED(2)
-blue_led = pyb.LED(3)
+class USBReceiver:
+    def __init__(self, usb):
+        self.usb = usb
+        self.red_led = None
+        self.green_led = None
+        self.blue_led = None
 
-red_led.off()
-green_led.on()
-blue_led.off()
+    def wait_for_connection(self):
+        while not self.usb.isconnected():
+            time.sleep(0.1)
 
-def receive_script(filename):
-    while not usb.isconnected():
-        pass
+    def read_line(self):
+        line = ''
+        while True:
+            char = self.usb.recv(1).decode(errors='ignore')
+            if char == '\n':
+                break
+            line += char
+        return line.strip()
 
-    red_led.off()
-    green_led.off()
-    blue_led.on()
+    def receive_script(self, filename):
+        self.wait_for_connection()
+        self.red_led.off()
+        self.green_led.off()
+        self.blue_led.on()
 
-    while not usb.any():
-        pass  # Wait for data
+        params = {}
+        with open(filename, 'wb') as file:
+            params['db_gain'] = self.read_line()
+            params['gamma_corr'] = self.read_line()
+            length = int(self.read_line())
 
-    params = {}
-    with open(filename, 'wb') as file:
-        db_gain_set =  False
-        gamma_corr_set = False
-        db_gain_line = ""
-        gamma_line = ""
-        len_line = ""
-        while usb.any():
-            if not db_gain_set:
-                char = usb.recv(1).decode()
-                if char == '\n':
-                    params["db_gain"] = db_gain_line.strip()
-                    db_gain_set = True
+            count = 0
+            while count < length:
+                data_needed = length - count
+                data = self.usb.recv(min(64, data_needed))
+                if data:
+                    file.write(data)
+                    count += len(data)
                 else:
-                    db_gain_line += char
-            elif not gamma_corr_set:
-                char = usb.recv(1).decode()
-                if char == '\n':
-                    params["gamma_corr"] = gamma_line.strip()
-                    gamma_corr_set = True
-                else:
-                    gamma_line += char
-            else:
-                char = usb.recv(1).decode()
-                if char == '\n':
-                    length = int(len_line)
-                    count = 0
-                    while count < length:
-                        data = usb.recv(64)  # Receive 64 bytes at a time
-                        file.write(data)
-                        count += len(data)
-                else:
-                    len_line += char
-    return params
+                    time.sleep(0.1)  # Pause briefly to wait for more data
 
-# Name of the new script file
-new_script_filename = "/h7_cam_exec.py"
+        return params
 
-# Receive and save the new script
-parameters = receive_script(new_script_filename)
-time.sleep(10)
-
-# Execute the new script
-globals().update(parameters)
-exec(open(new_script_filename).read(), globals())
+# Example of using the USBReceiver
+if __name__ == '__main__':
+    usb = pyb.USB_VCP()
+    receiver = USBReceiver(usb)
+    #receiver.red_led = pyb.LED(1)  # Example of setting up LEDs
+    #receiver.green_led = pyb.LED(2)
+    receiver.blue_led = pyb.LED(3)
+    params = receiver.receive_script(/h7_cam_exec.py)
+    globals().update(params)
+    exec(open(new_script_filename).read(), globals())
