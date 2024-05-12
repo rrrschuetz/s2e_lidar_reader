@@ -528,7 +528,7 @@ class fullDriveNode(Node):
                         self._color1_r[ix1:ix2] = self.WEIGHT
                         msg = '*,'+x1+','+x2+',R'
                         self.publisher_.publish(msg)
-                   if cam == 2 and self._clockwise:
+                    if cam == 2 and self._clockwise:
                         self._color2_r[ix1:i^x2] = self.WEIGHT
                         msg = '*,'+x1+','+x2+',R'
                         self.publisher_.publish(msg)
