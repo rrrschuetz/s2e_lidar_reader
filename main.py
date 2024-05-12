@@ -52,7 +52,7 @@ new_script_filename = "/h7_cam_exec.py"
 
 # Receive and save the new script
 parameters = receive_script(new_script_filename)
-#time.sleep(10)
+time.sleep(10)
 
 # Execute the new script
 globals().update(parameters)
