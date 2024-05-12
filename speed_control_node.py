@@ -53,7 +53,7 @@ class SpeedControlNode(Node):
 
         config = configparser.ConfigParser()
         config.read('/home/rrrschuetz/ros2_ws4/config.ini')
-        self.pid_output_max = config(['Speed']['pid_output_max'])
+        self.pid_output_max = int(config['Speed']['pid_output_max'])
         self.get_logger().info(f"PID max setting: {self.pid_output_max}")
 
     def __del__(self):
