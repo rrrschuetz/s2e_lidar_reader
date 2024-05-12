@@ -35,6 +35,10 @@ class DisplayNode(Node):
         self.lines.append('**************')
         self.max_lines = self.height // 15  # Assuming 15 pixels per line of text
 
+        self.get_logger().info(f"Display dimensions: {self.width} x {self.height}")
+        self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)  # Clear the display area
+        self.draw.rectangle(10, 0, 20, self.height), outline=color, fill=color)
+
     def logger_callback(self, msg):
         self.get_logger().info(f'Display message received: {msg.data}')
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)  # Clear the display area
