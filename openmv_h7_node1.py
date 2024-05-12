@@ -23,7 +23,7 @@ class openmvH7Node(Node):
             header_data = f"{db_gain}\n{gamma_corr}\n".encode('utf-8')
             self.serial_port.write(header_data + script_data)
             self.get_logger().info('OpenMV H7 1 script sent' )
-        #time.sleep(10)
+        time.sleep(10)
         self.serial_port.reset_input_buffer()
         self.serial_port.reset_output_buffer()
         self.timer = self.create_timer(0.02, self.timer_callback)  # Adjust the timer callback rate as needed
