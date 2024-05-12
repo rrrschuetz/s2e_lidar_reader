@@ -5,7 +5,7 @@ import machine, datetime
 #gamma_corr = "1.2"
 
 try:
-    with open("/h7_cam_exec.log", 'w') as file:
+    with open('/h7_cam_exec.log', 'w') as file:
         file.write(f"db_gain {db_gain}, gamma_corr {gamma_corr} \n")
 except:
     pass
