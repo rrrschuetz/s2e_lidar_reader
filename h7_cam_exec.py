@@ -17,10 +17,10 @@ blue_led.off()
 sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
-sensor.set_auto_gain(True) # must be turned off for color tracking
-sensor.set_auto_whitebal(True) # must be turned off for color tracking
-#sensor.set_auto_gain(False) # must be turned off for color tracking
-#sensor.set_auto_whitebal(False) # must be turned off for color tracking
+
+sensor.set_auto_gain(False, gain_db = 20) # must be turned off for color tracking
+sensor.set_auto_whitebal(False, (1.5,1.5,1.0)) # must be turned off for color tracking
+sensor.set_saturation(3)
 sensor.skip_frames(time = 2000)
 
 green =  (30, 100, -64, -8, -32, 32)  # generic green
@@ -42,7 +42,7 @@ while True:
         #time.sleep(0.05)
         img = sensor.snapshot()
         img.lens_corr(strength=2.6, zoom=1.0)
-        img.gamma_corr(gamma = 1.0, contrast = 1.0, brightness = 0.2)
+        img.gamma_corr(gamma = 1.2)
         #img.laplacian(2, sharpen=True)
 
         blob_entries = []
