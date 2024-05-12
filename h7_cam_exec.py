@@ -1,6 +1,9 @@
 import sensor, image, time, math, pyb, os
 import machine
 
+db_gain = "20"
+gamma_corr = "1.2"
+
 # Get the unique machine ID
 unique_id = machine.unique_id()
 unique_id_hex = ''.join(['{:02x}'.format(byte) for byte in unique_id])
