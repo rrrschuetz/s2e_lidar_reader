@@ -14,8 +14,8 @@ class openmvH7Node(Node):
 
         config = configparser.ConfigParser()
         config.read('/home/rrrschuetz/ros2_ws4/config.ini')
-        db_gain = int(config['Camera']['db_gain'])
-        gamma_corr = int(config['Camera']['gamma_corr'])
+        db_gain = float(config['Camera']['db_gain'])
+        gamma_corr = float(config['Camera']['gamma_corr'])
         self.get_logger().info(f"Settings: db_gain {db_gain}, gamma_corr {gamma_corr}")
 
         with open("/home/rrrschuetz/ros2_ws4/src/s2e_lidar_reader/s2e_lidar_reader/h7_cam_exec.py", 'rb') as file:
