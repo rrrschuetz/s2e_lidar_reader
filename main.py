@@ -27,6 +27,7 @@ def receive_script(filename):
         gamma_corr_set = False
         db_gain_line = ""
         gamma_line = ""
+        len_line = ""
         while usb.any():
             if not db_gain_set:
                 char = usb.recv(1).decode()
@@ -43,8 +44,16 @@ def receive_script(filename):
                 else:
                     gamma_line += char
             else:
-                data = usb.recv(4096)  # Receive 64 bytes at a time
-                file.write(data)
+                char = usb.recv(1).decode()
+                if char == '\n':
+                    length = int(len_line)
+                    count = 0
+                    while count < length:
+                        data = usb.recv(64)  # Receive 64 bytes at a time
+                        file.write(data)
+                        count += len(data)
+                else:
+                    len_line += char
     return params
 
 # Name of the new script file

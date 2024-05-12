@@ -20,12 +20,12 @@ class openmvH7Node(Node):
 
         with open("/home/rrrschuetz/ros2_ws4/src/s2e_lidar_reader/s2e_lidar_reader/h7_cam_exec.py", 'rb') as file:
             script_data = file.read()
-            header_data = f"{db_gain}\n{gamma_corr}\n".encode('utf-8')
+            header_data = f"{db_gain}\n{gamma_corr}\n{len(script_data)}\n".encode('utf-8')
             self.serial_port.write(header_data + script_data)
             self.get_logger().info('OpenMV H7 1 script sent' )
-        time.sleep(10)
-        self.serial_port.reset_input_buffer()
-        self.serial_port.reset_output_buffer()
+        #time.sleep(10)
+        #self.serial_port.reset_input_buffer()
+        #self.serial_port.reset_output_buffer()
         self.timer = self.create_timer(0.02, self.timer_callback)  # Adjust the timer callback rate as needed
         self._counter = 0
 
