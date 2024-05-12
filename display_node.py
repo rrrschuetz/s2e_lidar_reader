@@ -36,17 +36,17 @@ class DisplayNode(Node):
         self.max_lines = self.height // 15  # Assuming 15 pixels per line of text
 
     def logger_callback(self, msg):
-        message = f'INFO: {msg.data}'
-        self.lines.append(message)
-        # Remove the oldest line if we exceed max_lines
-        if len(self.lines) > self.max_lines:
-            self.lines.pop(0)
-        self.update_display()
-
-    def update_display(self):
-        self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
-        for i, line in enumerate(self.lines):
-            self.draw.text((0, i*15), line, font=self.font, fill=255)
+        self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)  # Clear the display area
+        if msg.data[0]=='*':
+            data = msg.data.split(',')
+            color = 255 if data[3]=='G' else 525
+            self.draw.rectangle((int(data[1]), 0, int(data[2]), self.height), outline=color, fill=color)
+        else:
+            self.lines.append(f'{msg.data}')
+            if len(self.lines) > self.max_lines:
+                self.lines.pop(0)
+            for i, line in enumerate(self.lines):
+                self.draw.text((0, i*15), line, font=self.font, fill=255)
         self.display.image(self.image)
         self.display.display()
 
