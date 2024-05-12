@@ -529,7 +529,7 @@ class fullDriveNode(Node):
                         ack.data = '*,'+x1+','+x2+',R'
                         self.publisher_.publish(ack)
                     if cam == 2 and self._clockwise:
-                        self._color2_r[ix1:i^x2] = self.WEIGHT
+                        self._color2_r[ix1:ix2] = self.WEIGHT
                         ack.data = '*,'+x1+','+x2+',R'
                         self.publisher_.publish(ack)
                 if color == 4:
