@@ -37,7 +37,8 @@ class DisplayNode(Node):
 
     def logger_callback(self, msg):
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)  # Clear the display area
-        if msg.data[0]=='*':
+        data = msg.data.split(',')
+        if data[0]=='*':
             data = msg.data.split(',')
             color = 255 if data[3]=='G' else 525
             self.draw.rectangle((int(data[1]), 0, int(data[2]), self.height), outline=color, fill=color)
