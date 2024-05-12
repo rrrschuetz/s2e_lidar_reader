@@ -1,14 +1,14 @@
 import sensor, image, time, math, pyb, os
-import machine, datetime
+import machine
 
 #db_gain = "20"
 #gamma_corr = "1.2"
 
-#try:
-#    with open('./h7_cam_exec.log', 'w') as file:
-#        file.write(f"db_gain {db_gain}, gamma_corr {gamma_corr} \n")
-#except:
-#    pass
+try:
+    with open('./h7_cam_exec.log', 'w') as file:
+        file.write(f"db_gain {db_gain}, gamma_corr {gamma_corr} \n")
+except:
+    pass
 
 # Get the unique machine ID
 unique_id = machine.unique_id()
