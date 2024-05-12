@@ -4,7 +4,7 @@ import machine, datetime
 #db_gain = "20"
 #gamma_corr = "1.2"
 
-with open("~/h7_cam_exec.log", 'w') as file:
+with open("/h7_cam_exec.log", 'w') as file:
     file.write(f"db_gain {db_gain}, gamma_corr {gamma_corr} \n")
 
 # Get the unique machine ID
