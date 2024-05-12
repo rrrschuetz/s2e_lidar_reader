@@ -85,14 +85,12 @@ class fullDriveNode(Node):
         config = configparser.ConfigParser()
         config.read('/home/rrrschuetz/ros2_ws4/config.ini')
         # Accessing the data from the configuration file
-        FWD_SPEED_initial = config['Speed']['forward_initial_counterclockwise']
-        FWD_SPEEDU_initial = config['Speed']['forward_initial_clockwise']
-        FWD_SPEED_obstacle = config['Speed']['forward_obstacle_counterclockwise']
-        FWD_SPEEDU_obstacle = config['Speed']['forward_obstacle_clockwise']
-        self.REV_SPEED = config['Speed']['reverse_all']
+        FWD_SPEED_initial = str(config['Speed']['forward_initial_counterclockwise'])
+        FWD_SPEEDU_initial = str(config['Speed']['forward_initial_clockwise'])
+        FWD_SPEED_obstacle = str(config['Speed']['forward_obstacle_counterclockwise'])
+        FWD_SPEEDU_obstacle = str(config['Speed']['forward_obstacle_clockwise'])
         self.get_logger().info(f"Speed settings initial race: {FWD_SPEEDU_initial}/{FWD_SPEEDU_initial}")
         self.get_logger().info(f"Speed settings obstacle race: {FWD_SPEED_obstacle}/{FWD_SPEEDU_obstacle}")
-        self.get_logger().info(f"Reverse speed: {self.REV_SPEED}")
 
         self._speed_msg = String()
         self._speed_msg.data = "0"
@@ -370,8 +368,8 @@ class fullDriveNode(Node):
 
                     elif not self._clockwise_def:
                         self._clockwise_def = True
-                        sum_first_half = np.nansum(scan[:self.num_scan2])
-                        sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
+                        sum_first_half = np.nansum(scan[200:self.num_scan2])
+                        sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan-200])
                         self._clockwise = (sum_first_half <= sum_second_half)
                         self.get_logger().info('lidar_callback: clockwise "%s" ' % self._clockwise)
 
