@@ -44,7 +44,7 @@ class DisplayNode(Node):
         data = msg.data.split(',')
         if data[0] == '*':
             data = msg.data.split(',')
-            color = 255 if data[3]=='G' else 525
+            color = (0,255,0) if data[3]=='G' else (255,0,0)
             self.draw.rectangle((int(int(data[1])*self.width/320), 0, int(int(data[2])*self.width/320), self.height), outline=color, fill=color)
         else:
             self.lines.append(f'{msg.data}')
