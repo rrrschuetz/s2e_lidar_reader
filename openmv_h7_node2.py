@@ -22,7 +22,7 @@ class openmvH7Node(Node):
             script_data = file.read()
             send_data = bytearray()
             send_data.extend(script_data)
-            header_data = f"{db_gain}\n{gamma_corr}\n{len(script_data)}\n{hashlib.sha256(send_data).hexdigest()}\n".encode('utf-8')
+            header_data = f"{db_gain}\n{gamma_corr}\n{hashlib.sha256(send_data).hexdigest()}\n{len(script_data)}\n".encode('utf-8')
             self.serial_port.write(header_data + script_data)
             self.get_logger().info('OpenMV H7 2 script sent' )
         #time.sleep(10)
