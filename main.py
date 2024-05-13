@@ -5,7 +5,7 @@ class USBReceiver:
     def __init__(self, usb):
         self.usb = usb
 
-    def wait_for_connection(self, timeout=60):
+    def wait_for_connection(self, timeout=120):
         start_time = time.time()
         while not self.usb.isconnected():
             time.sleep(0.1)
