@@ -12,7 +12,7 @@ class USBReceiver:
             if time.time() - start_time > timeout:
                 raise Exception("Timeout waiting for USB connection.")
 
-    def read_line(self, timeout=5):
+    def read_line(self, timeout=120):
         line = ''
         start_time = time.time()
         while True:
