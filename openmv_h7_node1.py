@@ -2,7 +2,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 import serial, time
-import hashlib, configparser
+import configparser
 
 class openmvH7Node(Node):
     def __init__(self):
@@ -20,9 +20,7 @@ class openmvH7Node(Node):
 
         with open("/home/rrrschuetz/ros2_ws4/src/s2e_lidar_reader/s2e_lidar_reader/h7_cam_exec.py", 'rb') as file:
             script_data = file.read()
-            send_data = bytearray()
-            send_data.extend(script_data)
-            header_data = f"{db_gain}\n{gamma_corr}\n{hashlib.sha256(send_data).hexdigest()}\n{len(script_data)}\n".encode('utf-8')
+            header_data = f"{db_gain}\n{gamma_corr}\n{len(script_data)}\n".encode('utf-8')
             self.serial_port.write(header_data + script_data)
             self.get_logger().info(f"OpenMV H7 1 script sent: {header_data}" )
         #time.sleep(10)
