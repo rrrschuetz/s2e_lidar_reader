@@ -11,13 +11,13 @@ class USBReceiver:
         self.usb = usb
         logging.info("USBReceiver initialized")
 
-    def wait_for_connection(self, timeout=10):
+    def wait_for_connection(self, timeout=60):
         start_time = time.time()
         while not self.usb.isconnected():
             time.sleep(0.1)
             if time.time() - start_time > timeout:
                 logging.error("Timeout waiting for USB connection.")
-                raise TimeoutError("Timeout waiting for USB connection.")
+                raise Exception("Timeout waiting for USB connection.")
 
     def read_line(self, timeout=5):
         line = ''
@@ -31,7 +31,7 @@ class USBReceiver:
             else:
                 if time.time() - start_time > timeout:
                     logging.error("Timeout reading line from USB.")
-                    raise TimeoutError("Timeout reading line from USB.")
+                    raise Exception("Timeout reading line from USB.")
                 time.sleep(0.1)
         return line.strip()
 
