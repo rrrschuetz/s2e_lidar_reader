@@ -1,6 +1,5 @@
 import time, pyb
 import hashlib
-import logging
 
 class USBReceiver:
     def __init__(self, usb):
@@ -24,7 +23,6 @@ class USBReceiver:
                 line += char
             else:
                 if time.time() - start_time > timeout:
-                    logging.error("Timeout reading line from USB.")
                     raise Exception("Timeout reading line from USB.")
                 time.sleep(0.1)
         return line.strip()
