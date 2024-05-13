@@ -2,21 +2,15 @@ import time, pyb
 import hashlib
 import logging
 
-# Setup logging
-logging.basicConfig(filename='/main.log', level=logging.DEBUG, 
-                    format='%(asctime)s - %(levelname)s - %(message)s')
-
 class USBReceiver:
     def __init__(self, usb):
         self.usb = usb
-        logging.info("USBReceiver initialized")
 
     def wait_for_connection(self, timeout=60):
         start_time = time.time()
         while not self.usb.isconnected():
             time.sleep(0.1)
             if time.time() - start_time > timeout:
-                logging.error("Timeout waiting for USB connection.")
                 raise Exception("Timeout waiting for USB connection.")
 
     def read_line(self, timeout=5):
@@ -40,15 +34,10 @@ class USBReceiver:
         params = {}
         with open(filename, 'wb') as file:
             params['db_gain'] = self.read_line()
-            logging.info(f"db_gain")
             params['gamma_corr'] = self.read_line()
-            logging.info(f"gamma_corr")
             expected_hash = self.read_line()
-            logging.info(f"# {expected_hash}")
             length = int(self.read_line())
-            logging.info(f"length {length}")
 
-            logging.info(f"Starting to receive file of length {length} with expected hash {expected_hash}")
             received_data = bytearray()
             while len(received_data) < length:
                 data_needed = length - len(received_data)
@@ -60,11 +49,8 @@ class USBReceiver:
 
             received_hash = hashlib.sha256(received_data).hexdigest()
             if received_hash != expected_hash:
-                logging.error("Data corruption detected: hash mismatch.")
                 raise ValueError("Data corruption: hash mismatch.")
-
             file.write(received_data)
-            logging.info("File received successfully and saved.")
 
         return params
 
@@ -75,9 +61,7 @@ if __name__ == '__main__':
     new_script_filename = '/h7_cam_exec.py'
     try:
         params = receiver.receive_script(new_script_filename)
-        logging.info(f"List of parameters: {params}")
         globals().update(params)
         exec(open(new_script_filename).read(), globals())
-        logging.info("Script executed successfully.")
     except Exception as e:
-        logging.error(f"Failed to execute script: {e}")
+        pass
