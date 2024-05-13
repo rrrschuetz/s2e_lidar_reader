@@ -40,9 +40,13 @@ class USBReceiver:
         params = {}
         with open(filename, 'wb') as file:
             params['db_gain'] = self.read_line()
+            logging.info(f"db_gain {db_gain}")
             params['gamma_corr'] = self.read_line()
+            logging.info(f"gamma_corr {gamma_corr}")
             expected_hash = self.read_line()
+            logging.info(f"# {expected_hash}")
             length = int(self.read_line())
+            logging.info(f"length {length}")
 
             logging.info(f"Starting to receive file of length {length} with expected hash {expected_hash}")
             received_data = bytearray()
