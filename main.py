@@ -40,9 +40,9 @@ class USBReceiver:
         params = {}
         with open(filename, 'wb') as file:
             params['db_gain'] = self.read_line()
-            logging.info(f"db_gain {db_gain}")
+            logging.info(f"db_gain")
             params['gamma_corr'] = self.read_line()
-            logging.info(f"gamma_corr {gamma_corr}")
+            logging.info(f"gamma_corr")
             expected_hash = self.read_line()
             logging.info(f"# {expected_hash}")
             length = int(self.read_line())
