@@ -41,10 +41,10 @@ class DisplayNode(Node):
     def logger_callback(self, msg):
         self.get_logger().info(f'Display message received: {msg.data}')
         data = msg.data.split(',')
-        color = 100 if data[3]=='G' else 200
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)  # Clear the display area
         data = msg.data.split(',')
         if data[0] == '*':
+            color = 100 if data[3]=='G' else 200
             self.draw.rectangle((int(int(data[1])*self.width/320), 0, int(int(data[2])*self.width/320), self.height), outline=color, fill=color)
         else:
             self.lines.append(f'{msg.data}')
