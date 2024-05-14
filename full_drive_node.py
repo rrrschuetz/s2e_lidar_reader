@@ -6,7 +6,6 @@ from rclpy.node import Node
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDurabilityPolicy
 from sensor_msgs.msg import LaserScan
-from sensor_msgs.msg import Joy
 from std_msgs.msg import String
 from std_msgs.msg import Bool
 import numpy as np
@@ -113,13 +112,6 @@ class fullDriveNode(Node):
             LaserScan,
             '/scan',
             self.lidar_callback,
-            qos_profile
-        )
-
-        self.subscription_joy = self.create_subscription(
-            Joy,
-            'joy',
-            self.joy_callback,
             qos_profile
         )
 
@@ -456,23 +448,6 @@ class fullDriveNode(Node):
                 pass
 
             self._processing = False
-
-       
-    def joy_callback(self, msg):
-        if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
-
-            # Check if 'A' button is pressed - switch on AI steering, counterclockwise
-            if msg.buttons[0] == 1:
-                self.start_race()
-
-            # Check if 'B' button is pressed - switch off AI steering
-            elif msg.buttons[1] == 1:
-                self.get_logger().info('emergency shutdown initiated by supervisor')
-                self.stop_race()
-
-        elif hasattr(msg, 'axes') and len(msg.axes) > 5:
-            self._X = msg.axes[2]
-            self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl_fwd))
 
     def touch_button_callback(self, msg):
         ack = String()
