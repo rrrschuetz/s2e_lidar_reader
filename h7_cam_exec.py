@@ -45,8 +45,8 @@ thresholds=[green, red, magenta]
 roi = [0,0,320,140]
 
 while True:
-    while usb.any():
-        data = usb.recv(4096)  # Receive 64 bytes at a time
+    #while usb.any():
+    #    data = usb.recv(4096)  # Receive 64 bytes at a time
 
     try:
         #time.sleep(0.05)

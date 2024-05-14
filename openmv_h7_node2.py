@@ -40,7 +40,8 @@ class openmvH7Node(Node):
                 msg.data = self.serial_port.readline().decode().strip()
                 self.publisher_.publish(msg)
             else:
-                self.get_logger().info("No cam data available!")
+                #self.get_logger().info("No cam data available!")
+                pass
 
         except serial.SerialException as e:
             self.get_logger().error(f"Serial Exception: {e}")
