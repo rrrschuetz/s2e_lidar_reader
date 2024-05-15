@@ -28,8 +28,8 @@ class USBReceiver:
         try:
             params['db_gain'] = self.read_line()
             params['gamma_corr'] = self.read_line()
-         except Exception as e:
-             pass
+        except Exception as e:
+            pass
         return params
 
 if __name__ == '__main__':
