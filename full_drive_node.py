@@ -467,7 +467,7 @@ class fullDriveNode(Node):
             params = f"{self.OI.db_gain}\n{self.OI.gamma_corr}\n".encode('utf-8')
             self.serial_port.write(params)
             self.OI.get_logger().info(f"Script sent: {params}" )
-            self.timer = self.OI.create_timer(0.01,self.callback)
+            self.timer = self.OI.create_timer(0.1,self.callback)
 
         def callback(self):
             try:
