@@ -481,9 +481,8 @@ class fullDriveNode(Node):
         
     def openmv_h7_sub(self, device_name):
         try:
-            if self.serial_port[device_name].in_waiting:
-                serial_msg = self.serial_port[device_name].readline().decode().strip()
-                self.openmv_h7_sub(serial_msg)
+            if not self.serial_port[device_name].in_waiting: return
+            serial_msg = self.serial_port[device_name].readline().decode().strip()
             data = serial_msg.split(',')
             if data[0] == '33001c000851303436373730': cam = 1
             elif data[0] == '2d0024001951333039373338': cam = 2
