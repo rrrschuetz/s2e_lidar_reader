@@ -46,7 +46,7 @@ class USBReceiver:
                     if self.usb.any():
                         data_needed = length - count
                         log_message(f"Data needed: {data_needed}")
-                        data = self.usb.recv(min(64, data_needed))
+                        data = self.usb.recv(min(4096, data_needed))
                         if data:
                             file.write(data)
                             count += len(data)
