@@ -94,4 +94,4 @@ if __name__ == '__main__':
                 usb.flush()
 
         except Exception as e:
-                log_message(f"Failed to capture frame: {e}")
+            pass
