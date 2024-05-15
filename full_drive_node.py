@@ -1,4 +1,4 @@
-import time
+import time, serial
 import configparser
 import rclpy, math
 from rclpy.time import Time
@@ -53,7 +53,9 @@ class fullDriveNode(Node):
         super().__init__('full_drive_node')
         self.publisher_ = self.create_publisher(String, 'main_logger', 10)
         self.speed_publisher_ = self.create_publisher(String, 'set_speed', 10)
-
+        
+        self.serial_port = {}
+        
         qos_profile = QoSProfile(
                 depth=1, 
                 history=QoSHistoryPolicy.KEEP_LAST, 
@@ -84,6 +86,7 @@ class fullDriveNode(Node):
 
         config = configparser.ConfigParser()
         config.read('/home/rrrschuetz/ros2_ws4/config.ini')
+        
         # Accessing the data from the configuration file
         FWD_SPEED_initial = str(config['Speed']['forward_initial_counterclockwise'])
         FWD_SPEEDU_initial = str(config['Speed']['forward_initial_clockwise'])
@@ -91,6 +94,10 @@ class fullDriveNode(Node):
         FWD_SPEEDU_obstacle = str(config['Speed']['forward_obstacle_clockwise'])
         self.get_logger().info(f"Speed settings initial race: {FWD_SPEEDU_initial}/{FWD_SPEEDU_initial}")
         self.get_logger().info(f"Speed settings obstacle race: {FWD_SPEED_obstacle}/{FWD_SPEEDU_obstacle}")
+
+        self.db_gain = float(config['Camera']['db_gain'])
+        self.gamma_corr = float(config['Camera']['gamma_corr'])
+        self.get_logger().info(f"Settings: db_gain {self.db_gain}, gamma_corr {self.gamma_corr}")
 
         self._speed_msg = String()
         self._speed_msg.data = "0"
@@ -112,20 +119,6 @@ class fullDriveNode(Node):
             LaserScan,
             '/scan',
             self.lidar_callback,
-            qos_profile
-        )
-
-        self.subscription_h71 = self.create_subscription(
-            String,
-            'openmv_topic1',
-            self.openmv_h7_callback1,
-            qos_profile
-        )
-
-        self.subscription_h72 = self.create_subscription(
-            String,
-            'openmv_topic2',
-            self.openmv_h7_callback2,
             qos_profile
         )
 
@@ -185,6 +178,11 @@ class fullDriveNode(Node):
         self._output_detailsu = self._interpreter.get_output_details()
         self.get_logger().info('clockwise prediction model loaded')
 
+        self.init_camera('/dev/ttyACM0')
+        self.init_camera('/dev/ttyACM1')
+        self.timer1 = self.create_timer(0.1,self.openmv_h7_callback1)
+        self.timer2 = self.create_timer(0.1,self.openmv_h7_callback2)
+        
         msg = String()
         msg.data = "Ready!"
         self.publisher_.publish(msg)
@@ -194,6 +192,16 @@ class fullDriveNode(Node):
         self.get_logger().info('Switch off ESC')
         self.motor_off()
 
+    def init_camera(self, device_name, num):
+        self.serial_port[device_name] = serial.Serial(device_name, 115200, timeout=5)   #115200
+        self.get_logger().info(f"Device {device_name} connected' )
+
+        with open("/home/rrrschuetz/ros2_ws4/src/s2e_lidar_reader/s2e_lidar_reader/h7_cam_exec.py", 'rb') as file:
+            script_data = file.read()
+            header_data = f"{db_gain}\n{gamma_corr}\n{len(script_data)}\n".encode('utf-8')
+            self.serial_port.write(header_data + script_data)
+            self.get_logger().info(f"Script sent: {header_data}" )
+    
     def motor_off(self):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.relay_pin, GPIO.OUT)
@@ -465,10 +473,18 @@ class fullDriveNode(Node):
                 self.get_logger().info('Stop button pressed!')
                 self.stop_race()
 
-    def openmv_h7_callback(self, msg):
+    def openmv_h7_callback_1(self):
+        self.openmv_h7_sub('/dev/ttyACM0')
+        
+    def openmv_h7_callback_2(self):
+        self.openmv_h7_sub('/dev/ttyACM1')
+        
+    def openmv_h7_sub(self, device_name):
         try:
-            data = msg.data.split(',')
-
+            if self.serial_port[device_name].in_waiting:
+                serial_msg = self.serial_port.readline().decode().strip()
+                self.openmv_h7_sub(serial_msg)
+            data = serial_msg.split(',')
             if data[0] == '33001c000851303436373730': cam = 1
             elif data[0] == '2d0024001951333039373338': cam = 2
             else: return
@@ -514,13 +530,14 @@ class fullDriveNode(Node):
 
                 #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
 
-        except:
-            self.get_logger().error('Faulty cam msg received: "%s"' % msg)
-
-    def openmv_h7_callback1(self, msg):
-        self.openmv_h7_callback(msg)
-    def openmv_h7_callback2(self, msg):
-        self.openmv_h7_callback(msg)
+        except serial.SerialException as e:
+            self.get_logger().error(f"Serial Exception: {e}")
+        except OSError as e:
+            self.get_logger().error(f"OS Error: {e}")
+        except Exception as e:
+            self.get_logger().error(f"Unexpected Error: {e}, Cam message {serial_msg}")
+            self.serial_port.reset_input_buffer()
+            self.serial_port.reset_output_buffer()
 
     def collision_callback(self, msg):
         self.get_logger().info('Collision msg received')
