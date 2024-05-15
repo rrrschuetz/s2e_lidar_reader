@@ -180,8 +180,8 @@ class fullDriveNode(Node):
 
         self.init_camera('/dev/ttyACM0')
         self.init_camera('/dev/ttyACM1')
-        self.timer1 = self.create_timer(0.1,self.openmv_h7_callback1)
-        self.timer2 = self.create_timer(0.1,self.openmv_h7_callback2)
+        self.timer1 = self.create_timer(0.01,self.openmv_h7_callback1)
+        self.timer2 = self.create_timer(0.01,self.openmv_h7_callback2)
         
         msg = String()
         msg.data = "Ready!"
@@ -534,7 +534,7 @@ class fullDriveNode(Node):
         except OSError as e:
             self.get_logger().error(f"OS Error: {e}")
         except Exception as e:
-            self.get_logger().error(f"Unexpected Error: {e}, Cam message {serial_msg[device_name]")
+            self.get_logger().error(f"Unexpected Error: {e}, Cam message {serial_msg[device_name]}")
             self.serial_port[device_name].reset_input_buffer()
             self.serial_port[device_name].reset_output_buffer()
 
