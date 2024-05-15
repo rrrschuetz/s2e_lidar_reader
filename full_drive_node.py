@@ -54,9 +54,6 @@ class fullDriveNode(Node):
         self.publisher_ = self.create_publisher(String, 'main_logger', 10)
         self.speed_publisher_ = self.create_publisher(String, 'set_speed', 10)
 
-        self.cam1 = self.openmv_h7(self,'/dev/ttyACM0')
-        self.cam2 = self.openmv_h7(self,'/dev/ttyACM1')
-
         qos_profile = QoSProfile(
                 depth=1, 
                 history=QoSHistoryPolicy.KEEP_LAST, 
@@ -99,6 +96,9 @@ class fullDriveNode(Node):
         self.db_gain = float(config['Camera']['db_gain'])
         self.gamma_corr = float(config['Camera']['gamma_corr'])
         self.get_logger().info(f"Settings: db_gain {self.db_gain}, gamma_corr {self.gamma_corr}")
+
+        self.cam1 = self.openmv_h7(self,'/dev/ttyACM0')
+        self.cam2 = self.openmv_h7(self,'/dev/ttyACM1')
 
         self._speed_msg = String()
         self._speed_msg.data = "0"
