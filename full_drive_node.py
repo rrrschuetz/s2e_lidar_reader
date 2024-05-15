@@ -192,7 +192,7 @@ class fullDriveNode(Node):
         self.get_logger().info('Switch off ESC')
         self.motor_off()
 
-    def init_camera(self, device_name, num):
+    def init_camera(self, device_name):
         self.serial_port[device_name] = serial.Serial(device_name, 115200, timeout=5)   #115200
         self.get_logger().info(f"Device {device_name} connected" )
 
