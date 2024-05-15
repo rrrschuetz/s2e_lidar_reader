@@ -1,5 +1,6 @@
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDurabilityPolicy
 from std_msgs.msg import String
 import Adafruit_SSD1306
 from PIL import Image, ImageDraw, ImageFont

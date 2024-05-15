@@ -39,6 +39,9 @@ if __name__ == '__main__':
     db_gain = float(params['db_gain'])
     gamma_corr = float(params['gamma_corr'])
 
+    db_gain = 20
+    gamma_corr = 1.2
+
     unique_id = machine.unique_id()
     unique_id_hex = ''.join(['{:02x}'.format(byte) for byte in unique_id])
 
