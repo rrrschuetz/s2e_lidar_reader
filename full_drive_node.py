@@ -473,10 +473,10 @@ class fullDriveNode(Node):
                 self.get_logger().info('Stop button pressed!')
                 self.stop_race()
 
-    def openmv_h7_callback_1(self):
+    def openmv_h7_callback1(self):
         self.openmv_h7_sub('/dev/ttyACM0')
         
-    def openmv_h7_callback_2(self):
+    def openmv_h7_callback2(self):
         self.openmv_h7_sub('/dev/ttyACM1')
         
     def openmv_h7_sub(self, device_name):
