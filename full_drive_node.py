@@ -468,7 +468,8 @@ class fullDriveNode(Node):
             with open("/home/rrrschuetz/ros2_ws4/src/s2e_lidar_reader/s2e_lidar_reader/h7_cam_exec.py", 'rb') as file:
                 script_data = file.read()
                 header_data = f"{self.OI.db_gain}\n{self.OI.gamma_corr}\n{len(script_data)}\n".encode('utf-8')
-                self.serial_port.write(header_data + script_data)
+                self.serial_port.write(header_data)
+                self.serial_port.write(script_data)
                 self.OI.get_logger().info(f"Script sent: {header_data}" )
             self.timer = self.OI.create_timer(0.05,self.callback)
 
