@@ -43,7 +43,7 @@ class USBReceiver:
 if __name__ == '__main__':
     usb = pyb.USB_VCP()
     receiver = USBReceiver(usb)
-    params = receiver.receive_script()
+    params = receiver.receive_params()
     db_gain = float(params['db_gain'])
     gamma_corr = float(params['gamma_corr'])
 

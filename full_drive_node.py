@@ -464,13 +464,9 @@ class fullDriveNode(Node):
             self.OI = OI
             self.serial_port = serial.Serial(device_name, 115200, timeout=10)   #115200
             self.OI.get_logger().info(f"Device {device_name} connected" )
-
-            with open("/home/rrrschuetz/ros2_ws4/src/s2e_lidar_reader/s2e_lidar_reader/h7_cam_exec.py", 'rb') as file:
-                script_data = file.read()
-                header_data = f"{self.OI.db_gain}\n{self.OI.gamma_corr}\n{len(script_data)}\n".encode('utf-8')
-                self.serial_port.write(header_data)
-                self.serial_port.write(script_data)
-                self.OI.get_logger().info(f"Script sent: {header_data}" )
+            params = f"{self.OI.db_gain}\n{self.OI.gamma_corr}\n".encode('utf-8')
+            self.serial_port.write(params)
+            self.OI.get_logger().info(f"Script sent: {params}" )
             self.timer = self.OI.create_timer(0.05,self.callback)
 
         def callback(self):
