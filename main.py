@@ -61,6 +61,7 @@ class USBReceiver:
 
 # Example of using the USBReceiver
 if __name__ == '__main__':
+    time.sleep(30)
     usb = pyb.USB_VCP()
     receiver = USBReceiver(usb)
     new_script_filename = '/h7_cam_exec.py'
