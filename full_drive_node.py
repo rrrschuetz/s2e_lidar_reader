@@ -194,7 +194,7 @@ class fullDriveNode(Node):
 
     def init_camera(self, device_name, num):
         self.serial_port[device_name] = serial.Serial(device_name, 115200, timeout=5)   #115200
-        self.get_logger().info(f"Device {device_name} connected' )
+        self.get_logger().info(f"Device {device_name} connected" )
 
         with open("/home/rrrschuetz/ros2_ws4/src/s2e_lidar_reader/s2e_lidar_reader/h7_cam_exec.py", 'rb') as file:
             script_data = file.read()
