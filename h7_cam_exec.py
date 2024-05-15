@@ -74,7 +74,7 @@ while True:
             usb.write(bloblist)
             usb.write("\n")
             #usb.write(jpg)
-            #usb.flush()
+            usb.flush()
 
     except Exception as e:
         pass
