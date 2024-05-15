@@ -54,6 +54,9 @@ class fullDriveNode(Node):
         self.publisher_ = self.create_publisher(String, 'main_logger', 10)
         self.speed_publisher_ = self.create_publisher(String, 'set_speed', 10)
 
+        self.cam1 = self.openmv_h7(self,'/dev/ttyACM0')
+        self.cam2 = self.openmv_h7(self,'/dev/ttyACM1')
+
         qos_profile = QoSProfile(
                 depth=1, 
                 history=QoSHistoryPolicy.KEEP_LAST, 
@@ -175,9 +178,6 @@ class fullDriveNode(Node):
         self._input_detailsu = self._interpreter.get_input_details()
         self._output_detailsu = self._interpreter.get_output_details()
         self.get_logger().info('clockwise prediction model loaded')
-
-        self.cam1 = self.openmv_h7(self,'/dev/ttyACM0')
-        self.cam2 = self.openmv_h7(self,'/dev/ttyACM1')
 
         msg = String()
         msg.data = "Ready!"
