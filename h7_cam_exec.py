@@ -67,13 +67,13 @@ while True:
 
         bloblist = ','.join(blob_entries)
         if bloblist:
+            usb.flush()
             #jpg = img.compress(quality=85)  # Compress image into JPEG format
             #header = "STR,{},STR,{},JPG,{}\n".format(unique_id_hex, len(bloblist), len(jpg))
             usb.write("{},".format(unique_id_hex))
             usb.write(bloblist)
             usb.write("\n")
             #usb.write(jpg)
-            usb.flush()
 
     except Exception as e:
         pass
