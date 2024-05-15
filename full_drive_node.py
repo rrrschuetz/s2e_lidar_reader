@@ -534,7 +534,7 @@ class fullDriveNode(Node):
         except OSError as e:
             self.get_logger().error(f"OS Error: {e}")
         except Exception as e:
-            self.get_logger().error(f"Unexpected Error: {e}, Cam message {serial_msg}")
+            self.get_logger().error(f"Unexpected Error: {e}, Cam message {serial_msg[device_name]")
             self.serial_port[device_name].reset_input_buffer()
             self.serial_port[device_name].reset_output_buffer()
 
