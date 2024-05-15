@@ -462,7 +462,7 @@ class fullDriveNode(Node):
     class openmv_h7:
         def __init__(self, OI, device_name):
             self.OI = OI
-            self.serial_port = serial.Serial(device_name, 115200, timeout=5)   #115200
+            self.serial_port = serial.Serial(device_name, 115200, timeout=10)   #115200
             self.OI.get_logger().info(f"Device {device_name} connected" )
 
             with open("/home/rrrschuetz/ros2_ws4/src/s2e_lidar_reader/s2e_lidar_reader/h7_cam_exec.py", 'rb') as file:
