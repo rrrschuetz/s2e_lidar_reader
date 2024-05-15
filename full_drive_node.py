@@ -482,7 +482,7 @@ class fullDriveNode(Node):
     def openmv_h7_sub(self, device_name):
         try:
             if self.serial_port[device_name].in_waiting:
-                serial_msg = self.serial_port.readline().decode().strip()
+                serial_msg = self.serial_port[device_name].readline().decode().strip()
                 self.openmv_h7_sub(serial_msg)
             data = serial_msg.split(',')
             if data[0] == '33001c000851303436373730': cam = 1
@@ -528,7 +528,7 @@ class fullDriveNode(Node):
                     if cam == 2: self._color2_m[ix1:ix2] = self.WEIGHT
                     self._parking_lot += 1
 
-                #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
+                self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
 
         except serial.SerialException as e:
             self.get_logger().error(f"Serial Exception: {e}")
@@ -536,8 +536,8 @@ class fullDriveNode(Node):
             self.get_logger().error(f"OS Error: {e}")
         except Exception as e:
             self.get_logger().error(f"Unexpected Error: {e}, Cam message {serial_msg}")
-            self.serial_port.reset_input_buffer()
-            self.serial_port.reset_output_buffer()
+            self.serial_port[device_name].reset_input_buffer()
+            self.serial_port[device_name].reset_output_buffer()
 
     def collision_callback(self, msg):
         self.get_logger().info('Collision msg received')
