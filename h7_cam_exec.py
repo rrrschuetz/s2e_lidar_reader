@@ -1,15 +1,6 @@
 import sensor, image, time, math, pyb, os
 import machine
 
-#db_gain = "20"
-#gamma_corr = "1.2"
-
-#try:
-#    with open('./h7_cam_exec.log', 'w') as file:
-#        file.write(f"db_gain {db_gain}, gamma_corr {gamma_corr} \n")
-#except:
-#    pass
-
 # Get the unique machine ID
 unique_id = machine.unique_id()
 unique_id_hex = ''.join(['{:02x}'.format(byte) for byte in unique_id])
@@ -26,12 +17,10 @@ blue_led.off()
 sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
-
-#sensor.set_auto_gain(False, gain_db = float(db_gain)) # must be turned off for color tracking
-sensor.set_auto_gain(True)
-#sensor.set_auto_whitebal(False)
-sensor.set_auto_whitebal(True)
-sensor.set_saturation(3)
+sensor.set_auto_gain(True) # must be turned off for color tracking
+sensor.set_auto_whitebal(True) # must be turned off for color tracking
+#sensor.set_auto_gain(False) # must be turned off for color tracking
+#sensor.set_auto_whitebal(False) # must be turned off for color tracking
 sensor.skip_frames(time = 2000)
 
 green =  (30, 100, -64, -8, -32, 32)  # generic green
@@ -53,7 +42,7 @@ while True:
         #time.sleep(0.05)
         img = sensor.snapshot()
         img.lens_corr(strength=2.6, zoom=1.0)
-        img.gamma_corr(gamma = float(gamma_corr))
+        img.gamma_corr(gamma = 1.0, contrast = 1.0, brightness = 0.2)
         #img.laplacian(2, sharpen=True)
 
         blob_entries = []

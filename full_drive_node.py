@@ -1,11 +1,11 @@
 import time
-import configparser
 import rclpy, math
 from rclpy.time import Time
 from rclpy.node import Node
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDurabilityPolicy
 from sensor_msgs.msg import LaserScan
+from sensor_msgs.msg import Joy
 from std_msgs.msg import String
 from std_msgs.msg import Bool
 import numpy as np
@@ -82,16 +82,6 @@ class fullDriveNode(Node):
         self._front_dist = 0
         self._backward = False
 
-        config = configparser.ConfigParser()
-        config.read('/home/rrrschuetz/ros2_ws4/config.ini')
-        # Accessing the data from the configuration file
-        FWD_SPEED_initial = str(config['Speed']['forward_initial_counterclockwise'])
-        FWD_SPEEDU_initial = str(config['Speed']['forward_initial_clockwise'])
-        FWD_SPEED_obstacle = str(config['Speed']['forward_obstacle_counterclockwise'])
-        FWD_SPEEDU_obstacle = str(config['Speed']['forward_obstacle_clockwise'])
-        self.get_logger().info(f"Speed settings initial race: {FWD_SPEEDU_initial}/{FWD_SPEEDU_initial}")
-        self.get_logger().info(f"Speed settings obstacle race: {FWD_SPEED_obstacle}/{FWD_SPEEDU_obstacle}")
-
         self._speed_msg = String()
         self._speed_msg.data = "0"
 
@@ -112,6 +102,13 @@ class fullDriveNode(Node):
             LaserScan,
             '/scan',
             self.lidar_callback,
+            qos_profile
+        )
+
+        self.subscription_joy = self.create_subscription(
+            Joy,
+            'joy',
+            self.joy_callback,
             qos_profile
         )
 
@@ -157,16 +154,16 @@ class fullDriveNode(Node):
             self.RACE_PATH_CW = self.INITIAL_RACE_PATH_CW
             self.SCALER_PATH_CC = self.INITIAL_SCALER_PATH_CC
             self.SCALER_PATH_CW = self.INITIAL_SCALER_PATH_CW
-            self.FWD_SPEED = FWD_SPEED_initial
-            self.FWD_SPEEDU = FWD_SPEEDU_initial
+            self.FWD_SPEED = "7"
+            self.FWD_SPEEDU = "7"
         else:
             self.get_logger().info('Obstacle race mode activated ...')
             self.RACE_PATH_CC = self.OBSTACLE_RACE_PATH_CC
             self.RACE_PATH_CW = self.OBSTACLE_RACE_PATH_CW
             self.SCALER_PATH_CC = self.OBSTACLE_SCALER_PATH_CC
             self.SCALER_PATH_CW = self.OBSTACLE_SCALER_PATH_CW
-            self.FWD_SPEED = FWD_SPEED_obstacle
-            self.FWD_SPEEDU = FWD_SPEEDU_obstacle
+            self.FWD_SPEED = "5"
+            self.FWD_SPEEDU = "5"
 
         # Load the trained racing model and the scaler counterclockwise and clockwise
         with open(self.SCALER_PATH_CC, 'rb') as f:
@@ -361,8 +358,8 @@ class fullDriveNode(Node):
 
                     elif not self._clockwise_def:
                         self._clockwise_def = True
-                        sum_first_half = np.nansum(scan[200:self.num_scan2])
-                        sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan-200])
+                        sum_first_half = np.nansum(scan[:self.num_scan2])
+                        sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
                         self._clockwise = (sum_first_half <= sum_second_half)
                         self.get_logger().info('lidar_callback: clockwise "%s" ' % self._clockwise)
 
@@ -449,6 +446,23 @@ class fullDriveNode(Node):
 
             self._processing = False
 
+       
+    def joy_callback(self, msg):
+        if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
+
+            # Check if 'A' button is pressed - switch on AI steering, counterclockwise
+            if msg.buttons[0] == 1:
+                self.start_race()
+
+            # Check if 'B' button is pressed - switch off AI steering
+            elif msg.buttons[1] == 1:
+                self.get_logger().info('emergency shutdown initiated by supervisor')
+                self.stop_race()
+
+        elif hasattr(msg, 'axes') and len(msg.axes) > 5:
+            self._X = msg.axes[2]
+            self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl_fwd))
+
     def touch_button_callback(self, msg):
         ack = String()
         if not self._tf_control:
@@ -469,8 +483,8 @@ class fullDriveNode(Node):
         try:
             data = msg.data.split(',')
 
-            if data[0] == '33001c000851303436373730': cam = 1
-            elif data[0] == '2d0024001951333039373338': cam = 2
+            if data[0] == '240024001951333039373338': cam = 1     # 33001c000851303436373730
+            elif data[0] == '2d0024001951333039373338': cam = 2   # 340046000e51303434373339
             else: return
 
             if cam == 1:
@@ -486,30 +500,17 @@ class fullDriveNode(Node):
             for blob in blobs:
                 color, x1, x2 = blob
                 color = int(color)
-                ix1 = int(x1)
-                ix2 = int(x2)
-                ack = String()
+                x1 = int(x1)
+                x2 = int(x2)
                 if color == 1:
-                    if cam == 1 and not self._clockwise:
-                        self._color1_g[ix1:ix2] = self.WEIGHT
-                        ack.data = '*,'+x1+','+x2+',G'
-                        self.publisher_.publish(ack)
-                    if cam == 2 and self._clockwise:
-                        self._color2_g[ix1:ix2] = self.WEIGHT
-                        ack.data = '*,'+x1+','+x2+',G'
-                        self.publisher_.publish(ack)
+                    if cam == 1 and not self._clockwise: self._color1_g[x1:x2] = self.WEIGHT
+                    if cam == 2 and self._clockwise: self._color2_g[x1:x2] = self.WEIGHT
                 if color == 2:
-                    if cam == 1 and not self._clockwise:
-                        self._color1_r[ix1:ix2] = self.WEIGHT
-                        ack.data = '*,'+x1+','+x2+',R'
-                        self.publisher_.publish(ack)
-                    if cam == 2 and self._clockwise:
-                        self._color2_r[ix1:ix2] = self.WEIGHT
-                        ack.data = '*,'+x1+','+x2+',R'
-                        self.publisher_.publish(ack)
+                    if cam == 1 and not self._clockwise: self._color1_r[x1:x2] = self.WEIGHT
+                    if cam == 2 and self._clockwise: self._color2_r[x1:x2] = self.WEIGHT
                 if color == 4:
-                    if cam == 1: self._color1_m[ix1:ix2] = self.WEIGHT
-                    if cam == 2: self._color2_m[ix1:ix2] = self.WEIGHT
+                    if cam == 1: self._color1_m[x1:x2] = self.WEIGHT
+                    if cam == 2: self._color2_m[x1:x2] = self.WEIGHT
                     self._parking_lot += 1
 
                 #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))

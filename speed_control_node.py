@@ -1,6 +1,5 @@
 import time
 import rclpy
-import configparser
 from rclpy.node import Node
 from std_msgs.msg import String
 import RPi.GPIO as GPIO
@@ -50,11 +49,6 @@ class SpeedControlNode(Node):
 
         GPIO.add_event_detect(self.gpio_pin, GPIO.FALLING, callback=self.impulse_callback)
         self.timer = self.create_timer(0.2, self.timer_callback)
-
-        config = configparser.ConfigParser()
-        config.read('/home/rrrschuetz/ros2_ws4/config.ini')
-        self.pid_output_max = int(config['Speed']['pid_output_max'])
-        self.get_logger().info(f"PID max setting: {self.pid_output_max}")
 
     def __del__(self):
         GPIO.output(self.relay_pin, GPIO.LOW)

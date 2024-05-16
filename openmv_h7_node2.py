@@ -2,7 +2,6 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 import serial, time
-import configparser
 
 class openmvH7Node(Node):
     def __init__(self):
@@ -11,22 +10,14 @@ class openmvH7Node(Node):
         self.publisher_log_ = self.create_publisher(String, 'main_logger', 10)
         self.serial_port = serial.Serial('/dev/ttyACM0', 115200, timeout=5)  # 115200
         self.get_logger().info('OpenMV H7 2 connected' )
-
-        config = configparser.ConfigParser()
-        config.read('/home/rrrschuetz/ros2_ws4/config.ini')
-        db_gain = float(config['Camera']['db_gain'])
-        gamma_corr = float(config['Camera']['gamma_corr'])
-        self.get_logger().info(f"Settings: db_gain {db_gain}, gamma_corr {gamma_corr}")
-
         with open("/home/rrrschuetz/ros2_ws4/src/s2e_lidar_reader/s2e_lidar_reader/h7_cam_exec.py", 'rb') as file:
             script_data = file.read()
-            header_data = f"{db_gain}\n{gamma_corr}\n{len(script_data)}\n".encode('utf-8')
-            self.serial_port.write(header_data + script_data)
-            self.get_logger().info(f"OpenMV H7 2 script sent {header_data}")
+            self.serial_port.write(script_data)
+            self.get_logger().info('OpenMV H7 2 script sent' )
         #time.sleep(10)
-        #self.serial_port.reset_input_buffer()
-        #self.serial_port.reset_output_buffer()
-        self.timer = self.create_timer(0.1, self.timer_callback)  # Adjust the timer callback rate as needed
+        self.serial_port.reset_input_buffer()
+        self.serial_port.reset_output_buffer()
+        self.timer = self.create_timer(0.02, self.timer_callback)  # Adjust the timer callback rate as needed
         self._counter = 0
 
         #msg = String()
@@ -39,9 +30,6 @@ class openmvH7Node(Node):
             if self.serial_port.in_waiting:
                 msg.data = self.serial_port.readline().decode().strip()
                 self.publisher_.publish(msg)
-            else:
-                #self.get_logger().info("No cam data available!")
-                pass
 
         except serial.SerialException as e:
             self.get_logger().error(f"Serial Exception: {e}")

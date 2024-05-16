@@ -1,48 +1,37 @@
-import time, pyb
+import pyb, time
+import os
 
-class USBReceiver:
-    def __init__(self, usb):
-        self.usb = usb
+usb = pyb.USB_VCP()
+red_led = pyb.LED(1)
+green_led = pyb.LED(2)
+blue_led = pyb.LED(3)
 
-    def wait_for_connection(self):
-        while not self.usb.isconnected():
-            time.sleep(0.1)
+red_led.off()
+green_led.on()
+blue_led.off()
 
-    def read_line(self):
-        line = ''
-        while True:
-            char = self.usb.recv(1).decode()
-            if char == '\n':
-                break
-            line += char
-        return line.strip()
+def receive_script(filename):
+    while not usb.isconnected():
+        pass
 
-    def receive_script(self, filename):
-        self.wait_for_connection()
+    red_led.off()
+    green_led.off()
+    blue_led.on()
 
-        params = {}
-        with open(filename, 'wb') as file:
-            params['db_gain'] = self.read_line()
-            params['gamma_corr'] = self.read_line()
-            length = int(self.read_line())
+    while not usb.any():
+        pass  # Wait for data
 
-            count = 0
-            while count < length:
-                data_needed = length - count
-                data = self.usb.recv(min(64, data_needed))
-                if data:
-                    file.write(data)
-                    count += len(data)
-                else:
-                    time.sleep(0.1)  # Pause briefly to wait for more data
+    with open(filename, 'wb') as file:
+        while usb.any():
+            data = usb.recv(4096)  # Receive 64 bytes at a time
+            file.write(data)
 
-        return params
+# Name of the new script file
+new_script_filename = "/h7_cam_exec.py"
 
-# Example of using the USBReceiver
-if __name__ == '__main__':
-    usb = pyb.USB_VCP()
-    receiver = USBReceiver(usb)
-    new_script_filename = '/h7_cam_exec.py'
-    params = receiver.receive_script(new_script_filename)
-    globals().update(params)
-    exec(open(new_script_filename).read(), globals())
+# Receive and save the new script
+receive_script(new_script_filename)
+time.sleep(10)
+
+# Execute the new script
+exec(open(new_script_filename).read(), globals())
