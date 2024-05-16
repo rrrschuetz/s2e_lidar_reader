@@ -17,10 +17,10 @@ blue_led.off()
 sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
-#sensor.set_auto_gain(True) # must be turned off for color tracking
-#sensor.set_auto_whitebal(True) # must be turned off for color tracking
-sensor.set_auto_gain(False, gain_db = 20) # must be turned off for color tracking
-sensor.set_auto_whitebal(False) # must be turned off for color tracking
+sensor.set_auto_gain(True) # must be turned off for color tracking
+sensor.set_auto_whitebal(True) # must be turned off for color tracking
+#sensor.set_auto_gain(False, gain_db = 20) # must be turned off for color tracking
+#sensor.set_auto_whitebal(False) # must be turned off for color tracking
 sensor.skip_frames(time = 2000)
 
 green =  (30, 100, -64, -8, -32, 32)  # generic green
