@@ -1,6 +1,5 @@
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDurabilityPolicy
 from std_msgs.msg import String
 import Adafruit_SSD1306
 from PIL import Image, ImageDraw, ImageFont
@@ -9,17 +8,12 @@ class DisplayNode(Node):
     def __init__(self):
         super().__init__('oled_display_node')
 
-        qos_profile = QoSProfile(
-                depth=1,
-                history=QoSHistoryPolicy.KEEP_LAST,
-                reliability=QoSReliabilityPolicy.BEST_EFFORT,
-                durability=QoSDurabilityPolicy.VOLATILE)
-
+        # Subscription for data from main
         self.logger_subscription = self.create_subscription(
             String,
             'main_logger',
             self.logger_callback,
-            qos_profile)
+            10)
 
         # Initialize the display
         self.display = Adafruit_SSD1306.SSD1306_128_64(rst=None, i2c_address=0x3C)
