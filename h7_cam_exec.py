@@ -27,9 +27,10 @@ sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
 
-sensor.set_auto_gain(False, gain_db = float(db_gain)) # must be turned off for color tracking
-#sensor.set_auto_whitebal(False, (1.5,1.5,1.0)) # must be turned off for color tracking
-sensor.set_auto_whitebal(False)
+sensor.set_auto_gain(True) # must be turned off for color tracking
+#sensor.set_auto_gain(False, gain_db = float(db_gain)) # must be turned off for color tracking
+sensor.set_auto_whitebal(True)
+#sensor.set_auto_whitebal(False)
 sensor.set_saturation(3)
 sensor.skip_frames(time = 2000)
 
