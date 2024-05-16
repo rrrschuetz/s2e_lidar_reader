@@ -1,4 +1,4 @@
-import time, serial
+import time
 import configparser
 import rclpy, math
 from rclpy.time import Time
@@ -84,7 +84,6 @@ class fullDriveNode(Node):
 
         config = configparser.ConfigParser()
         config.read('/home/rrrschuetz/ros2_ws4/config.ini')
-        
         # Accessing the data from the configuration file
         FWD_SPEED_initial = str(config['Speed']['forward_initial_counterclockwise'])
         FWD_SPEEDU_initial = str(config['Speed']['forward_initial_clockwise'])
@@ -92,13 +91,6 @@ class fullDriveNode(Node):
         FWD_SPEEDU_obstacle = str(config['Speed']['forward_obstacle_clockwise'])
         self.get_logger().info(f"Speed settings initial race: {FWD_SPEEDU_initial}/{FWD_SPEEDU_initial}")
         self.get_logger().info(f"Speed settings obstacle race: {FWD_SPEED_obstacle}/{FWD_SPEEDU_obstacle}")
-
-        self.db_gain = float(config['Camera']['db_gain'])
-        self.gamma_corr = float(config['Camera']['gamma_corr'])
-        self.get_logger().info(f"Settings: db_gain {self.db_gain}, gamma_corr {self.gamma_corr}")
-
-        self.cam1 = self.openmv_h7(self,'/dev/ttyACM0')
-        self.cam2 = self.openmv_h7(self,'/dev/ttyACM1')
 
         self._speed_msg = String()
         self._speed_msg.data = "0"
@@ -120,6 +112,20 @@ class fullDriveNode(Node):
             LaserScan,
             '/scan',
             self.lidar_callback,
+            qos_profile
+        )
+
+        self.subscription_h71 = self.create_subscription(
+            String,
+            'openmv_topic1',
+            self.openmv_h7_callback1,
+            qos_profile
+        )
+
+        self.subscription_h72 = self.create_subscription(
+            String,
+            'openmv_topic2',
+            self.openmv_h7_callback2,
             qos_profile
         )
 
@@ -187,7 +193,7 @@ class fullDriveNode(Node):
     def __del__(self):
         self.get_logger().info('Switch off ESC')
         self.motor_off()
-    
+
     def motor_off(self):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.relay_pin, GPIO.OUT)
@@ -459,74 +465,62 @@ class fullDriveNode(Node):
                 self.get_logger().info('Stop button pressed!')
                 self.stop_race()
 
-    class openmv_h7:
-        def __init__(self, OI, device_name):
-            self.OI = OI
-            self.serial_port = serial.Serial(device_name, 115200, timeout=10)   #115200
-            self.OI.get_logger().info(f"Device {device_name} connected" )
-            params = f"{self.OI.db_gain}\n{self.OI.gamma_corr}\n".encode('utf-8')
-            self.serial_port.write(params)
-            self.OI.get_logger().info(f"Script sent: {params}" )
-            self.timer = self.OI.create_timer(0.1,self.callback)
+    def openmv_h7_callback(self, msg):
+        try:
+            data = msg.data.split(',')
 
-        def callback(self):
-            try:
-                if not self.serial_port.in_waiting: return
-                serial_msg = self.serial_port.readline().decode().strip()
-                data = serial_msg.split(',')
-                if data[0] == '33001c000851303436373730': cam = 1
-                elif data[0] == '2d0024001951333039373338': cam = 2
-                else: return
+            if data[0] == '33001c000851303436373730': cam = 1
+            elif data[0] == '2d0024001951333039373338': cam = 2
+            else: return
 
-                if cam == 1:
-                    self.OI._color1_g = np.zeros(self.OI.HPIX, dtype=int)
-                    self.OI._color1_r = np.zeros(self.OI.HPIX, dtype=int)
-                    self.OI._color1_m = np.zeros(self.OI.HPIX, dtype=int)
-                elif cam == 2:
-                    self.OI._color2_g = np.zeros(self.OI.HPIX, dtype=int)
-                    self.OI._color2_r = np.zeros(self.OI.HPIX, dtype=int)
-                    self.OI._color2_m = np.zeros(self.OI.HPIX, dtype=int)
+            if cam == 1:
+                self._color1_g = np.zeros(self.HPIX, dtype=int)
+                self._color1_r = np.zeros(self.HPIX, dtype=int)
+                self._color1_m = np.zeros(self.HPIX, dtype=int)
+            elif cam == 2:
+                self._color2_g = np.zeros(self.HPIX, dtype=int)
+                self._color2_r = np.zeros(self.HPIX, dtype=int)
+                self._color2_m = np.zeros(self.HPIX, dtype=int)
 
-                blobs = ((data[i],data[i+1],data[i+2]) for i in range (1,len(data),3))
-                for blob in blobs:
-                    color, x1, x2 = blob
-                    color = int(color)
-                    ix1 = int(x1)
-                    ix2 = int(x2)
-                    ack = String()
-                    if color == 1:
-                        if cam == 1 and not self.OI._clockwise:
-                            self.OI._color1_g[ix1:ix2] = self.OI.WEIGHT
-                            ack.data = '*,'+x1+','+x2+',G'
-                            self.OI.publisher_.publish(ack)
-                        if cam == 2 and self.OI._clockwise:
-                            self.OI._color2_g[ix1:ix2] = self.OI.WEIGHT
-                            ack.data = '*,'+x1+','+x2+',G'
-                            self.OI.publisher_.publish(ack)
-                    if color == 2:
-                        if cam == 1 and not self.OI._clockwise:
-                            self.OI._color1_r[ix1:ix2] = self.OI.WEIGHT
-                            ack.data = '*,'+x1+','+x2+',R'
-                            self.OI.publisher_.publish(ack)
-                        if cam == 2 and self.OI._clockwise:
-                            self.OI._color2_r[ix1:ix2] = self.OI.WEIGHT
-                            ack.data = '*,'+x1+','+x2+',R'
-                            self.OI.publisher_.publish(ack)
-                    if color == 4:
-                        if cam == 1: self.OI._color1_m[ix1:ix2] = self.OI.WEIGHT
-                        if cam == 2: self.OI._color2_m[ix1:ix2] = self.OI.WEIGHT
-                        self.OI._parking_lot += 1
+            blobs = ((data[i],data[i+1],data[i+2]) for i in range (1,len(data),3))
+            for blob in blobs:
+                color, x1, x2 = blob
+                color = int(color)
+                ix1 = int(x1)
+                ix2 = int(x2)
+                ack = String()
+                if color == 1:
+                    if cam == 1 and not self._clockwise:
+                        self._color1_g[ix1:ix2] = self.WEIGHT
+                        ack.data = '*,'+x1+','+x2+',G'
+                        self.publisher_.publish(ack)
+                    if cam == 2 and self._clockwise:
+                        self._color2_g[ix1:ix2] = self.WEIGHT
+                        ack.data = '*,'+x1+','+x2+',G'
+                        self.publisher_.publish(ack)
+                if color == 2:
+                    if cam == 1 and not self._clockwise:
+                        self._color1_r[ix1:ix2] = self.WEIGHT
+                        ack.data = '*,'+x1+','+x2+',R'
+                        self.publisher_.publish(ack)
+                    if cam == 2 and self._clockwise:
+                        self._color2_r[ix1:ix2] = self.WEIGHT
+                        ack.data = '*,'+x1+','+x2+',R'
+                        self.publisher_.publish(ack)
+                if color == 4:
+                    if cam == 1: self._color1_m[ix1:ix2] = self.WEIGHT
+                    if cam == 2: self._color2_m[ix1:ix2] = self.WEIGHT
+                    self._parking_lot += 1
 
-                    #self.OI.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
+                #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
 
-            except serial.SerialException as e:
-                self.OI.get_logger().error(f"Serial Exception: {e}")
-            except OSError as e:
-                self.OI.get_logger().error(f"OS Error: {e}")
-            except Exception as e:
-                self.OI.get_logger().error(f"Unexpected Error: {e}, Cam message {serial_msg}")
-                self.serial_port.reset_input_buffer()
-                self.serial_port.reset_output_buffer()
+        except:
+            self.get_logger().error('Faulty cam msg received: "%s"' % msg)
+
+    def openmv_h7_callback1(self, msg):
+        self.openmv_h7_callback(msg)
+    def openmv_h7_callback2(self, msg):
+        self.openmv_h7_callback(msg)
 
     def collision_callback(self, msg):
         self.get_logger().info('Collision msg received')
