@@ -316,6 +316,7 @@ class fullDriveNode(Node):
                         self._total_heading_change = 0
 
                     if self._parking_lot > 50 and self._section >= 2:  #6
+                        self.get_logger()linfo(f"cam1/cam2 {self._color1_m}/{self._color2_m}")
                         if ((not self._clockwise and sum(self._color2_m) > 4) or (self._clockwise and sum(self._color1_m) > 4)):
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                             self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
@@ -430,7 +431,7 @@ class fullDriveNode(Node):
                 else:
                     X = 0.0
                 self.steer(X,False)
-                self.get_logger().info(f"Side Distance: {dist}, heading change: {heading_change}, X: {X}")
+                self.get_logger().info(f"Side Distance: {self.min_near_dist}, heading change: {heading_change}, X: {X}")
 
                 if self.min_near_dist < 0.20:
                     self.stop_race()
