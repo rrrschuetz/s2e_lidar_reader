@@ -242,6 +242,9 @@ class fullDriveNode(Node):
                 pipe.write('shutdown\n')
         except:
             pass
+    def stop(self):
+        self._speed_msg.data = "0"
+        self.speed_publisher_.publish(self._speed_msg)
 
     def calculate_heading_change(self, start_heading, current_heading):
         # Calculate the raw difference
@@ -327,6 +330,7 @@ class fullDriveNode(Node):
                             self.publisher_.publish(msg)
                             self._state = "PARK"
                             self._processing = False
+                            self._park_flag = False
                             return
 
                     elif self._parking_lot <= 50 and self._section >= 6 and abs(self._race_heading_change) > 1070 and calibration < 0.2 and self._front_dist < 1.6:
@@ -426,11 +430,17 @@ class fullDriveNode(Node):
                 self._current_heading = self._sense.gyro['yaw']
                 heading_change = abs(self.calculate_heading_change(self._last_heading, self._current_heading))
 
-                if heading_change < 20:
+                if not self._park_flag and heading_change < 15:
                     X = -1.0 if self._clockwise else 1.0
                 else:
                     X = 0.0
+                    self._park_flag = True
                 self.steer(X,False)
+                if self._park_flag:
+                    self.get_logger().info(f"Pause")
+                    self.stop()
+                    time.sleep(10)
+                    self.reset()
                 self.get_logger().info(f"Side Distance: {min_near_dist}, heading change: {heading_change}, X: {X}")
 
                 if min_near_dist < 0.20:
