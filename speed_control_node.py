@@ -40,10 +40,7 @@ class SpeedControlNode(Node):
         self.y_pwm = 0
         self.max_y = 350
         self.min_y = 250
-        self.reverse = False
-        self.reverse_p = False
         self.impulse_count = 0
-        self.impulse_count_p = 0
         self.rolling_avg_size = 100  # Number of measurements for the rolling average
         self.impulse_history = collections.deque(maxlen=self.rolling_avg_size)
         self.reset_pid()
@@ -113,43 +110,17 @@ class SpeedControlNode(Node):
 
     def timer_callback(self):
         if not self.pid_steering: return
-        pid_output = 0
-        self.impulse_count_p = self.impulse_count
         self.impulse_count = sum(self.impulse_history)
-
-        if self.impulse_count > self.impulse_count_max:
-            self.pid_steering = False
-            self.pwm.set_pwm(1, 0, self.neutral_pulse)  # Set motor to neutral.
-            GPIO.output(self.relay_pin, GPIO.LOW)
-            return
-
-        if self.reverse != self.reverse_p:
-            self.reverse_p = self.reverse
-            self.reset_pid()
-            # break mode
-            # self.y_pwm = self.neutral_pulse
-            # self.y_pwm = self.min_y if self.reverse else self.max_y
-        else:
-            pid_output = self.pid(self.impulse_count)
-            #self.get_logger().info(f"Impulses {self.impulse_count},pid_output {pid_output}")
-            # Determine PWM adjustment based on PID output and desired direction.
-            if self.reverse:
-                # If desired speed is negative, adjust for reverse.
-                self.y_pwm = self.neutral_pulse + self.base_rev - abs(int(pid_output * self.motor_ctl))
-                self.y_pwm = max(self.min_y, self.y_pwm)  # Ensure PWM is within reverse range.
-            else:
-                # If desired speed is positive or zero, adjust for forward.
-                self.y_pwm = self.neutral_pulse + self.base_fwd + int(pid_output * self.motor_ctl)
-                self.y_pwm = min(self.max_y, self.y_pwm)  # Ensure PWM is within forward range.
-            
+        pid_output = self.pid(self.impulse_count)
+        #self.get_logger().info(f"Impulses {self.impulse_count},pid_output {pid_output}")
+        self.y_pwm = self.neutral_pulse + self.base_fwd + int(pid_output * self.motor_ctl)
+        self.y_pwm = min(self.max_y, self.y_pwm)  # Ensure PWM is within forward range.
         self.impulse_history.clear()  # Clear history after each measurement
-
         try:
             #self.get_logger().info(f"'y_pwm {self.y_pwm} pid_output {pid_output}")
             self.pwm.set_pwm(1, 0, self.y_pwm)
         except IOError as e:
             self.get_logger().error("IOError I2C occurred: %s" % str(e))
-
         
 def main(args=None):
     rclpy.init(args=args)
