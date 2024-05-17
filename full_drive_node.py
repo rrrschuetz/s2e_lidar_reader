@@ -431,14 +431,23 @@ class fullDriveNode(Node):
                 heading_change = abs(self.calculate_heading_change(self._last_heading, self._current_heading))
 
                 if self._park_phase == 0:
+                    if self._front_dist < 1.5:
+                        self._park_phase = 1:
+
+                elif self._park_phase == 1:
+                    X = -1.0 if self._clockwise else 1.0
+                    self.steer(X,False)
+                    self._park_phase = 2
+
+                elif self._parh_phase == 4:
                     if heading_change < 15:
                         X = -1.0 if self._clockwise else 1.0
                     else:
                         X = 0.0
-                        self._park_phase = 1
+                        self._park_phase = 2
                     self.steer(X,False)
 
-                elif self._park_phase == 1:
+                elif self._park_phase == 5:
                     self.get_logger().info(f"Pause")
                     self.stop()
                     time.sleep(1)

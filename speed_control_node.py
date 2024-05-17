@@ -87,7 +87,7 @@ class SpeedControlNode(Node):
             new_speed = msg.data  # Assuming speed is passed as a string.
             if new_speed == "STOP":
                 self.pid_steering = False
-                self.pwm.set_pwm(1, 0, self.neutral_pulse)  # Set motor to neutral.
+                self.pwm.set_pwm(1, 0, self.neutral_pulse-2)  # brake mode
             elif new_speed =="RESET":
                 self.impulse_history.clear()
                 self.reset_pid()
