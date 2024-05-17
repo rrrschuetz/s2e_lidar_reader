@@ -425,8 +425,6 @@ class fullDriveNode(Node):
                 self._current_heading = self._sense.gyro['yaw']
                 heading_change = abs(self.calculate_heading_change(self._last_heading, self._current_heading))
 
-                dist = min(section_means)
-
                 if heading_change < 20:
                     X = -1.0 if self._clockwise else 1.0
                 else:
@@ -434,7 +432,7 @@ class fullDriveNode(Node):
                 self.steer(X,False)
                 self.get_logger().info(f"Side Distance: {dist}, heading change: {heading_change}, X: {X}")
 
-                if dist < 0.20:
+                if self.min_near_dist < 0.20:
                     self.stop_race()
                     self._state = "IDLE"
 
