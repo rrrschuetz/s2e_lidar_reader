@@ -88,7 +88,6 @@ class SpeedControlNode(Node):
             if new_speed == "STOP":
                 self.pid_steering = False
                 self.pwm.set_pwm(1, 0, self.neutral_pulse)  # Set motor to neutral.
-                GPIO.output(self.relay_pin, GPIO.LOW)
             elif new_speed =="RESET":
                 self.impulse_history.clear()
                 self.reset_pid()

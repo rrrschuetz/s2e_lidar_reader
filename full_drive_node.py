@@ -229,22 +229,22 @@ class fullDriveNode(Node):
         self.get_logger().info(f"Initial heading: {self._initial_heading} degrees")
         self._round_start_time = self.get_clock().now()
 
+    def stop(self):
+        self._speed_msg.data = "STOP"
+        self.speed_publisher_.publish(self._speed_msg)
+
     def stop_race(self):
         self._state = "IDLE"
         self._tf_control = False
         self._processing = False
         self._pwm.set_pwm(0, 0, int(self.servo_neutral))
-        self._speed_msg.data = "0"
-        self.speed_publisher_.publish(self._speed_msg)
+        self.stop()
         self.motor_off()
         try:
             with open('/tmp/ros2_pipe', 'w') as pipe:
                 pipe.write('shutdown\n')
         except:
             pass
-    def stop(self):
-        self._speed_msg.data = "0"
-        self.speed_publisher_.publish(self._speed_msg)
 
     def calculate_heading_change(self, start_heading, current_heading):
         # Calculate the raw difference
