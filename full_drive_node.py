@@ -330,7 +330,7 @@ class fullDriveNode(Node):
                             self.publisher_.publish(msg)
                             self._state = "PARK"
                             self._processing = False
-                            self._park_flag = False
+                            self._park_phase = 0
                             return
 
                     elif self._parking_lot <= 50 and self._section >= 6 and abs(self._race_heading_change) > 1070 and calibration < 0.2 and self._front_dist < 1.6:
@@ -430,22 +430,26 @@ class fullDriveNode(Node):
                 self._current_heading = self._sense.gyro['yaw']
                 heading_change = abs(self.calculate_heading_change(self._last_heading, self._current_heading))
 
-                if not self._park_flag and heading_change < 15:
-                    X = -1.0 if self._clockwise else 1.0
-                else:
-                    X = 0.0
-                    self._park_flag = True
-                self.steer(X,False)
-                if self._park_flag:
+                if self._park_phase == 0:
+                    if heading_change < 15:
+                        X = -1.0 if self._clockwise else 1.0
+                    else:
+                        X = 0.0
+                        self._park_phase = 1
+                    self.steer(X,False)
+
+                elif self._park_phase == 1:
                     self.get_logger().info(f"Pause")
                     self.stop()
-                    time.sleep(10)
+                    time.sleep(1)
                     self.reset()
-                self.get_logger().info(f"Side Distance: {min_near_dist}, heading change: {heading_change}, X: {X}")
+                    self._park_phase = 2
 
-                if min_near_dist < 0.20:
-                    self.stop_race()
-                    self._state = "IDLE"
+                elif self._park_phase == 2:
+                    self.get_logger().info(f"Side Distance: {min_near_dist}, heading change: {heading_change}, X: {X}")
+                    if min_near_dist < 0.20:
+                        self.stop_race()
+                        self._state = "IDLE"
 
             ########################
             # IDLE
