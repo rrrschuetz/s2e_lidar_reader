@@ -15,6 +15,7 @@ class SpeedControlNode(Node):
     base_rev = -4
     gpio_pin = 22
     relay_pin = 17
+    pid_output_min = 4
     pid_output_max = 8
     impulse_count_max = 20
 
@@ -55,7 +56,7 @@ class SpeedControlNode(Node):
         GPIO.cleanup()
 
     def reset_pid(self):
-        self.pid = PID(0.2, 0.05, 0.00, setpoint=0)   #0.2,0.05,0.00
+        self.pid = PID(0.2, 0.05, 0.00, setpoint=0, output_limits = (self.pid_output_min,self.pid_output_max))
         self.pid.sample_time = 0.1
 
     def move_to_impulse(self, impulse_goal):
@@ -142,14 +143,6 @@ class SpeedControlNode(Node):
                 self.y_pwm = min(self.max_y, self.y_pwm)  # Ensure PWM is within forward range.
             
         self.impulse_history.clear()  # Clear history after each measurement
-
-        if abs(pid_output) > self.pid_output_max:
-            self.get_logger().error("Track blocked: %s" % pid_output)
-            self.y_pwm = self.neutral_pulse
-            self.impulse_history.clear()
-            self.reset_pid()
-            self._msg.data = "COLLISION"
-            self.publisher_.publish(self._msg)
 
         try:
             #self.get_logger().info(f"'y_pwm {self.y_pwm} pid_output {pid_output}")
