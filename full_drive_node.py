@@ -431,20 +431,28 @@ class fullDriveNode(Node):
                 heading_change = abs(self.calculate_heading_change(self._last_heading, self._current_heading))
 
                 if self._park_phase == 0:
-                    self.get_logger().info(f"Front distance: {self._front_dist}")
-                    if self._front_dist < 1.3:
-                        self.stop()
-                        self._park_phase = 1
+                    self._dist_list = []
+                    self._park_phase = 1
 
-                elif self._park_phase == 1:
+                if self._park_phase ==1:
+                    self._dist_list.append(self._front_dist)
+                    if len(self._dist_list) > 2:
+                        dist = sum(self._dist_list)/len(self._dist_list)
+                        self._dist_list.pop(0)
+                        self.get_logger().info(f"Avg front distance: {dist}")
+                        if dist < 1.5:
+                            self.stop()
+                            self._park_phase = 2
+
+                elif self._park_phase == 2:
                     X = -1.0 if self._clockwise else 1.0
                     self.steer(X,True)
                     self.reset()
-                    self._park_phase = 2
+                    self._park_phase = 3
 
-                elif self._park_phase == 2:
+                elif self._park_phase == 3:
                     self.get_logger().info(f"Side Distance: {min_near_dist}")
-                    if min_near_dist < 0.20:
+                    if self._front_dist < 0.5 and min_near_dist < 0.2:
                         self.stop_race()
                         self._state = "IDLE"
 
