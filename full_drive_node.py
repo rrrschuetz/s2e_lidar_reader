@@ -441,14 +441,26 @@ class fullDriveNode(Node):
                         else:
                             X = 1.0 if orientation < 90 else -1.0
                     else:
-                        X = 0
-                        self._dist_list = []
                         self._park_phase = 1
-                        self.stop()
                     self.steer(X,False)
                     self.get_logger().info(f"Front distance phase 1: {orientation} {self._front_dist}")
 
-                elif self._park_phase ==1:
+                elif self._park_phase == 1:
+                    orientation = self._cal_left/self._cal_right
+                    if not self._clockwise:
+                        X = 1.0 if orientation > 1 else -1.0
+                    else:
+                        X = 1.0 if orientation < 1 else -1.0
+                    if abs(orientation -1) < 0.05:
+                        X = 0
+                        self.stop()
+                        self.steer(0,True)
+                        self._dist_list = []
+                        self._park_phase = 2
+                    self.steer(X,False)
+                    self.get_logger().info(f"Front distance phase 2: {orientation} {self._front_dist}")
+
+                elif self._park_phase == 2:
                     self._dist_list.append(self._front_dist)
                     if len(self._dist_list) > 10:
                         dist = np.nanmean(np.array(self._dist_list))
@@ -456,16 +468,19 @@ class fullDriveNode(Node):
                         if dist > 1.55:
                             self._dist_list = []
                             self.move("F1")
+                        elif dist < 1.45:
+                            self._dist_list = []
+                            self.move("R1")
                         else:
-                            self._park_phase = 2
+                            self._park_phase = 3
 
-                elif self._park_phase == 2:
+                elif self._park_phase == 3:
                     X = -1.0 if self._clockwise else 1.0
                     self.steer(X,True)
                     self.reset()
-                    self._park_phase = 3
+                    self._park_phase = 4
 
-                elif self._park_phase == 3:
+                elif self._park_phase == 4:
                     self.get_logger().info(f"Side Distance: {min_near_dist}")
                     if self._front_dist < 0.2 and min_near_dist < 0.2:
                         self.stop_race()
