@@ -435,7 +435,6 @@ class fullDriveNode(Node):
                     orientation = abs(self._total_heading_change)
                     if orientation > 120: orientation -= 90
                     if orientation > 120: orientation -= 90
-                    if abs(orientation -90) > 15:
                     if not self._clockwise:
                         X = 1.0 if orientation > 90 else -1.0
                     else:
