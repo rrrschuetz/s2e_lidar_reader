@@ -318,14 +318,14 @@ class fullDriveNode(Node):
                         self.get_logger().info(f"Number of sections {self._section}, race heading change: {self._race_heading_change}, round heading change: {self._total_heading_change}, Distance: {self._front_dist}")
                         self._total_heading_change = 0
 
-                    if self._parking_lot > 20 and self._section >= 2: #50 #6
+                    if self._parking_lot > 20 and self._section > 6: #50 #6
                         self.get_logger().info(f"cam1/cam2 {sum(self._color1_m)}/{sum(self._color2_m)}")
                         if ((not self._clockwise and sum(self._color2_m) > 4) or (self._clockwise and sum(self._color1_m) > 4)):
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                             self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                             self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
                             self.get_logger().info(f"Parking lot detections {self._parking_lot}")
-                            msg = String()
+                            msg = String()=
                             msg.data = "Parking ..."
                             self.publisher_.publish(msg)
                             self._state = "PARK"
@@ -453,7 +453,7 @@ class fullDriveNode(Node):
                     if len(self._dist_list) > 10:
                         dist = np.nanmean(np.array(self._dist_list))
                         self.get_logger().info(f"Avg front distance: {dist} {self._dist_list}")
-                        if dist > 1.5:
+                        if dist > 1.55:
                             self._dist_list = []
                             self.move("F1")
                         else:
