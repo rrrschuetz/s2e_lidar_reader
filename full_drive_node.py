@@ -431,18 +431,17 @@ class fullDriveNode(Node):
                 heading_change = abs(self.calculate_heading_change(self._last_heading, self._current_heading))
 
                 if self._park_phase == 0:
-                    self._dist_list = []
+                    self._dist_list = [1.8,1.8,1.8]
                     self._park_phase = 1
 
-                if self._park_phase ==1:
-                    self._dist_list.append(self._front_dist)
-                    if len(self._dist_list) > 2:
-                        dist = sum(self._dist_list)/len(self._dist_list)
-                        self._dist_list.pop(0)
-                        self.get_logger().info(f"Avg front distance: {dist}")
-                        if dist < 1.5:
-                            self.stop()
-                            self._park_phase = 2
+                elif self._park_phase ==1:
+                    dist = np.nanmean(np.array(self._dist_list))
+                    self._dist_list.append(min(self._front_dist,dist))
+                    self._dist_list.pop(0)
+                    self.get_logger().info(f"Avg front distance: {dist} {self._dist_list}")
+                    if dist < 1.5:
+                        self.stop()
+                        self._park_phase = 2
 
                 elif self._park_phase == 2:
                     X = -1.0 if self._clockwise else 1.0
