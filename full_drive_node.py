@@ -435,14 +435,14 @@ class fullDriveNode(Node):
                     orientation = abs(self._total_heading_change)
                     if orientation > 120: orientation -= 90
                     if orientation > 120: orientation -= 90
-                    if abs(orientation -90) > 5:
-                        if not self._clockwise:
-                            X = 1.0 if orientation > 90 else -1.0
-                        else:
-                            X = 1.0 if orientation < 90 else -1.0
+                    if abs(orientation -90) > 15:
+                    if not self._clockwise:
+                        X = 1.0 if orientation > 90 else -1.0
                     else:
-                        self._park_phase = 1
+                        X = 1.0 if orientation < 90 else -1.0
                     self.steer(X,False)
+                    if abs(orientation -90) < 15:
+                        self._park_phase = 1
                     self.get_logger().info(f"Front distance phase 1: {orientation} {self._front_dist}")
 
                 elif self._park_phase == 1:
