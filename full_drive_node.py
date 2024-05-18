@@ -325,7 +325,7 @@ class fullDriveNode(Node):
                             self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                             self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
                             self.get_logger().info(f"Parking lot detections {self._parking_lot}")
-                            msg = String()=
+                            msg = String()
                             msg.data = "Parking ..."
                             self.publisher_.publish(msg)
                             self._state = "PARK"
