@@ -467,7 +467,7 @@ class fullDriveNode(Node):
 
                 elif self._park_phase == 3:
                     self.get_logger().info(f"Side Distance: {min_near_dist}")
-                    if min_near_dist < 0.2:
+                    if self.front_dist < 0.2 and min_near_dist < 0.2:
                         self.stop_race()
                         self._state = "IDLE"
 
