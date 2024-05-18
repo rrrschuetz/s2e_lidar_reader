@@ -436,7 +436,7 @@ class fullDriveNode(Node):
 
                 elif self._park_phase ==1:
                     dist = np.nanmean(np.array(self._dist_list))
-                    self._dist_list.append(min(self._front_dist,dist))
+                    self._dist_list.append(min(dist,max(self._cal_left,self._cal_right)))
                     self._dist_list.pop(0)
                     self.get_logger().info(f"Avg front distance: {dist} {self._dist_list}")
                     if dist < 1.5:
