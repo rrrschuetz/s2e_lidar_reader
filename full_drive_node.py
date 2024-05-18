@@ -427,21 +427,37 @@ class fullDriveNode(Node):
             ########################
             elif self._state == 'PARK':
 
-                self._current_heading = self._sense.gyro['yaw']
-                heading_change = abs(self.calculate_heading_change(self._last_heading, self._current_heading))
-
                 if self._park_phase == 0:
-                    self._dist_list = [1.8,1.8,1.8]
-                    self._park_phase = 1
+                    self._current_heading = self._sense.gyro['yaw']
+                    heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
+                    self._total_heading_change += heading_change
+                    self._last_heading = self._current_heading
+                    orientation = abs(self._total_heading_change)
+                    if orientation > 120: orientation -= 90
+                    if orientation > 120: orientation -= 90
+                    if abs(orientation -90) > 5:
+                        if not self._clockwise:
+                            X = 1.0 if orientation > 90 else -1.0
+                        else:
+                            X = 1.0 if orientation < 90 else -1.0
+                    else:
+                        X = 0
+                        self._dist_list = []
+                        self._park_phase = 1
+                        self.stop()
+                    self.steer(X,False)
+                    self.get_logger().info(f"Front distance phase 1: {orientation} {self._front_dist}")
 
                 elif self._park_phase ==1:
-                    dist = np.nanmean(np.array(self._dist_list))
-                    self._dist_list.append(min(dist,max(self._cal_left,self._cal_right)))
-                    self._dist_list.pop(0)
-                    self.get_logger().info(f"Avg front distance: {dist} {self._dist_list}")
-                    if dist < 1.5:
-                        self.stop()
-                        self._park_phase = 2
+                    self._dist_list.append(self._front_dist)
+                    if len(self._dist_list) > 10:
+                        dist = np.nanmean(np.array(self._dist_list))
+                        self.get_logger().info(f"Avg front distance: {dist} {self._dist_list}")
+                        if dist > 1.5:
+                            self._dist_list = []
+                            self.move("F1")
+                        else:
+                            self._park_phase = 2
 
                 elif self._park_phase == 2:
                     X = -1.0 if self._clockwise else 1.0
@@ -451,7 +467,7 @@ class fullDriveNode(Node):
 
                 elif self._park_phase == 3:
                     self.get_logger().info(f"Side Distance: {min_near_dist}")
-                    if self._front_dist < 0.5 and min_near_dist < 0.2:
+                    if min_near_dist < 0.2:
                         self.stop_race()
                         self._state = "IDLE"
 
