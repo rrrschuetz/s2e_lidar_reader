@@ -3,7 +3,7 @@ import configparser
 import rclpy, math
 from rclpy.time import Time
 from rclpy.node import Node
-from rclpy.executors import SingleThreadedExecutor
+from rclpy.executors import MultiThreadedExecutorr
 from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDurabilityPolicy
 from sensor_msgs.msg import LaserScan
 from sensor_msgs.msg import Joy
@@ -651,15 +651,27 @@ class fullDriveNode(Node):
         self._tf_control = True
         return
 
+#def main(args=None):
+#    rclpy.init(args=args)
+#    full_drive_node = fullDriveNode()
+#    rclpy.spin(full_drive_node)
+#    full_drive_node.destroy_node()
+#    rclpy.shutdown()
+
 def main(args=None):
     rclpy.init(args=args)
-
     full_drive_node = fullDriveNode()
-    rclpy.spin(full_drive_node)
-    full_drive_node.destroy_node()
-    
-    rclpy.shutdown()
 
+    # Use MultiThreadedExecutor to allow parallel callback execution
+    executor = MultiThreadedExecutor(num_threads=6)
+    executor.add_node(full_drive_node)
+
+    try:
+        executor.spin()  # Handles callbacks as they arrive
+    finally:
+        executor.shutdown()
+        full_drive_node.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
