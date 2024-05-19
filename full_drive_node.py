@@ -612,6 +612,7 @@ class fullDriveNode(Node):
                 if not self._tf_control:
                     if color == 1: self.prompt('*,'+x1+','+x2+',G')
                     elif color == 2: self.prompt('*,'+x1+','+x2+',R')
+                    #self.get_logger().info('CAM: blob: %s,%s,%s,%s' % (cam,color,x1,x2))
                     return
                 if color == 1:
                     if cam == 1 and not self._clockwise:
@@ -631,8 +632,6 @@ class fullDriveNode(Node):
                     if cam == 1: self._color1_m[ix1:ix2] = self.WEIGHT
                     if cam == 2: self._color2_m[ix1:ix2] = self.WEIGHT
                     self._parking_lot += 1
-
-                #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
 
         except:
             self.get_logger().error('Faulty cam msg received: "%s"' % msg)
