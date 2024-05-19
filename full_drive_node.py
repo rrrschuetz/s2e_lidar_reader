@@ -523,6 +523,7 @@ class fullDriveNode(Node):
             ########################
             elif self._state == 'STOP':
                 self.stop_race()
+                self._state = "IDLE"
 
             ########################
             # IDLE
