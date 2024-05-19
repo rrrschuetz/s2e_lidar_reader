@@ -28,6 +28,7 @@ class DisplayNode(Node):
         self.display.display()
 
         # Create blank image for drawing
+        self.busy = False
         self.width = self.display.width
         self.height = self.display.height
         self.image = Image.new('1', (self.width, self.height))
@@ -45,7 +46,11 @@ class DisplayNode(Node):
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)  # Clear the display area
 
     def logger_callback(self, msg):
-        self.get_logger().info(f'Display message received: {msg.data}')
+        if self.busy:
+            self.get_logger().info(f"Display busy, skipping message.")
+            return
+        self.busy = True
+        self.get_logger().info(f'Displaying message: {msg.data}')
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)  # Clear the display area
         data = msg.data.split(',')
         if data[0] == '*':
@@ -64,6 +69,7 @@ class DisplayNode(Node):
                 self.draw.text((0, i*15), line, font=self.font, fill=255)
         self.display.image(self.image)
         self.display.display()
+        self.busy = False
 
 def main(args=None):
     rclpy.init(args=args)
