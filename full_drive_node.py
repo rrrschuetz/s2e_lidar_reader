@@ -100,10 +100,20 @@ class fullDriveNode(Node):
         self.RACE_SECTIONS = int(config['Parking']['race_sections'])
         self.GYRO_ACCURACY = float(config['Parking']['gyro_accuracy'])
         self.LIDAR_CAL_ACCURACY = float(config['Parking']['lidar_cal_accuracy'])
-        self.STOP_DISANCE_MAX_TURN = float(config['Parking']['stop_distance_max_turn'])
+        self.STOP_DISTANCE_MAX_TURN = float(config['Parking']['stop_distance_max_turn'])
         self.STOP_DISTANCE_MIN_TURN = float(config['Parking']['stop_distance_min_turn'])
         self.STOP_DISTANCE_PARK = float(config['Parking']['stop_distance_park'])
+        self.get_logger().info(f"Parking detection spot / trigger: {self.MIN_DETECTIONS_SPOT} / {self.MIN_DETECTIONS_TRIGGER}")
+        self.get_logger().info(f"Number of race half rounds: {self.RACE_SECTIONS}")
+        self.get_logger().info(f"Parking accuracy gyro / lidar: {self.GYRO_ACCURACY} / {self.LIDAR_CAL_ACCURACY}")
+        self.get_logger().info(f"Stop distances min / max / park: {self.STOP_DISTANCE_MIN_TURN} / {self.STOP_DISTANCE_MAX_TURN} / {self.STOP_DISTANCE_PARK}")
 
+        self.LEFT_CAM_ID = str(config['Hardware']['left_cam_id'])
+        self.RIGHT_CAM_ID = str(config['Hardware']['right_cam_id'])
+        self.DONGLE_ID1 = str(config['Hardware']['dongle_id1'])
+        self.DONGLE_ID2 = str(config['Hardware']['dongle_id2'])
+        self.get_logger().info(f"Left / right camera IDs: {self.LEFT_CAM_ID} / {self.RIGHT_CAM_ID}")
+        self.get_logger().info(f"Dongle ID: {self.DONGLE_ID1}:{self.DONGLE_ID2}")
 
         # Initialize compass
         self._sense = SenseHat()
@@ -166,10 +176,10 @@ class fullDriveNode(Node):
 
         # Look for initial race dongle
         # ID 2357:012e TP-Link 802.11ac NIC
-        self.initial_race = self.check_usb_device('2357', '012e')
+        self.initial_race = self.check_usb_device(self.DONGLE_ID1, self.DONGLE_ID2)
 
         if self.initial_race:
-            self.get_logger().info('Inital race mode activated ...')
+            self.get_logger().info('Initial race mode activated ...')
             self.RACE_PATH_CC = self.INITIAL_RACE_PATH_CC
             self.RACE_PATH_CW = self.INITIAL_RACE_PATH_CW
             self.SCALER_PATH_CC = self.INITIAL_SCALER_PATH_CC
@@ -202,14 +212,17 @@ class fullDriveNode(Node):
         self._output_detailsu = self._interpreter.get_output_details()
         self.get_logger().info('clockwise prediction model loaded')
 
-        msg = String()
-        msg.data = "Ready!"
-        self.publisher_.publish(msg)
+        self.prompt("Ready!")
         self.get_logger().info('Ready.')
 
     def __del__(self):
         self.get_logger().info('Switch off ESC')
         self.motor_off()
+
+    def prompt(self, message):
+        msg = String()
+        msg.data = message
+        self.publisher_.publish(msg)
 
     def motor_off(self):
         GPIO.setmode(GPIO.BCM)
@@ -345,9 +358,7 @@ class fullDriveNode(Node):
                             self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                             self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
                             self.get_logger().info(f"Parking lot detections {self._parking_lot}")
-                            msg = String()
-                            msg.data = "Parking ..."
-                            self.publisher_.publish(msg)
+                            self.prompt("Parking ...")
                             self._state = "PARK"
                             self._processing = False
                             self._park_phase = 0
@@ -358,8 +369,10 @@ class fullDriveNode(Node):
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                         self.get_logger().info(f"Race heading change: {self._race_heading_change}, round heading change: {self._total_heading_change}Distance: {self._front_dist}")
                         self.get_logger().info(f"Parking lot detections {self._parking_lot}")
-                        self.stop_race()
+                        self.prompt("Stopping ...")
+                        self._state = "STOP"
                         self._processing = False
+                        self._stop_phase = 0
                         return
 
                 try:
@@ -460,7 +473,7 @@ class fullDriveNode(Node):
                     else:
                         X = 1.0 if orientation < 90 else -1.0
                     self.steer(X,False)
-                    if abs(orientation -90) < GYRO_ACCURACY:  #15
+                    if abs(orientation -90) < self.GYRO_ACCURACY:  #15
                         self._park_phase = 1
                     self.get_logger().info(f"Front distance phase 1: {orientation} {self._front_dist}")
 
@@ -470,7 +483,7 @@ class fullDriveNode(Node):
                         X = 1.0 if orientation > 1 else -1.0
                     else:
                         X = 1.0 if orientation < 1 else -1.0
-                    if abs(orientation -1) < LIDAR_CAL_ACCURACY: #0.05
+                    if abs(orientation -1) < self.LIDAR_CAL_ACCURACY: #0.05
                         X = 0
                         self.stop()
                         self.steer(0,True)
@@ -506,6 +519,12 @@ class fullDriveNode(Node):
                         self._state = "IDLE"
 
             ########################
+            # STOP
+            ########################
+            elif self._state == 'STOP':
+                self.stop_race()
+
+            ########################
             # IDLE
             ########################
             elif self._state == 'IDLE':
@@ -531,17 +550,15 @@ class fullDriveNode(Node):
             self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl_fwd))
 
     def touch_button_callback(self, msg):
-        ack = String()
         if not self._tf_control:
             self._button_time = self.get_clock().now()
-            ack.data = "Starting ..."
-            self.publisher_.publish(ack)
+            self.prompt("Starting ...")
             self.get_logger().info('Start button pressed!')
             self.start_race()
         else:
             duration_in_seconds = (self.get_clock().now() - self._button_time).nanoseconds * 1e-9
             if duration_in_seconds > 5:
-                ack.data = "Shutting down ..."
+                self.prompt("Shutting down ...")
                 self.publisher_.publish(ack)
                 self.get_logger().info('Stop button pressed!')
                 self.stop_race()
@@ -550,8 +567,8 @@ class fullDriveNode(Node):
         try:
             data = msg.data.split(',')
 
-            if data[0] == '33001c000851303436373730': cam = 1     # 240024001951333039373338
-            elif data[0] == '2d0024001951333039373338': cam = 2   # 340046000e51303434373339
+            if data[0] == self.LEFT_CAM_ID: cam = 1      # 33001c000851303436373730 / 240024001951333039373338
+            elif data[0] == self.RIGHT_CAM_ID: cam = 2   # 2d0024001951333039373338 / 340046000e51303434373339
             else: return
 
             if cam == 1:
