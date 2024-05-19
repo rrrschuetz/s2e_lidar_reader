@@ -581,7 +581,6 @@ class fullDriveNode(Node):
             duration_in_seconds = (self.get_clock().now() - self._button_time).nanoseconds * 1e-9
             if duration_in_seconds > 5:
                 self.prompt("Shutting down ...")
-                self.publisher_.publish(ack)
                 self.get_logger().info('Stop button pressed!')
                 self.stop_race()
 
