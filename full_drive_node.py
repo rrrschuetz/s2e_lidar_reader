@@ -355,7 +355,7 @@ class fullDriveNode(Node):
                         self.get_logger().info(f"Number of sections {self._section}, race heading change: {self._race_heading_change}, round heading change: {self._total_heading_change}, Distance: {self._front_dist}")
                         self._total_heading_change = 0
 
-                    if self._parking_lot > self.MIN_DETECTIONS_SPOT and self._section >= RACE_SECTIONS: #20 #6
+                    if self._parking_lot > self.MIN_DETECTIONS_SPOT and self._section >= self.RACE_SECTIONS: #20 #6
                         self.get_logger().info(f"cam1/cam2 {sum(self._color1_m)}/{sum(self._color2_m)}")
                         if ((not self._clockwise and sum(self._color2_m) > self.MIN_DETECTIONS_TRIGGER) or (self._clockwise and sum(self._color1_m) > self.MIN_DETECTIONS_TRIGGER)):
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
@@ -368,7 +368,7 @@ class fullDriveNode(Node):
                             self._park_phase = 0
                             return
 
-                    elif self._parking_lot <= 50 and self._section >= 6 and abs(self._race_heading_change) > 1070 and calibration < 0.2 and self._front_dist < 1.6:
+                    elif self._parking_lot <= 50 and self._section >= self.RACE_SECTIONS and abs(self._race_heading_change) > 1070 and calibration < 0.2 and self._front_dist < 1.6:
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                         self.get_logger().info(f"Race heading change: {self._race_heading_change}, round heading change: {self._total_heading_change}Distance: {self._front_dist}")
@@ -610,13 +610,19 @@ class fullDriveNode(Node):
                 ix1 = int(x1)
                 ix2 = int(x2)
                 if color == 1:
-                    self.prompt('*,'+x1+','+x2+',G')
-                    if cam == 1 and not self._clockwise: self._color1_g[ix1:ix2] = self.WEIGHT
-                    if cam == 2 and self._clockwise: self._color2_g[ix1:ix2] = self.WEIGHT
+                    if cam == 1 and not self._clockwise:
+                        self._color1_g[ix1:ix2] = self.WEIGHT
+                        self.prompt('*,'+x1+','+x2+',G')
+                    if cam == 2 and self._clockwise:
+                        self._color2_g[ix1:ix2] = self.WEIGHT
+                        self.prompt('*,'+x1+','+x2+',G')
                 if color == 2:
-                    self.prompt('*,'+x1+','+x2+',R')
-                    if cam == 1 and not self._clockwise: self._color1_r[ix1:ix2] = self.WEIGHT
-                    if cam == 2 and self._clockwise: self._color2_r[ix1:ix2] = self.WEIGHT
+                    if cam == 1 and not self._clockwise:
+                        self._color1_r[ix1:ix2] = self.WEIGHT
+                        self.prompt('*,'+x1+','+x2+',R')
+                    if cam == 2 and self._clockwise:
+                        self._color2_r[ix1:ix2] = self.WEIGHT
+                        self.prompt('*,'+x1+','+x2+',R')
                 if color == 4:
                     if cam == 1: self._color1_m[ix1:ix2] = self.WEIGHT
                     if cam == 2: self._color2_m[ix1:ix2] = self.WEIGHT
