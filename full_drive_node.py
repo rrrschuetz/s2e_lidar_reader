@@ -608,9 +608,11 @@ class fullDriveNode(Node):
                 x1 = int(x1)
                 x2 = int(x2)
                 if color == 1:
+                    self.prompt('*,'+x1+','+x2+',G')
                     if cam == 1 and not self._clockwise: self._color1_g[x1:x2] = self.WEIGHT
                     if cam == 2 and self._clockwise: self._color2_g[x1:x2] = self.WEIGHT
                 if color == 2:
+                    self.prompt('*,'+x1+','+x2+',R')
                     if cam == 1 and not self._clockwise: self._color1_r[x1:x2] = self.WEIGHT
                     if cam == 2 and self._clockwise: self._color2_r[x1:x2] = self.WEIGHT
                 if color == 4:
