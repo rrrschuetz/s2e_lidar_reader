@@ -103,10 +103,13 @@ class fullDriveNode(Node):
         self.STOP_DISTANCE_MAX_TURN = float(config['Parking']['stop_distance_max_turn'])
         self.STOP_DISTANCE_MIN_TURN = float(config['Parking']['stop_distance_min_turn'])
         self.STOP_DISTANCE_PARK = float(config['Parking']['stop_distance_park'])
+        self.STOP_DISTANCE_MAX_FINAL = float(config['Parking']['stop_distance_max_final'])
+        self.STOP_DISTANCE_MIN_FINAL = float(config['Parking']['stop_distance_min_final'])
         self.get_logger().info(f"Parking detection spot / trigger: {self.MIN_DETECTIONS_SPOT} / {self.MIN_DETECTIONS_TRIGGER}")
         self.get_logger().info(f"Number of race half rounds: {self.RACE_SECTIONS}")
         self.get_logger().info(f"Parking accuracy gyro / lidar: {self.GYRO_ACCURACY} / {self.LIDAR_CAL_ACCURACY}")
         self.get_logger().info(f"Stop distances min / max / park: {self.STOP_DISTANCE_MIN_TURN} / {self.STOP_DISTANCE_MAX_TURN} / {self.STOP_DISTANCE_PARK}")
+        self.get_logger().info(f"Hold position final min / max : {self.STOP_DISTANCE_MIN_FINAL} / {self.STOP_DISTANCE_MAX_FINAL}")
 
         self.LEFT_CAM_ID = str(config['Hardware']['left_cam_id'])
         self.RIGHT_CAM_ID = str(config['Hardware']['right_cam_id'])
@@ -372,6 +375,7 @@ class fullDriveNode(Node):
                         self.prompt("Stopping ...")
                         self._state = "STOP"
                         self._processing = False
+                        self._dist_list = []
                         self._stop_phase = 0
                         return
 
@@ -522,8 +526,24 @@ class fullDriveNode(Node):
             # STOP
             ########################
             elif self._state == 'STOP':
-                self.stop_race()
-                self._state = "IDLE"
+
+                if self._stop_phase == 0:
+                    self._dist_list.append(self._front_dist)
+                    if len(self._dist_list) > 10:
+                        dist = np.nanmean(np.array(self._dist_list))
+                        self.get_logger().info(f"Avg front distance: {dist} {self._dist_list}")
+                        if dist > self.STOP_DISTANCE_MAX_FINAL: # 1.6
+                            self._dist_list = []
+                            self.move("F1")
+                        elif dist < self.STOP_DISTANCE_MIN_FINAL: # 1.0
+                            self._dist_list = []
+                            self.move("R1")
+                        else:
+                            self._stop_phase = 1
+                else:
+                    self.stop_race()
+                    self._state = "IDLE"
+
 
             ########################
             # IDLE
