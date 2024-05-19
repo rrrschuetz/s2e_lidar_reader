@@ -3,7 +3,7 @@ import configparser
 import rclpy, math
 from rclpy.time import Time
 from rclpy.node import Node
-from rclpy.executors import MultiThreadedExecutorr
+from rclpy.executors import MultiThreadedExecutor
 from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDurabilityPolicy
 from sensor_msgs.msg import LaserScan
 from sensor_msgs.msg import Joy
