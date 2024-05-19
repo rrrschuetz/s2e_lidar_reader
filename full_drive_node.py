@@ -85,6 +85,26 @@ class fullDriveNode(Node):
         self._speed_msg = String()
         self._speed_msg.data = "0"
 
+        config = configparser.ConfigParser()
+        config.read('/home/rrrschuetz/ros2_ws4/config.ini')
+
+        FWD_SPEED_initial = str(config['Speed']['forward_initial_counterclockwise'])
+        FWD_SPEEDU_initial = str(config['Speed']['forward_initial_clockwise'])
+        FWD_SPEED_obstacle = str(config['Speed']['forward_obstacle_counterclockwise'])
+        FWD_SPEEDU_obstacle = str(config['Speed']['forward_obstacle_clockwise'])
+        self.get_logger().info(f"Speed settings initial race: {FWD_SPEEDU_initial}/{FWD_SPEEDU_initial}")
+        self.get_logger().info(f"Speed settings obstacle race: {FWD_SPEED_obstacle}/{FWD_SPEEDU_obstacle}")
+
+        self.MIN_DETECTIONS_SPOT = int(config['Parking']['min_detections_spot'])
+        self.MIN_DETECTIONS_TRIGGER = int(config['Parking']['min_detections_trigger'])
+        self.RACE_SECTIONS = int(config['Parking']['race_sections'])
+        self.GYRO_ACCURACY = float(config['Parking']['gyro_accuracy'])
+        self.LIDAR_CAL_ACCURACY = float(config['Parking']['lidar_cal_accuracy'])
+        self.STOP_DISANCE_MAX_TURN = float(config['Parking']['stop_distance_max_turn'])
+        self.STOP_DISTANCE_MIN_TURN = float(config['Parking']['stop_distance_min_turn'])
+        self.STOP_DISTANCE_PARK = float(config['Parking']['stop_distance_park'])
+
+
         # Initialize compass
         self._sense = SenseHat()
         self.get_logger().info('Sense hat initialized ...')
@@ -154,16 +174,16 @@ class fullDriveNode(Node):
             self.RACE_PATH_CW = self.INITIAL_RACE_PATH_CW
             self.SCALER_PATH_CC = self.INITIAL_SCALER_PATH_CC
             self.SCALER_PATH_CW = self.INITIAL_SCALER_PATH_CW
-            self.FWD_SPEED = "7"
-            self.FWD_SPEEDU = "7"
+            self.FWD_SPEED = FWD_SPEED_initial
+            self.FWD_SPEEDU = FWD_SPEEDU_initial
         else:
             self.get_logger().info('Obstacle race mode activated ...')
             self.RACE_PATH_CC = self.OBSTACLE_RACE_PATH_CC
             self.RACE_PATH_CW = self.OBSTACLE_RACE_PATH_CW
             self.SCALER_PATH_CC = self.OBSTACLE_SCALER_PATH_CC
             self.SCALER_PATH_CW = self.OBSTACLE_SCALER_PATH_CW
-            self.FWD_SPEED = "5"
-            self.FWD_SPEEDU = "5"
+            self.FWD_SPEED = FWD_SPEED_obstacle
+            self.FWD_SPEEDU = FWD_SPEEDU_obstacle
 
         # Load the trained racing model and the scaler counterclockwise and clockwise
         with open(self.SCALER_PATH_CC, 'rb') as f:
@@ -318,9 +338,9 @@ class fullDriveNode(Node):
                         self.get_logger().info(f"Number of sections {self._section}, race heading change: {self._race_heading_change}, round heading change: {self._total_heading_change}, Distance: {self._front_dist}")
                         self._total_heading_change = 0
 
-                    if self._parking_lot > 20 and self._section >= 6: #50 #6
+                    if self._parking_lot > self.MIN_DETECTIONS_SPOT and self._section >= RACE_SECTIONS: #20 #6
                         self.get_logger().info(f"cam1/cam2 {sum(self._color1_m)}/{sum(self._color2_m)}")
-                        if ((not self._clockwise and sum(self._color2_m) > 4) or (self._clockwise and sum(self._color1_m) > 4)):
+                        if ((not self._clockwise and sum(self._color2_m) > self.MIN_DETECTIONS_TRIGGER) or (self._clockwise and sum(self._color1_m) > self.MIN_DETECTIONS_TRIGGER)):
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                             self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                             self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
@@ -440,7 +460,7 @@ class fullDriveNode(Node):
                     else:
                         X = 1.0 if orientation < 90 else -1.0
                     self.steer(X,False)
-                    if abs(orientation -90) < 15:
+                    if abs(orientation -90) < GYRO_ACCURACY:  #15
                         self._park_phase = 1
                     self.get_logger().info(f"Front distance phase 1: {orientation} {self._front_dist}")
 
@@ -450,7 +470,7 @@ class fullDriveNode(Node):
                         X = 1.0 if orientation > 1 else -1.0
                     else:
                         X = 1.0 if orientation < 1 else -1.0
-                    if abs(orientation -1) < 0.05:
+                    if abs(orientation -1) < LIDAR_CAL_ACCURACY: #0.05
                         X = 0
                         self.stop()
                         self.steer(0,True)
@@ -464,10 +484,10 @@ class fullDriveNode(Node):
                     if len(self._dist_list) > 10:
                         dist = np.nanmean(np.array(self._dist_list))
                         self.get_logger().info(f"Avg front distance: {dist} {self._dist_list}")
-                        if dist > 1.55:
+                        if dist > self.STOP_DISTANCE_MAX_TURN: # 1.55
                             self._dist_list = []
                             self.move("F1")
-                        elif dist < 1.45:
+                        elif dist < self.STOP_DISTANCE_MIN_TURN: # 1.45
                             self._dist_list = []
                             self.move("R1")
                         else:
@@ -481,7 +501,7 @@ class fullDriveNode(Node):
 
                 elif self._park_phase == 4:
                     self.get_logger().info(f"Side Distance: {min_near_dist}")
-                    if self._front_dist < 0.2 and min_near_dist < 0.2:
+                    if self._front_dist < self.STOP_DISTANCE_PARK and min_near_dist < self.STOP_DISTANCE_PARK:
                         self.stop_race()
                         self._state = "IDLE"
 

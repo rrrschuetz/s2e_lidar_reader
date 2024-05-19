@@ -17,6 +17,9 @@ class SpeedControlNode(Node):
     relay_pin = 17
     pid_output_min = 4
     pid_output_max = 8
+    PID_Kp = 0.2
+    PID_Ki = 0.05
+    PID_Kd = 0.00
     impulse_count_max = 20
 
     def __init__(self):
@@ -48,12 +51,26 @@ class SpeedControlNode(Node):
         GPIO.add_event_detect(self.gpio_pin, GPIO.FALLING, callback=self.impulse_callback)
         self.timer = self.create_timer(0.2, self.timer_callback)
 
+        config = configparser.ConfigParser()
+        config.read('/home/rrrschuetz/ros2_ws4/config.ini')
+        self.pid_output_max = int(config['Speed']['pid_output_max'])
+        self.pid_output_min = int(config['Speed']['pid_output_min'])
+        self.PID_Kp = float(config['Speed']['pid_Kp'])
+        self.PID_Ki = float(config['Speed']['pid_Ki'])
+        self.PID_Kd = float(config['Speed']['pid_Kd'])
+        self.get_logger().info(f"PID min / max setting: {self.pid_output_min} / {self.pid_output_max}")
+        self.get_logger().info(f"PID Kp / Ki / Kd: {self.PID_Kp} / {self.PID_Ki} / {self.PID_Kd}")
+
+        self.impulse_speed_fwd = int(config['Speed']['impulse_speed_fwd'])
+        self.impulse_speed_rev = int(config['Speed']['impulse_speed_rev'])
+        self.get_logger().info(f"Impulse speed fwd / rev setting: {self.impulse_speed_fwd} / {self.impulse_speed_rev}")
+
     def __del__(self):
         GPIO.output(self.relay_pin, GPIO.LOW)
         GPIO.cleanup()
 
     def reset_pid(self):
-        self.pid = PID(0.2, 0.05, 0.00, setpoint=0, output_limits = (self.pid_output_min,self.pid_output_max))
+        self.pid = PID(self.PID_Kp, self.PID_Ki, self.PID_Kd, setpoint=0, output_limits = (self.pid_output_min,self.pid_output_max)) # 0.2/0.05/0.00
         self.pid.sample_time = 0.1
 
     def move_to_impulse(self, impulse_goal):
@@ -61,7 +78,7 @@ class SpeedControlNode(Node):
         if impulse_goal == 0:
             self.get_logger().info("move_to_impulse: No move!")
             return
-        power = -12 if impulse_goal < 0 else 12   # -10
+        power = self.impulse_speed_rev if impulse_goal < 0 else self.impulse_speed_fwd   # -12/12
         self.impulse_history.clear()
         self.impulse_count = 0
 
