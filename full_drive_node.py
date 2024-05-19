@@ -609,6 +609,10 @@ class fullDriveNode(Node):
                 color = int(color)
                 ix1 = int(x1)
                 ix2 = int(x2)
+                if not self._tf_control:
+                    if color == 1: self.prompt('*,'+x1+','+x2+',G')
+                    elif color == 2: self.prompt('*,'+x1+','+x2+',R')
+                    return
                 if color == 1:
                     if cam == 1 and not self._clockwise:
                         self._color1_g[ix1:ix2] = self.WEIGHT
