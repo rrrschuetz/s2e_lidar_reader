@@ -591,7 +591,9 @@ class fullDriveNode(Node):
 
             if data[0] == self.LEFT_CAM_ID: cam = 1      # 33001c000851303436373730 / 240024001951333039373338
             elif data[0] == self.RIGHT_CAM_ID: cam = 2   # 2d0024001951333039373338 / 340046000e51303434373339
-            else: return
+            else:
+                self.get_logger().error(f'Cam not found: {data[0]}')
+                return
 
             if cam == 1:
                 self._color1_g = np.zeros(self.HPIX, dtype=int)
@@ -606,19 +608,19 @@ class fullDriveNode(Node):
             for blob in blobs:
                 color, x1, x2 = blob
                 color = int(color)
-                x1 = int(x1)
-                x2 = int(x2)
+                ix1 = int(x1)
+                ix2 = int(x2)
                 if color == 1:
                     self.prompt('*,'+x1+','+x2+',G')
-                    if cam == 1 and not self._clockwise: self._color1_g[x1:x2] = self.WEIGHT
-                    if cam == 2 and self._clockwise: self._color2_g[x1:x2] = self.WEIGHT
+                    if cam == 1 and not self._clockwise: self._color1_g[ix1:ix2] = self.WEIGHT
+                    if cam == 2 and self._clockwise: self._color2_g[ix1:ix2] = self.WEIGHT
                 if color == 2:
                     self.prompt('*,'+x1+','+x2+',R')
-                    if cam == 1 and not self._clockwise: self._color1_r[x1:x2] = self.WEIGHT
-                    if cam == 2 and self._clockwise: self._color2_r[x1:x2] = self.WEIGHT
+                    if cam == 1 and not self._clockwise: self._color1_r[ix1:ix2] = self.WEIGHT
+                    if cam == 2 and self._clockwise: self._color2_r[ix1:ix2] = self.WEIGHT
                 if color == 4:
-                    if cam == 1: self._color1_m[x1:x2] = self.WEIGHT
-                    if cam == 2: self._color2_m[x1:x2] = self.WEIGHT
+                    if cam == 1: self._color1_m[ix1:ix2] = self.WEIGHT
+                    if cam == 2: self._color2_m[ix1:ix2] = self.WEIGHT
                     self._parking_lot += 1
 
                 #self.get_logger().info('CAM: blob inserted: %s,%s,%s,%s' % (cam,color,x1,x2))
