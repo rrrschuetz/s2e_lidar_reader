@@ -34,8 +34,10 @@ class s2eLidarReader(Node):
     HFOV = 70.8
     num_scan = 1620
     num_scan2 = 810
-    scan_min_dist = 0.30
     scan_max_dist = 2.8
+    reverse_pulse = 204
+    neutral_pulse = 307
+    forward_pulse = 409
     servo_min = 260  # Min pulse length out of 4096
     servo_max = 380  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
