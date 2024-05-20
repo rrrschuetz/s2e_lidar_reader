@@ -285,13 +285,8 @@ class fullDriveNode(Node):
         self._pwm.set_pwm(0, 0, int(self.servo_neutral))
         self.stop()
         self.motor_off()
-        try:
-            with open('/tmp/ros2_pipe', 'w') as pipe:
-                pipe.write('shutdown\n')
-        except:
-            pass
-        finally:
-            rclpy.shutdown()
+        self.get_logger().info(f"ROS2 shutdown requested")
+        rclpy.shutdown()
 
     def calculate_heading_change(self, start_heading, current_heading):
         # Calculate the raw difference
@@ -694,6 +689,10 @@ class cameraNode(Node):
 
 
 def main(args=None):
+
+    profiler = cProfile.Profile()
+    profiler.enable()
+
     rclpy.init(args=args)
     full_drive_node = fullDriveNode()
     cam1_node = cameraNode()
@@ -715,7 +714,17 @@ def main(args=None):
         full_drive_node.destroy_node()
         cam1_node.destroy_node()
         cam2_node.destroy_node()
-        rclpy.shutdown()
+        #rclpy.shutdown()
+
+    profiler.disable()
+    stats = pstats.Stats(profiler).sort_stats('cumtime')
+    stats.print_stats()
+
+    try:
+        with open('/tmp/ros2_pipe', 'w') as pipe:
+            pipe.write('shutdown\n')
+    except:
+        pass
 
 if __name__ == '__main__':
     main()
