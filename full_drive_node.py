@@ -1,5 +1,5 @@
-import time
-import configparser
+import time, configparser
+from multiprocessing import Process, Value, Array, Lock
 import rclpy, math
 from rclpy.time import Time
 from rclpy.node import Node
@@ -18,6 +18,21 @@ import RPi.GPIO as GPIO
 import usb.core
 import usb.util
 
+G_LEFT_CAM_ID = ""
+G_RIGHT_CAM_ID = ""
+
+HPIX = 320
+G_color1_g = np.zeros(HPIX, dtype=int)
+G_color1_r = np.zeros(HPIX, dtype=int)
+G_color2_g = np.zeros(HPIX, dtype=int)
+G_color2_r = np.zeros(HPIX, dtype=int)
+G_color1_m = np.zeros(HPIX, dtype=int)
+G_color2_m = np.zeros(HPIX, dtype=int)
+
+G_tf_control = False
+G_parking_lot = 0
+G_clockwise = False
+
 class fullDriveNode(Node):
 
     OBSTACLE_RACE_PATH_CC = "/home/rrrschuetz/test/model.tflite"
@@ -31,7 +46,6 @@ class fullDriveNode(Node):
     INITIAL_SCALER_PATH_CW = "/home/rrrschuetz/test/scaler_iu.pkl"
 
     initial_race = False
-    HPIX = 320
     VPIX = 200
     HFOV = 70.8
     num_scan = 1620
@@ -45,12 +59,15 @@ class fullDriveNode(Node):
     servo_ctl_rev = int(-(servo_max-servo_min)/2 * 1.0)
     motor_ctl = -20
     relay_pin = 17
-    WEIGHT = 1
     FWD_SPEED = "5"
     FWD_SPEEDU = "5"
     REV_SPEED = "-5"
 
     def __init__(self):
+        global G_color1_r,G_color1_g,G_color2_r,G_color2_g,G_color1_m,G_color2_m
+        global G_tf_control,G_parking_lot,G_clockwise
+        global G_LEFT_CAM_ID, G_RIGHT_CAM_ID
+
         super().__init__('full_drive_node')
         self.publisher_ = self.create_publisher(String, 'main_logger', 10)
         self.speed_publisher_ = self.create_publisher(String, 'set_speed', 10)
@@ -63,22 +80,23 @@ class fullDriveNode(Node):
     
         self._state = 'IDLE'
         self._processing = False
-        self._tf_control = False
-        self._clockwise = False
+        G_tf_control = False
+        G_clockwise = False
         self._clockwise_def = False
         self._obstacle_chk = False
-        self._parking_lot = 0
+        G_parking_lot = 0
         self._gyro_cnt = 0
 
         self._X = 0.0 
         self._Y = 0.0
         self._Xtrim = 0.0
-        self._color1_g = np.zeros(self.HPIX, dtype=int)
-        self._color1_r = np.zeros(self.HPIX, dtype=int)
-        self._color2_g = np.zeros(self.HPIX, dtype=int)
-        self._color2_r = np.zeros(self.HPIX, dtype=int)
-        self._color1_m = np.zeros(self.HPIX, dtype=int)
-        self._color2_m = np.zeros(self.HPIX, dtype=int)
+        HPIX = 320
+        G_color1_g = np.zeros(HPIX, dtype=int)
+        G_color1_r = np.zeros(HPIX, dtype=int)
+        G_color2_g = np.zeros(HPIX, dtype=int)
+        G_color2_r = np.zeros(HPIX, dtype=int)
+        G_color1_m = np.zeros(HPIX, dtype=int)
+        G_color2_m = np.zeros(HPIX, dtype=int)
 
         self._front_dist = 0
         self._backward = False
@@ -112,11 +130,11 @@ class fullDriveNode(Node):
         self.get_logger().info(f"Stop distances min / max / park: {self.STOP_DISTANCE_MIN_TURN} / {self.STOP_DISTANCE_MAX_TURN} / {self.STOP_DISTANCE_PARK}")
         self.get_logger().info(f"Hold position final min / max : {self.STOP_DISTANCE_MIN_FINAL} / {self.STOP_DISTANCE_MAX_FINAL}")
 
-        self.LEFT_CAM_ID = str(config['Hardware']['left_cam_id'])
-        self.RIGHT_CAM_ID = str(config['Hardware']['right_cam_id'])
+        G_LEFT_CAM_ID = str(config['Hardware']['left_cam_id'])
+        G_RIGHT_CAM_ID = str(config['Hardware']['right_cam_id'])
         self.DONGLE_ID1 = str(config['Hardware']['dongle_id1'])
         self.DONGLE_ID2 = str(config['Hardware']['dongle_id2'])
-        self.get_logger().info(f"Left / right camera IDs: {self.LEFT_CAM_ID} / {self.RIGHT_CAM_ID}")
+        self.get_logger().info(f"Left / right camera IDs: {G_LEFT_CAM_ID} / {G_RIGHT_CAM_ID}")
         self.get_logger().info(f"Dongle ID: {self.DONGLE_ID1}:{self.DONGLE_ID2}")
 
         # Initialize compass
@@ -143,20 +161,6 @@ class fullDriveNode(Node):
             Joy,
             'joy',
             self.joy_callback,
-            qos_profile
-        )
-
-        self.subscription_h71 = self.create_subscription(
-            String,
-            'openmv_topic1',
-            self.openmv_h7_callback1,
-            qos_profile
-        )
-
-        self.subscription_h72 = self.create_subscription(
-            String,
-            'openmv_topic2',
-            self.openmv_h7_callback2,
             qos_profile
         )
 
@@ -235,10 +239,11 @@ class fullDriveNode(Node):
         GPIO.cleanup()
 
     def reset(self):
+        global G_clockwise
         self._speed_msg.data = "RESET"
         self.speed_publisher_.publish(self._speed_msg)
         # lower speed for clockwise race, speed measurement at inner wheel !
-        self._speed_msg.data = self.FWD_SPEED if not self._clockwise else self.FWD_SPEEDU
+        self._speed_msg.data = self.FWD_SPEED if not G_clockwise else self.FWD_SPEEDU
         self.speed_publisher_.publish(self._speed_msg)
 
     def steer(self,X,sleep):
@@ -252,9 +257,10 @@ class fullDriveNode(Node):
         time.sleep(2.0)
 
     def start_race(self):
+        global G_tf_control,G_parking_lot
         self._state = "RACE"
-        self._tf_control = True
-        self._parking_lot = 0
+        G_tf_control = True
+        G_parking_lot = 0
         self._gyro_cnt = 0
         self._section = 0
 
@@ -271,8 +277,9 @@ class fullDriveNode(Node):
         self.speed_publisher_.publish(self._speed_msg)
 
     def stop_race(self):
+        global G_tf_control
         self._state = "IDLE"
-        self._tf_control = False
+        G_tf_control = False
         self._processing = False
         self._pwm.set_pwm(0, 0, int(self.servo_neutral))
         self.stop()
@@ -308,6 +315,9 @@ class fullDriveNode(Node):
             return False
 
     def lidar_callback(self, msg):
+        global G_color1_r,G_color1_g,G_color2_r,G_color2_g,G_color1_m,G_color2_m
+        global G_tf_control,G_parking_lot,G_clockwise
+
         if self._processing:
             self.get_logger().info('Scan skipped')
             return
@@ -331,7 +341,7 @@ class fullDriveNode(Node):
             ########################
             # RACE
             ########################
-            if self._state == 'RACE' and self._tf_control:
+            if self._state == 'RACE' and G_tf_control:
 
                 # Round completion check
                 self._gyro_cnt += 1
@@ -347,7 +357,7 @@ class fullDriveNode(Node):
                     calibration = abs(self._cal_left/self._cal_right -1)
                     if calibration < 0.01:
                         #self.get_logger().info(f"Calibration")
-                        G = 180 if self._clockwise else -180
+                        G = 180 if G_clockwise else -180
                         self._race_heading_change = self._section*G + self._total_heading_change
 
                     if abs(self._total_heading_change) >= 160 and calibration < 0.1:
@@ -355,24 +365,24 @@ class fullDriveNode(Node):
                         self.get_logger().info(f"Number of sections {self._section}, race heading change: {self._race_heading_change}, round heading change: {self._total_heading_change}, Distance: {self._front_dist}")
                         self._total_heading_change = 0
 
-                    if self._parking_lot > self.MIN_DETECTIONS_SPOT and self._section >= self.RACE_SECTIONS: #20 #6
-                        self.get_logger().info(f"cam1/cam2 {sum(self._color1_m)}/{sum(self._color2_m)}")
-                        if ((not self._clockwise and sum(self._color2_m) > self.MIN_DETECTIONS_TRIGGER) or (self._clockwise and sum(self._color1_m) > self.MIN_DETECTIONS_TRIGGER)):
+                    if G_parking_lot > self.MIN_DETECTIONS_SPOT and self._section >= self.RACE_SECTIONS: #20 #6
+                        self.get_logger().info(f"cam1/cam2 {sum(G_color1_m)}/{sum(G_color2_m)}")
+                        if ((not G_clockwise and sum(G_color2_m) > self.MIN_DETECTIONS_TRIGGER) or (G_clockwise and sum(G_color1_m) > self.MIN_DETECTIONS_TRIGGER)):
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                             self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                             self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
-                            self.get_logger().info(f"Parking lot detections {self._parking_lot}")
+                            self.get_logger().info(f"Parking lot detections {G_parking_lot}")
                             self.prompt("Parking ...")
                             self._state = "PARK"
                             self._processing = False
                             self._park_phase = 0
                             return
 
-                    elif self._parking_lot <= 50 and self._section >= self.RACE_SECTIONS and abs(self._race_heading_change) > 1070 and calibration < 0.2 and self._front_dist < 1.6:
+                    elif G_parking_lot <= 50 and self._section >= self.RACE_SECTIONS and abs(self._race_heading_change) > 1070 and calibration < 0.2 and self._front_dist < 1.6:
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                         self.get_logger().info(f"Race heading change: {self._race_heading_change}, round heading change: {self._total_heading_change}Distance: {self._front_dist}")
-                        self.get_logger().info(f"Parking lot detections {self._parking_lot}")
+                        self.get_logger().info(f"Parking lot detections {G_parking_lot}")
                         self.prompt("Stopping ...")
                         self._state = "STOP"
                         self._processing = False
@@ -403,12 +413,12 @@ class fullDriveNode(Node):
                         self._clockwise_def = True
                         sum_first_half = np.nansum(scan[200:self.num_scan2])
                         sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan-200])
-                        self._clockwise = (sum_first_half <= sum_second_half)
-                        self.get_logger().info('lidar_callback: clockwise "%s" ' % self._clockwise)
+                        G_clockwise = (sum_first_half <= sum_second_half)
+                        self.get_logger().info('lidar_callback: clockwise "%s" ' % G_clockwise)
 
                         if self._backward:
                             self._backward = False
-                            self.steer(-1.0 if self._clockwise else 1.0,True)
+                            self.steer(-1.0 if G_clockwise else 1.0,True)
                             self.move("F2")
                             self.move("F2")
                             self.move("F2")
@@ -421,14 +431,14 @@ class fullDriveNode(Node):
                     scan_interpolated = np.interp(x, x[finite_vals], scan[finite_vals])
                     scan_interpolated = [1/value if value != 0 else 0 for value in scan_interpolated]
                     scan_interpolated = list(scan_interpolated)
-                    color_data = list(self._color1_g) + list(self._color2_g) + list(self._color1_r) + list(self._color2_r)
+                    color_data = list(G_color1_g) + list(G_color2_g) + list(G_color1_r) + list(G_color2_r)
 
                     lidar_data = np.reshape(scan_interpolated, (1, -1))               # Reshape LIDAR data
                     color_data_standardized = np.reshape(color_data, (1, -1))         # Reshape COLOR data
                     # Reshape color_data to (1, 1, 1) to match dimensions
                     color_data_standardized = np.reshape(color_data_standardized, (1, color_data_standardized.shape[1], 1)).astype(np.float32)
 
-                    if not self._clockwise:
+                    if not G_clockwise:
                         lidar_data_standardized = self._scaler.transform(lidar_data)
                         # Reshape for TFLite model input
                         lidar_data_standardized = np.reshape(lidar_data_standardized, (1, lidar_data_standardized.shape[1], 1)).astype(np.float32)
@@ -473,7 +483,7 @@ class fullDriveNode(Node):
                     orientation = abs(self._total_heading_change)
                     if orientation > 120: orientation -= 90
                     if orientation > 120: orientation -= 90
-                    if not self._clockwise:
+                    if not G_clockwise:
                         X = 1.0 if orientation > 90 else -1.0
                     else:
                         X = 1.0 if orientation < 90 else -1.0
@@ -484,7 +494,7 @@ class fullDriveNode(Node):
 
                 elif self._park_phase == 1:
                     orientation = self._cal_left/self._cal_right
-                    if not self._clockwise:
+                    if not G_clockwise:
                         X = 1.0 if orientation > 1 else -1.0
                     else:
                         X = 1.0 if orientation < 1 else -1.0
@@ -512,7 +522,7 @@ class fullDriveNode(Node):
                             self._park_phase = 3
 
                 elif self._park_phase == 3:
-                    X = -1.0 if self._clockwise else 1.0
+                    X = -1.0 if G_clockwise else 1.0
                     self.steer(X,True)
                     self.reset()
                     self._park_phase = 4
@@ -572,7 +582,8 @@ class fullDriveNode(Node):
             self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl_fwd))
 
     def touch_button_callback(self, msg):
-        if not self._tf_control:
+        global G_tf_control
+        if not G_tf_control:
             self._button_time = self.get_clock().now()
             self.prompt("Starting ...")
             self.get_logger().info('Start button pressed!')
@@ -584,24 +595,66 @@ class fullDriveNode(Node):
                 self.get_logger().info('Stop button pressed!')
                 self.stop_race()
 
+    def collision_callback(self, msg):
+        global G_tf_control
+        self.get_logger().info('Collision msg received')
+        self._processing = False
+        G_tf_control = False
+        self.steer(0.0,True)
+        self.move("R15")
+        self.reset()
+        G_tf_control = True
+        return
+
+
+class cameraNode(Node):
+    def __init__(self):
+        super().__init__('camera_node')
+        self.publisher_ = self.create_publisher(String, 'main_logger', 10)
+
+    def subscribe(self, topic):
+        qos_profile = QoSProfile(
+            depth=1,
+            history=QoSHistoryPolicy.KEEP_LAST,
+            reliability=QoSReliabilityPolicy.BEST_EFFORT,
+            durability=QoSDurabilityPolicy.VOLATILE)
+
+        self.subscription = self.create_subscription(
+            String,
+            topic,
+            self.openmv_h7_callback,
+            qos_profile
+        )
+
+    def prompt(self, message):
+        msg = String()
+        msg.data = message
+        self.publisher_.publish(msg)
+
     def openmv_h7_callback(self, msg):
+        global G_color1_r,G_color1_g,G_color2_r,G_color2_g,G_color1_m,G_color2_m
+        global G_tf_control,G_parking_lot,G_clockwise
+        global G_LEFT_CAM_ID, G_RIGHT_CAM_ID
+        HPIX = 320
+        WEIGHT = 1
+
         try:
             data = msg.data.split(',')
 
-            if data[0] == self.LEFT_CAM_ID: cam = 1      # 33001c000851303436373730 / 240024001951333039373338
-            elif data[0] == self.RIGHT_CAM_ID: cam = 2   # 2d0024001951333039373338 / 340046000e51303434373339
+            if data[0] == G_LEFT_CAM_ID: cam = 1      # 33001c000851303436373730 / 240024001951333039373338
+            elif data[0] == G_RIGHT_CAM_ID: cam = 2   # 2d0024001951333039373338 / 340046000e51303434373339
             else:
                 self.get_logger().error(f'Cam not found: {data[0]}')
                 return
 
             if cam == 1:
-                self._color1_g = np.zeros(self.HPIX, dtype=int)
-                self._color1_r = np.zeros(self.HPIX, dtype=int)
-                self._color1_m = np.zeros(self.HPIX, dtype=int)
+                G_color1_g = np.zeros(HPIX, dtype=int)
+                G_color1_r = np.zeros(HPIX, dtype=int)
+                G_color1_m = np.zeros(HPIX, dtype=int)
             elif cam == 2:
-                self._color2_g = np.zeros(self.HPIX, dtype=int)
-                self._color2_r = np.zeros(self.HPIX, dtype=int)
-                self._color2_m = np.zeros(self.HPIX, dtype=int)
+                G_color2_g = np.zeros(HPIX, dtype=int)
+                G_color2_r = np.zeros(HPIX, dtype=int)
+                G_color2_m = np.zeros(HPIX, dtype=int)
 
             blobs = ((data[i],data[i+1],data[i+2]) for i in range (1,len(data),3))
             for blob in blobs:
@@ -609,68 +662,56 @@ class fullDriveNode(Node):
                 color = int(color)
                 ix1 = int(x1)
                 ix2 = int(x2)
-                if not self._tf_control:
+                if not G_tf_control:
                     if color == 1: self.prompt('*,'+x1+','+x2+',G')
                     elif color == 2: self.prompt('*,'+x1+','+x2+',R')
                     #self.get_logger().info('CAM: blob: %s,%s,%s,%s' % (cam,color,x1,x2))
                     return
                 if color == 1:
-                    if cam == 1 and not self._clockwise:
-                        self._color1_g[ix1:ix2] = self.WEIGHT
+                    if cam == 1 and not G_clockwise:
+                        G_color1_g[ix1:ix2] = WEIGHT
                         self.prompt('*,'+x1+','+x2+',G')
-                    if cam == 2 and self._clockwise:
-                        self._color2_g[ix1:ix2] = self.WEIGHT
+                    if cam == 2 and G_clockwise:
+                        G_color2_g[ix1:ix2] = WEIGHT
                         self.prompt('*,'+x1+','+x2+',G')
                 if color == 2:
-                    if cam == 1 and not self._clockwise:
-                        self._color1_r[ix1:ix2] = self.WEIGHT
+                    if cam == 1 and not G_clockwise:
+                        G_color1_r[ix1:ix2] = WEIGHT
                         self.prompt('*,'+x1+','+x2+',R')
-                    if cam == 2 and self._clockwise:
-                        self._color2_r[ix1:ix2] = self.WEIGHT
+                    if cam == 2 and G_clockwise:
+                        G_color2_r[ix1:ix2] = WEIGHT
                         self.prompt('*,'+x1+','+x2+',R')
                 if color == 4:
-                    if cam == 1: self._color1_m[ix1:ix2] = self.WEIGHT
-                    if cam == 2: self._color2_m[ix1:ix2] = self.WEIGHT
-                    self._parking_lot += 1
+                    if cam == 1: G_color1_m[ix1:ix2] = WEIGHT
+                    if cam == 2: G_color2_m[ix1:ix2] = WEIGHT
+                    G_parking_lot += 1
 
-        except:
-            self.get_logger().error('Faulty cam msg received: "%s"' % msg)
+        except Exception as e:
+            self.get_logger().error(f"Faulty cam msg received: {msg.data} {e}")
 
-    def openmv_h7_callback1(self, msg):
-        self.openmv_h7_callback(msg)
-    def openmv_h7_callback2(self, msg):
-        self.openmv_h7_callback(msg)
-
-    def collision_callback(self, msg):
-        self.get_logger().info('Collision msg received')
-        self._processing = False
-        self._tf_control = False
-        self.steer(0.0,True)
-        self.move("R15")
-        self.reset()
-        self._tf_control = True
-        return
-
-#def main(args=None):
-#    rclpy.init(args=args)
-#    full_drive_node = fullDriveNode()
-#    rclpy.spin(full_drive_node)
-#    full_drive_node.destroy_node()
-#    rclpy.shutdown()
 
 def main(args=None):
     rclpy.init(args=args)
     full_drive_node = fullDriveNode()
+    cam1_node = cameraNode()
+    cam2_node = cameraNode()
+    cam1_node.subscribe('openmv_topic1')
+    cam2_node.subscribe('openmv_topic2')
 
     # Use MultiThreadedExecutor to allow parallel callback execution
-    executor = MultiThreadedExecutor(num_threads=6)
+    executor = MultiThreadedExecutor(num_threads=4)
     executor.add_node(full_drive_node)
+    executor.add_node(cam1_node)
+    executor.add_node(cam2_node)
 
     try:
         executor.spin()  # Handles callbacks as they arrive
     finally:
         executor.shutdown()
         full_drive_node.destroy_node()
+        cam1_node.destroy_node()
+        cam2_node.destroy_node()
+
         rclpy.shutdown()
 
 if __name__ == '__main__':
