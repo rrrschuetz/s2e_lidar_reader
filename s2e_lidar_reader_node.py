@@ -312,7 +312,7 @@ class cameraNode(Node):
 def main(args=None):
 
     rclpy.init(args=args)
-    lidar_reader_node = s2eLidarReaderNode()
+    lidar_reader_node = s2eLidarReader()
     cam1_node = cameraNode('openmv_topic1')
     cam2_node = cameraNode('openmv_topic2')
 
