@@ -1,5 +1,5 @@
 import time, configparser
-from multiprocessing import Process, Value, Array, Lock
+#from multiprocessing import Process, Value, Array, Lock
 import rclpy, math
 from rclpy.time import Time
 from rclpy.node import Node
@@ -17,6 +17,7 @@ from sense_hat import SenseHat
 import RPi.GPIO as GPIO
 import usb.core
 import usb.util
+import cProfile, pstats
 
 G_LEFT_CAM_ID = ""
 G_RIGHT_CAM_ID = ""
@@ -289,6 +290,7 @@ class fullDriveNode(Node):
                 pipe.write('shutdown\n')
         except:
             pass
+        rclpy.shutdown()
 
     def calculate_heading_change(self, start_heading, current_heading):
         # Calculate the raw difference
@@ -705,7 +707,11 @@ def main(args=None):
     executor.add_node(cam2_node)
 
     try:
-        executor.spin()  # Handles callbacks as they arrive
+        executor.spin()
+    except KeyboardInterrupt:
+        pass
+    except RuntimeError as e:
+        pass
     finally:
         executor.shutdown()
         full_drive_node.destroy_node()
