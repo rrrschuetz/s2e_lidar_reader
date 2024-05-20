@@ -1,4 +1,4 @@
-import time, configparser
+import os, time, configparser
 import rclpy, math
 from rclpy.time import Time
 from rclpy.node import Node
