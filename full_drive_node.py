@@ -290,7 +290,8 @@ class fullDriveNode(Node):
                 pipe.write('shutdown\n')
         except:
             pass
-        rclpy.shutdown()
+        finally:
+            rclpy.shutdown()
 
     def calculate_heading_change(self, start_heading, current_heading):
         # Calculate the raw difference
