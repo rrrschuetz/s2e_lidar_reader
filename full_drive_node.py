@@ -707,17 +707,13 @@ def main(args=None):
     executor.add_node(cam2_node)
 
     try:
-        executor.spin()
-    except KeyboardInterrupt:
-        pass
-    except RuntimeError as e:
-        pass
+        while rclpy.ok():
+            executor.spin_once()
     finally:
         executor.shutdown()
         full_drive_node.destroy_node()
         cam1_node.destroy_node()
         cam2_node.destroy_node()
-
         rclpy.shutdown()
 
 if __name__ == '__main__':
