@@ -136,7 +136,7 @@ class fullDriveNode(Node):
         self.get_logger().info(f"Number of race half rounds: {self.RACE_SECTIONS}")
         self.get_logger().info(f"Parking accuracy gyro / lidar: {self.GYRO_ACCURACY} / {self.LIDAR_CAL_ACCURACY}")
         self.get_logger().info(f"Stop distances min / max / park: {self.STOP_DISTANCE_MIN_TURN} / {self.STOP_DISTANCE_MAX_TURN} / {self.STOP_DISTANCE_PARK}")
-        self.get_logger().info(f"Hold position final min / max : {self.STOP_DISTANCE_MIN_FINAL} / {self.STOP_DISTANCE_MAX_FINAL}")
+        self.get_logger().info(f"Stop position final min / max : {self.STOP_DISTANCE_MIN_FINAL} / {self.STOP_DISTANCE_MAX_FINAL}")
 
         G_LEFT_CAM_ID = str(config['Hardware']['left_cam_id'])
         G_RIGHT_CAM_ID = str(config['Hardware']['right_cam_id'])
@@ -331,7 +331,7 @@ class fullDriveNode(Node):
         else:
             self._processing = True
 
-            self.get_logger().info(f"Cam updates per lidar callback {G_cam_updates}")
+            #self.get_logger().info(f"Cam updates per lidar callback {G_cam_updates}")
             G_cam_updates = 0
 
             scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
@@ -554,9 +554,11 @@ class fullDriveNode(Node):
                         dist = np.nanmean(np.array(self._dist_list))
                         self.get_logger().info(f"Avg front distance: {dist} {self._dist_list}")
                         if dist > self.STOP_DISTANCE_MAX_FINAL: # 1.6
+                            self.get_logger().info(f"Move forward")
                             self._dist_list = []
                             self.move("F1")
                         elif dist < self.STOP_DISTANCE_MIN_FINAL: # 1.0
+                            self.get_logger().info(f"Move backward")
                             self._dist_list = []
                             self.move("R1")
                         else:
