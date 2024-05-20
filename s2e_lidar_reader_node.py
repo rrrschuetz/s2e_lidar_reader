@@ -136,8 +136,7 @@ class s2eLidarReader(Node):
         self.get_logger().info('Ready.')
 
     def __del__(self):
-        GPIO.output(self.relay_pin, GPIO.LOW)
-        GPIO.cleanup()
+        self.motor_off()
 
     def prompt(self, message):
         msg = String()
