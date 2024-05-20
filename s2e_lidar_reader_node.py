@@ -41,13 +41,9 @@ class s2eLidarReader(Node):
     servo_min = 260  # Min pulse length out of 4096
     servo_max = 380  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
-    servo_ctl_fwd = int(-(servo_max-servo_min)/2 * 1.1)
-    servo_ctl_rev = int(-(servo_max-servo_min)/2 * 1.0)
-    motor_ctl = -20
+    servo_ctl = int(-(servo_max-servo_min)/2 *1.0)
+    motor_ctl = 16
     relay_pin = 17
-    FWD_SPEED = "5"
-    FWD_SPEEDU = "5"
-    REV_SPEED = "-5"
 
     def __init__(self):
         global G_color1_r,G_color1_g,G_color2_r,G_color2_g
