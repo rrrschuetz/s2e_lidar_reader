@@ -394,6 +394,7 @@ class fullDriveNode(Node):
                         self.get_logger().info(f"Race heading change: {self._race_heading_change}, round heading change: {self._total_heading_change}Distance: {self._front_dist}")
                         self.get_logger().info(f"Parking lot detections {G_parking_lot}")
                         self.prompt("Stopping ...")
+                        self.stop()
                         self._state = "STOP"
                         self._processing = False
                         self._dist_list = []
@@ -557,7 +558,7 @@ class fullDriveNode(Node):
                             self.get_logger().info(f"Move forward")
                             self._dist_list = []
                             self.move("F1")
-                        elif dist < self.STOP_DISTANCE_MIN_FINAL: # 1.0
+                        elif dist < self.STOP_DISTANCE_MIN_FINAL: # 1.2
                             self.get_logger().info(f"Move backward")
                             self._dist_list = []
                             self.move("R1")
