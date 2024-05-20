@@ -75,7 +75,7 @@ class s2eLidarReader(Node):
         G_RIGHT_CAM_ID = str(config['Hardware']['right_cam_id'])
         self.get_logger().info(f"Left / right camera IDs: {G_LEFT_CAM_ID} / {G_RIGHT_CAM_ID}")
 
-        scan_labels = [f'SCAN.{i}' for i in range(1, num_scan+1)]
+        scan_labels = [f'SCAN.{i}' for i in range(1, self.num_scan+1)]
         HPIX = 320
         col1_g_labels = [f'COL1_G.{i}' for i in range(1, HPIX+1)]
         col2_g_labels = [f'COL2_G.{i}' for i in range(1, HPIX+1)]
@@ -90,7 +90,6 @@ class s2eLidarReader(Node):
         with open(filepath, 'a') as f:
             if not labels: f.write(line)
 
-        HPIX = 320
         G_color1_g = np.zeros(HPIX, dtype=int)
         G_color1_r = np.zeros(HPIX, dtype=int)
         G_color2_g = np.zeros(HPIX, dtype=int)
