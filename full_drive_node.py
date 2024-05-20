@@ -322,7 +322,6 @@ class fullDriveNode(Node):
     def lidar_callback(self, msg):
         global G_color1_r,G_color1_g,G_color2_r,G_color2_g,G_color1_m,G_color2_m
         global G_tf_control,G_parking_lot,G_clockwise
-        global profiler
 
         if self._processing:
             self.get_logger().info('Scan skipped')
