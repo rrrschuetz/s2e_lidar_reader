@@ -17,7 +17,9 @@ from sense_hat import SenseHat
 import RPi.GPIO as GPIO
 import usb.core
 import usb.util
-import cProfile, pstats
+#import cProfile, pstats
+
+#profiler = cProfile.Profile()
 
 G_LEFT_CAM_ID = ""
 G_RIGHT_CAM_ID = ""
@@ -68,6 +70,9 @@ class fullDriveNode(Node):
         global G_color1_r,G_color1_g,G_color2_r,G_color2_g,G_color1_m,G_color2_m
         global G_tf_control,G_parking_lot,G_clockwise
         global G_LEFT_CAM_ID, G_RIGHT_CAM_ID
+        #global profiler
+
+        #profiler.enable()
 
         super().__init__('full_drive_node')
         self.publisher_ = self.create_publisher(String, 'main_logger', 10)
@@ -225,8 +230,10 @@ class fullDriveNode(Node):
         self.get_logger().info('Ready.')
 
     def __del__(self):
+        #global profiler
         self.get_logger().info('Switch off ESC')
         self.motor_off()
+        #profiler.disable()
 
     def prompt(self, message):
         msg = String()
@@ -315,6 +322,7 @@ class fullDriveNode(Node):
     def lidar_callback(self, msg):
         global G_color1_r,G_color1_g,G_color2_r,G_color2_g,G_color1_m,G_color2_m
         global G_tf_control,G_parking_lot,G_clockwise
+        global profiler
 
         if self._processing:
             self.get_logger().info('Scan skipped')
@@ -689,9 +697,9 @@ class cameraNode(Node):
 
 
 def main(args=None):
+    #global profiler
 
-    profiler = cProfile.Profile()
-    profiler.enable()
+    #profiler.enable()
 
     rclpy.init(args=args)
     full_drive_node = fullDriveNode()
@@ -716,9 +724,10 @@ def main(args=None):
         cam2_node.destroy_node()
         #rclpy.shutdown()
 
-    profiler.disable()
-    stats = pstats.Stats(profiler).sort_stats('cumtime')
-    stats.print_stats()
+    #profiler.disable()
+
+    #stats = pstats.Stats(profiler).sort_stats('cumtime')
+    #stats.print_stats()
 
     try:
         with open('/tmp/ros2_pipe', 'w') as pipe:
