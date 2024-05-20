@@ -33,8 +33,9 @@ G_color1_m = np.zeros(HPIX, dtype=int)
 G_color2_m = np.zeros(HPIX, dtype=int)
 
 G_tf_control = False
-G_parking_lot = 0
 G_clockwise = False
+G_parking_lot = 0
+G_cam_updates = 0
 
 class fullDriveNode(Node):
 
@@ -68,7 +69,7 @@ class fullDriveNode(Node):
 
     def __init__(self):
         global G_color1_r,G_color1_g,G_color2_r,G_color2_g,G_color1_m,G_color2_m
-        global G_tf_control,G_parking_lot,G_clockwise
+        global G_tf_control,G_parking_lot,G_clockwise,G_cam_updates
         global G_LEFT_CAM_ID, G_RIGHT_CAM_ID
         #global profiler
 
@@ -91,6 +92,7 @@ class fullDriveNode(Node):
         self._clockwise_def = False
         self._obstacle_chk = False
         G_parking_lot = 0
+        G_cam_updates = 0
         self._gyro_cnt = 0
 
         self._X = 0.0 
@@ -321,13 +323,16 @@ class fullDriveNode(Node):
 
     def lidar_callback(self, msg):
         global G_color1_r,G_color1_g,G_color2_r,G_color2_g,G_color1_m,G_color2_m
-        global G_tf_control,G_parking_lot,G_clockwise
+        global G_tf_control,G_parking_lot,G_clockwise,G_cam_updates
 
         if self._processing:
             self.get_logger().info('Scan skipped')
             return
         else:
             self._processing = True
+
+            self.get_logger().info(f"Cam updates per lidar callback {G_cam_updates}")
+            G_cam_updates = 0
 
             scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
             scan[scan == np.inf] = np.nan
@@ -632,14 +637,13 @@ class cameraNode(Node):
         )
 
     def prompt(self, message):
-        return
         msg = String()
         msg.data = message
         self.publisher_.publish(msg)
 
     def openmv_h7_callback(self, msg):
         global G_color1_r,G_color1_g,G_color2_r,G_color2_g,G_color1_m,G_color2_m
-        global G_tf_control,G_parking_lot,G_clockwise
+        global G_tf_control,G_parking_lot,G_clockwise, G_cam_updates
         global G_LEFT_CAM_ID, G_RIGHT_CAM_ID
 
         if self._busy: return
@@ -673,27 +677,27 @@ class cameraNode(Node):
                 color = int(color)
                 ix1 = int(x1)
                 ix2 = int(x2)
-                if not G_tf_control:
-                    if color == 1: self.prompt('*,'+x1+','+x2+',G')
-                    elif color == 2: self.prompt('*,'+x1+','+x2+',R')
-                    self.get_logger().info('CAM: blob: %s,%s,%s,%s' % (cam,color,x1,x2))
-                    self._busy = False
-                    return
+
                 if color == 1:
                     if cam == 1 and not G_clockwise:
+                        G_cam_updates += 1
                         G_color1_g[ix1:ix2] = WEIGHT
                         self.prompt('*,'+x1+','+x2+',G')
                     if cam == 2 and G_clockwise:
+                        G_cam_updates += 1
                         G_color2_g[ix1:ix2] = WEIGHT
                         self.prompt('*,'+x1+','+x2+',G')
                 if color == 2:
                     if cam == 1 and not G_clockwise:
+                        G_cam_updates += 1
                         G_color1_r[ix1:ix2] = WEIGHT
                         self.prompt('*,'+x1+','+x2+',R')
                     if cam == 2 and G_clockwise:
+                        G_cam_updates += 1
                         G_color2_r[ix1:ix2] = WEIGHT
                         self.prompt('*,'+x1+','+x2+',R')
                 if color == 4:
+                    G_cam_uptdates += 1
                     if cam == 1: G_color1_m[ix1:ix2] = WEIGHT
                     if cam == 2: G_color2_m[ix1:ix2] = WEIGHT
                     G_parking_lot += 1
