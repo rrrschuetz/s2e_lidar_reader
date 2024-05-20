@@ -613,11 +613,11 @@ class fullDriveNode(Node):
 
 
 class cameraNode(Node):
-    def __init__(self):
-        super().__init__('camera_node')
+    def __init__(self, name):
+        super().__init__(name)
         self.publisher_ = self.create_publisher(String, 'main_logger', 10)
+        self._busy = False
 
-    def subscribe(self, topic):
         qos_profile = QoSProfile(
             depth=1,
             history=QoSHistoryPolicy.KEEP_LAST,
@@ -626,12 +626,13 @@ class cameraNode(Node):
 
         self.subscription = self.create_subscription(
             String,
-            topic,
+            name,
             self.openmv_h7_callback,
             qos_profile
         )
 
     def prompt(self, message):
+        return
         msg = String()
         msg.data = message
         self.publisher_.publish(msg)
@@ -640,6 +641,10 @@ class cameraNode(Node):
         global G_color1_r,G_color1_g,G_color2_r,G_color2_g,G_color1_m,G_color2_m
         global G_tf_control,G_parking_lot,G_clockwise
         global G_LEFT_CAM_ID, G_RIGHT_CAM_ID
+
+        if self._busy: return
+        self._busy = True
+
         HPIX = 320
         WEIGHT = 1
 
@@ -650,6 +655,7 @@ class cameraNode(Node):
             elif data[0] == G_RIGHT_CAM_ID: cam = 2   # 2d0024001951333039373338 / 340046000e51303434373339
             else:
                 self.get_logger().error(f'Cam not found: {data[0]}')
+                self._busy = False
                 return
 
             if cam == 1:
@@ -670,7 +676,8 @@ class cameraNode(Node):
                 if not G_tf_control:
                     if color == 1: self.prompt('*,'+x1+','+x2+',G')
                     elif color == 2: self.prompt('*,'+x1+','+x2+',R')
-                    #self.get_logger().info('CAM: blob: %s,%s,%s,%s' % (cam,color,x1,x2))
+                    self.get_logger().info('CAM: blob: %s,%s,%s,%s' % (cam,color,x1,x2))
+                    self._busy = False
                     return
                 if color == 1:
                     if cam == 1 and not G_clockwise:
@@ -693,7 +700,8 @@ class cameraNode(Node):
 
         except Exception as e:
             self.get_logger().error(f"Faulty cam msg received: {msg.data} {e}")
-
+        finally:
+            self._busy = False
 
 def main(args=None):
     #global profiler
@@ -702,10 +710,8 @@ def main(args=None):
 
     rclpy.init(args=args)
     full_drive_node = fullDriveNode()
-    cam1_node = cameraNode()
-    cam2_node = cameraNode()
-    cam1_node.subscribe('openmv_topic1')
-    cam2_node.subscribe('openmv_topic2')
+    cam1_node = cameraNode('openmv_topic1')
+    cam2_node = cameraNode('openmv_topic2')
 
     # Use MultiThreadedExecutor to allow parallel callback execution
     executor = MultiThreadedExecutor(num_threads=4)
