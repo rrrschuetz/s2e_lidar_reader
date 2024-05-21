@@ -657,11 +657,9 @@ class cameraNode(Node):
 
         try:
             data = msg.data.split(',')
-
             if data[0] == G_LEFT_CAM_ID: cam = 1      # 33001c000851303436373730 / 240024001951333039373338
             elif data[0] == G_RIGHT_CAM_ID: cam = 2   # 2d0024001951333039373338 / 340046000e51303434373339
             else:
-                self.get_logger().error(f'Cam not found: {data[0]}')
                 self._busy = False
                 return
 
