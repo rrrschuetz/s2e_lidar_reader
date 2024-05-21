@@ -700,7 +700,7 @@ class cameraNode(Node):
                         G_color2_r[ix1:ix2] = WEIGHT
                         self.prompt('*,'+x1+','+x2+',R')
                 if color == 4:
-                    G_cam_uptdates += 1
+                    G_cam_updates += 1
                     if cam == 1: G_color1_m[ix1:ix2] = WEIGHT
                     if cam == 2: G_color2_m[ix1:ix2] = WEIGHT
                     G_parking_lot += 1
