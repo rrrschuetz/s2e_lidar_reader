@@ -41,12 +41,9 @@ class openmvH7Node(Node):
                     try:
                         self.latest_message.data = self.serial_port.readline().decode().strip()
                         data = self.latest_message.data.split(',')
-                        blobs = ((data[i],data[i+1],data[i+2]) for i in range (1,len(data),3))
+                        blobs = [(int(data[i]), int(data[i+1]), int(data[i+2])) for i in range(1, len(data), 3)]
                         for blob in blobs:
                             color_id, x1_new, x2_new = blob
-                            color_id = int(color_id)
-                            x1_new = int(x1_new)
-                            x2_new = int(x2_new)
                             merged = False
                             for existing_blob in self.consolidated_data[color_id]:
                                 _, x1_exist, x2_exist = existing_blob
