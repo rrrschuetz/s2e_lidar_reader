@@ -24,6 +24,7 @@ class openmvH7Node(Node):
         self.serial_port.reset_input_buffer()
         self.serial_port.reset_output_buffer()
 
+        self.consolidated_data = {1: [], 2: [], 4:[]}
         self.latest_message = String()
         self.lock = threading.Lock()
         read_thread = threading.Thread(target=self.read_from_port)
@@ -39,18 +40,57 @@ class openmvH7Node(Node):
                 with self.lock:
                     try:
                         self.latest_message.data = self.serial_port.readline().decode().strip()
+                        data = self.latest_message.data.split(',')
+                        blobs = ((data[i],data[i+1],data[i+2]) for i in range (1,len(data),3))
+                        for blob in blobs:
+                            color_id, x1_new, x2_new = blob
+                            color_id = int(color_id)
+                            x1_new = int(x1_new)
+                            x2_new = int(x2_new)
+                            merged = False
+                            for existing_blob in self.consolidated_data[color_id]:
+                                x1_exist, x2_exist = existing_blob
+                                if not (x2_new < x1_exist or x1_new > x2_exist):
+                                    existing_blob[0] = min(x1_exist, x1_new)
+                                    existing_blob[1] = max(x2_exist, x2_new)
+                                    merged = True
+                                    break
+                            if not merged:
+                                self.consolidated_data[color_id].append(new_blob)
+
                     except Exception as e:
                         self.get_logger().error(f"Unexpected Error: {e}")
                         self.serial_port.reset_input_buffer()
                         self.serial_port.reset_output_buffer()
             time.sleep(0.01)  # Small sleep to prevent excessive CPU usage
 
-    def timer_callback(self):
-        self.publisher_.publish(self.latest_message)
+def timer_callback(self):
+    msg = String()
+    blob_data = []
+
+    if 1 in self.consolidated_data:
+        for blob in self.consolidated_data[1]:
+            x1, x2 = blob
+            blob_data.append(f"1,{x1},{x2}")
+
+    if 2 in self.consolidated_data:
+        for blob in self.consolidated_data[2]:
+            x1, x2 = blob
+            blob_data.append(f"2,{x1},{x2}")
+
+    if 4 in self.consolidated_data:
+        for blob in self.consolidated_data[2]:
+            x1, x2 = blob
+            blob_data.append(f"4,{x1},{x2}")
+
+    msg.data = ",".join(blob_data)
+    self.publisher_.publish(msg)
+
+    self.consolidated_data = {1: [], 2: [], 4: []}
 
 def main(args=None):
     rclpy.init(args=args)
-    node = openmvH7Node()
+    node = openmvH7Node()  data = msg.data.split(',')
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
