@@ -64,20 +64,20 @@ class openmvH7Node(Node):
                         self.serial_port.reset_output_buffer()
             time.sleep(0.01)  # Small sleep to prevent excessive CPU usage
 
-def timer_callback(self):
-    msg = String()
-    blob_data = []
-    color_ids = [1, 2, 4]
+    def timer_callback(self):
+        msg = String()
+        blob_data = []
+        color_ids = [1, 2, 4]
 
-    for color_id in color_ids:
-        if color_id in self.consolidated_data:
-            for blob in self.consolidated_data[color_id]:
-                _, x1, x2 = blob
-                blob_data.append(f"{color_id},{x1},{x2}")
+        for color_id in color_ids:
+            if color_id in self.consolidated_data:
+                for blob in self.consolidated_data[color_id]:
+                    _, x1, x2 = blob
+                    blob_data.append(f"{color_id},{x1},{x2}")
 
-    msg.data = ",".join(blob_data)
-    self.publisher_.publish(msg)
-    self.consolidated_data = {color_id: [] for color_id in color_ids}
+        msg.data = ",".join(blob_data)
+        self.publisher_.publish(msg)
+        self.consolidated_data = {color_id: [] for color_id in color_ids}
 
 def main(args=None):
     rclpy.init(args=args)
