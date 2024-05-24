@@ -90,7 +90,7 @@ def timer_callback(self):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = openmvH7Node()  data = msg.data.split(',')
+    node = openmvH7Node()
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
