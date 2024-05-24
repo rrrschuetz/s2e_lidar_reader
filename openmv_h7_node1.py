@@ -56,7 +56,7 @@ class openmvH7Node(Node):
                                     merged = True
                                     break
                             if not merged:
-                                self.consolidated_data[color_id].append(new_blob)
+                                self.consolidated_data[color_id].append(blob)
 
                     except Exception as e:
                         self.get_logger().error(f"Unexpected Error: {e}")
