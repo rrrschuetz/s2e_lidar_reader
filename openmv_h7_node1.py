@@ -64,29 +64,28 @@ class openmvH7Node(Node):
                         self.serial_port.reset_output_buffer()
             time.sleep(0.01)  # Small sleep to prevent excessive CPU usage
 
-def timer_callback(self):
-    msg = String()
-    blob_data = []
+    def timer_callback(self):
+        msg = String()
+        blob_data = []
 
-    if 1 in self.consolidated_data:
-        for blob in self.consolidated_data[1]:
-            x1, x2 = blob
-            blob_data.append(f"1,{x1},{x2}")
+        if 1 in self.consolidated_data:
+            for blob in self.consolidated_data[1]:
+                x1, x2 = blob
+                blob_data.append(f"1,{x1},{x2}")
 
-    if 2 in self.consolidated_data:
-        for blob in self.consolidated_data[2]:
-            x1, x2 = blob
-            blob_data.append(f"2,{x1},{x2}")
+        if 2 in self.consolidated_data:
+            for blob in self.consolidated_data[2]:
+                x1, x2 = blob
+                blob_data.append(f"2,{x1},{x2}")
 
-    if 4 in self.consolidated_data:
-        for blob in self.consolidated_data[2]:
-            x1, x2 = blob
-            blob_data.append(f"4,{x1},{x2}")
+        if 4 in self.consolidated_data:
+            for blob in self.consolidated_data[2]:
+                x1, x2 = blob
+                blob_data.append(f"4,{x1},{x2}")
 
-    msg.data = ",".join(blob_data)
-    self.publisher_.publish(msg)
-
-    self.consolidated_data = {1: [], 2: [], 4: []}
+        msg.data = ",".join(blob_data)
+        self.publisher_.publish(msg)
+        self.consolidated_data = {1: [], 2: [], 4: []}
 
 def main(args=None):
     rclpy.init(args=args)
