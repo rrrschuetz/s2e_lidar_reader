@@ -615,7 +615,7 @@ class fullDriveNode(Node):
         self.roll = math.degrees(self.roll)
         self.pitch = math.degrees(self.pitch)
         self.yaw = math.degrees(self.yaw)
-        #self.get_logger().info(f"Roll: {self.roll}, Pitch: {self.pitch}, Yaw: {self.yaw}")
+        self.get_logger().info(f"Roll: {self.roll}, Pitch: {self.pitch}, Yaw: {self.yaw}")
 
     def joy_callback(self, msg):
         if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
