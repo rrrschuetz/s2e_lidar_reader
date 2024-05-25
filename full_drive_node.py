@@ -174,7 +174,7 @@ class fullDriveNode(Node):
             Imu,
             'wit/imu',
             self.imu_callback,
-            qos_profile
+            10
         )
 
         self.subscription_joy = self.create_subscription(
@@ -376,7 +376,7 @@ class fullDriveNode(Node):
                     self._total_heading_change += heading_change
                     self._race_heading_change += heading_change
                     self._last_heading = self._current_heading
-                    #self.get_logger().info(f"Heading change: {heading_change}, total heading change: {self._total_heading_change}")
+                    self.get_logger().info(f"Heading change: {heading_change}, total heading change: {self._total_heading_change}")
 
                     calibration = abs(self._cal_left/self._cal_right -1)
                     if calibration < 0.01:
@@ -612,7 +612,10 @@ class fullDriveNode(Node):
     def imu_callback(self, msg):
         quaternion = msg.orientation
         self.roll, self.pitch, self.yaw = self.quaternion_to_euler(quaternion)
-        #self.get_logger().info('Roll: {:.2f}, Pitch: {:.2f}, Yaw: {:.2f}'.format(math.degrees(self.roll), math.degrees(self.pitch), math.degrees(self.yaw)))
+        self.roll = math.degrees(self.roll)
+        self.pitch = math.degrees(self.pitch)
+        self.yaw = math.degrees(self.yaw)
+        self.get_logger().info(f"Roll: {self.roll}, Pitch: {self.pitch}, Yaw: {self.yaw}")
 
     def joy_callback(self, msg):
         if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
