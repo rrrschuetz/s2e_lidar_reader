@@ -108,7 +108,7 @@ class SpeedControlNode(Node):
         current_time = self.get_clock().now()
         self.impulse_history.append(1)
         self.impulse_history_long.append(current_time)
-        while self.impulse_history_long and (current_time - self.impulse_history_long[0]).seconds() > self.rolling_avg_period:
+        while self.impulse_history_long and (current_time - self.impulse_history_long[0]).nanoseconds()/1e9 > self.rolling_avg_period:
             self.impulse_times.popleft()
 
     def set_speed_callback(self, msg):
@@ -152,7 +152,7 @@ class SpeedControlNode(Node):
             self.get_logger().error("IOError I2C occurred: %s" % str(e))
 
         current_time = self.get_clock().now()
-        if (current_time - self.last_impulse_time).seconds() >= 1:
+        if (current_time - self.last_impulse_time).nanoseconds()/1e9 >= 1:
             self.impulse_history_long.clear()
 
     def log_timer_callback(self):
