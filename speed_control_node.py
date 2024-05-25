@@ -108,8 +108,12 @@ class SpeedControlNode(Node):
         current_time = self.get_clock().now()
         self.impulse_history.append(1)
         self.impulse_history_long.append(current_time)
-        while self.impulse_history_long and (current_time - self.impulse_history_long[0]).nanoseconds()/1e9 > self.rolling_avg_period:
-            self.impulse_times.popleft()
+        while self.impulse_history_long:
+            duration_seconds = (current_time - self.impulse_history_long[0]).nanoseconds() / 1e9
+            if duration_seconds > self.rolling_avg_period:
+                self.impulse_history_long.popleft()  # Remove old data
+            else:
+                break
 
     def set_speed_callback(self, msg):
         try:
