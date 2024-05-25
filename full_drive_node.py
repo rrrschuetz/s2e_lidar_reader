@@ -174,7 +174,7 @@ class fullDriveNode(Node):
             Imu,
             'wit/imu',
             self.imu_callback,
-            10
+            qos_profile
         )
 
         self.subscription_joy = self.create_subscription(
