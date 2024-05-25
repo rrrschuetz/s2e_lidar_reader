@@ -360,36 +360,35 @@ class fullDriveNode(Node):
             ########################
             if self._state == 'RACE' and G_tf_control:
 
-                if True:
-                    self._current_heading = self.roll
-                    heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
-                    self._total_heading_change += heading_change
-                    self._last_heading = self._current_heading
-                    if G_parking_lot > self.MIN_DETECTIONS_SPOT and abs(self._total_heading_change) >= (self.RACE_SECTIONS*360-10):
-                        self.get_logger().info(f"cam1/cam2 {sum(G_color1_m)}/{sum(G_color2_m)}")
-                        if ((not G_clockwise and sum(G_color2_m) > self.MIN_DETECTIONS_TRIGGER) or (G_clockwise and sum(G_color1_m) > self.MIN_DETECTIONS_TRIGGER)):
-                            duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
-                            self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
-                            self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
-                            self.get_logger().info(f"Parking lot detections {G_parking_lot}")
-                            self.prompt("Parking ...")
-                            self._state = "PARK"
-                            self._processing = False
-                            self._park_phase = 0
-                            return
-
-                    elif G_parking_lot <= self.MIN_DETECTIONS_SPOT and abs(self._total_heading_change) >= (self.RACE_SECTIONS*360-10) and self._front_dist < 1.6:
+                self._current_heading = self.roll
+                heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
+                self._total_heading_change += heading_change
+                self._last_heading = self._current_heading
+                if G_parking_lot > self.MIN_DETECTIONS_SPOT and abs(self._total_heading_change) >= (self.RACE_SECTIONS*360-10):
+                    self.get_logger().info(f"cam1/cam2 {sum(G_color1_m)}/{sum(G_color2_m)}")
+                    if ((not G_clockwise and sum(G_color2_m) > self.MIN_DETECTIONS_TRIGGER) or (G_clockwise and sum(G_color1_m) > self.MIN_DETECTIONS_TRIGGER)):
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                         self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
                         self.get_logger().info(f"Parking lot detections {G_parking_lot}")
-                        self.prompt("Stopping ...")
-                        self.stop()
-                        self._state = "STOP"
+                        self.prompt("Parking ...")
+                        self._state = "PARK"
                         self._processing = False
-                        self._dist_list = []
-                        self._stop_phase = 0
+                        self._park_phase = 0
                         return
+
+                elif G_parking_lot <= self.MIN_DETECTIONS_SPOT and abs(self._total_heading_change) >= (self.RACE_SECTIONS*360-10) and self._front_dist < 1.6:
+                    duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
+                    self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
+                    self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
+                    self.get_logger().info(f"Parking lot detections {G_parking_lot}")
+                    self.prompt("Stopping ...")
+                    self.stop()
+                    self._state = "STOP"
+                    self._processing = False
+                    self._dist_list = []
+                    self._stop_phase = 0
+                    return
 
                 try:
                     if not self._obstacle_chk:
