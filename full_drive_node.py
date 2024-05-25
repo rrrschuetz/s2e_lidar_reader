@@ -60,7 +60,7 @@ class fullDriveNode(Node):
     servo_min = 260  # Min pulse length out of 4096
     servo_max = 380  # Max pulse length out of 4096
     servo_neutral = int((servo_max+servo_min)/2)
-    servo_ctl_fwd = int(-(servo_max-servo_min)/2 * 1.1)
+    servo_ctl_fwd = int(-(servo_max-servo_min)/2 * 1.05)
     servo_ctl_rev = int(-(servo_max-servo_min)/2 * 1.0)
     motor_ctl = -20
     relay_pin = 17
@@ -615,7 +615,7 @@ class fullDriveNode(Node):
         self.roll = math.degrees(self.roll)
         self.pitch = math.degrees(self.pitch)
         self.yaw = math.degrees(self.yaw)
-        #self.get_logger().info(f"Roll: {self.roll}, Pitch: {self.pitch}, Yaw: {self.yaw}")
+        self.get_logger().info(f"Roll: {self.roll}, Pitch: {self.pitch}, Yaw: {self.yaw}")
 
     def joy_callback(self, msg):
         if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
