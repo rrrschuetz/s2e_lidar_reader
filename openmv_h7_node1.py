@@ -24,6 +24,7 @@ class openmvH7Node(Node):
         self.serial_port.reset_input_buffer()
         self.serial_port.reset_output_buffer()
 
+        self.cam_id = ""
         self.consolidated_data = {1: [], 2: [], 4:[]}
         self.latest_message = String()
         self.lock = threading.Lock()
@@ -40,8 +41,11 @@ class openmvH7Node(Node):
                 with self.lock:
                     try:
                         self.latest_message.data = self.serial_port.readline().decode().strip()
+                        #self.get_logger().info(f"{self.latest_message.data}")
                         data = self.latest_message.data.split(',')
+                        self.cam_id = data[0]
                         blobs = [(int(data[i]), int(data[i+1]), int(data[i+2])) for i in range(1, len(data), 3)]
+                        #self.get_logger().info(f"{blobs}")
                         for blob in blobs:
                             color_id, x1_new, x2_new = blob
                             merged = False
@@ -56,6 +60,8 @@ class openmvH7Node(Node):
                                     break
                             if not merged:
                                 self.consolidated_data[color_id].append([x1_new, x2_new])
+
+                        #self.get_logger().info(f"{self.consolidated_data}")
 
                     except Exception as e:
                         self.get_logger().error(f"Unexpected Error: {e}")
@@ -74,9 +80,11 @@ class openmvH7Node(Node):
                     x1, x2 = blob
                     blob_data.append(f"{color_id},{x1},{x2}")
 
-        msg.data = ",".join(blob_data)
-        self.publisher_.publish(msg)
-        self.consolidated_data = {color_id: [] for color_id in color_ids}
+        if blob_data:
+            msg.data = self.cam_id + ","+",".join(blob_data)
+            #self.get_logger().info(f"*1* {msg.data}")
+            self.publisher_.publish(msg)
+            self.consolidated_data = {color_id: [] for color_id in color_ids}
 
 def main(args=None):
     rclpy.init(args=args)
