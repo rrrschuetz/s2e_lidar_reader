@@ -160,7 +160,7 @@ class SpeedControlNode(Node):
             self.impulse_history_long.clear()
 
     def log_timer_callback(self):
-        self.get_logger().info(f"Speed: {sum(self.impulse_history_long[1:])/self.rolling_avg_period} impulses/sec")
+        self.get_logger().info(f"Speed: {sum(list(self.impulse_history_long)[1:])/self.rolling_avg_period} impulses/sec")
 
 def main(args=None):
     rclpy.init(args=args)
