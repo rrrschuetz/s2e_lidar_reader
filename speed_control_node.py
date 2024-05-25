@@ -143,6 +143,10 @@ class SpeedControlNode(Node):
     def timer_callback(self):
         if not self.pid_steering: return
 
+        current_time = self.get_clock().now()
+        if (current_time - self.last_impulse_time).nanoseconds/1e9 >= 1:
+            self.impulse_history_long.clear()
+
         self.impulse_count = sum(self.impulse_history)
         pid_output = self.pid(self.impulse_count)
         #self.get_logger().info(f"Impulses {self.impulse_count},pid_output {pid_output}")
@@ -154,10 +158,6 @@ class SpeedControlNode(Node):
             self.pwm.set_pwm(1, 0, self.y_pwm)
         except IOError as e:
             self.get_logger().error("IOError I2C occurred: %s" % str(e))
-
-        current_time = self.get_clock().now()
-        if (current_time - self.last_impulse_time).nanoseconds/1e9 >= 1:
-            self.impulse_history_long.clear()
 
     def log_timer_callback(self):
         self.get_logger().info(f"Speed: {len(self.impulse_history_long)/self.rolling_avg_period} impulses/sec")
