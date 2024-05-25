@@ -147,6 +147,10 @@ class fullDriveNode(Node):
         self.get_logger().info(f"Dongle ID: {self.DONGLE_ID1}:{self.DONGLE_ID2}")
 
         # Initialize compass
+        self.roll = 0    # X
+        self.pitch = 0   # Y
+        self.yaw = 0     # Z
+
         self._sense = SenseHat()
         self.get_logger().info('Sense hat initialized ...')
 
@@ -282,7 +286,8 @@ class fullDriveNode(Node):
         self._gyro_cnt = 0
         self._section = 0
 
-        self._initial_heading = self._sense.gyro['yaw']
+        #self._initial_heading = self._sense.gyro['yaw']
+        self._initial_heading = self.roll
         self._start_heading = self._initial_heading
         self._last_heading = self._initial_heading
         self._total_heading_change = 0
@@ -365,7 +370,8 @@ class fullDriveNode(Node):
                 self._gyro_cnt += 1
                 if self._gyro_cnt >= 1:
                     self._gyro_cnt = 0
-                    self._current_heading = self._sense.gyro['yaw']
+                    #self._current_heading = self._sense.gyro['yaw']
+                    self._current_heading = self.roll
                     heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
                     self._total_heading_change += heading_change
                     self._race_heading_change += heading_change
@@ -495,7 +501,8 @@ class fullDriveNode(Node):
             elif self._state == 'PARK':
 
                 if self._park_phase == 0:
-                    self._current_heading = self._sense.gyro['yaw']
+                    #self._current_heading = self._sense.gyro['yaw']
+                    self._current_heading = self.roll
                     heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
                     self._total_heading_change += heading_change
                     self._last_heading = self._current_heading
@@ -604,8 +611,8 @@ class fullDriveNode(Node):
 
     def imu_callback(self, msg):
         quaternion = msg.orientation
-        roll, pitch, yaw = self.quaternion_to_euler(quaternion)
-        self.get_logger().info('Roll: {:.2f}, Pitch: {:.2f}, Yaw: {:.2f}'.format(math.degrees(roll), math.degrees(pitch), math.degrees(yaw)))
+        self.roll, self.pitch, self.yaw = self.quaternion_to_euler(quaternion)
+        #self.get_logger().info('Roll: {:.2f}, Pitch: {:.2f}, Yaw: {:.2f}'.format(math.degrees(self.roll), math.degrees(self.pitch), math.degrees(self.yaw)))
 
     def joy_callback(self, msg):
         if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
