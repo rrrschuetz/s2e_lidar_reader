@@ -50,7 +50,7 @@ class DisplayNode(Node):
             self.get_logger().info(f"Display busy, skipping message.")
             return
         self.busy = True
-        self.get_logger().info(f'Displaying message: {msg.data}')
+        #self.get_logger().info(f'Displaying message: {msg.data}')
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)  # Clear the display area
         data = msg.data.split(',')
         if data[0] == '*':
