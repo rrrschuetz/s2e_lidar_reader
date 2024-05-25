@@ -47,6 +47,8 @@ class ImuNode(Node):
 
         self.buff = bytearray()
 
+        self.last_received_time = self.get_clock().now()
+        self.timer = self.create_timer(0.1, self.check_imu_data_timeout)
         self.timer = self.create_timer(0.1, self.read_serial_data)
         self.get_logger().info('WT61 configuration ready.')
 
@@ -54,6 +56,7 @@ class ImuNode(Node):
         if self.serial_port.in_waiting:
             data = self.serial_port.read(self.serial_port.in_waiting)
             self.handle_serial_data(data)
+            self.last_received_time = self.get_clock().now()
 
     def handle_serial_data(self, data):
         for byte in data:
@@ -85,6 +88,18 @@ class ImuNode(Node):
         imu_msg.header.frame_id = 'base_link'
         imu_msg.orientation = quat
         self.imu_pub.publish(imu_msg)
+
+    def check_imu_data_timeout(self):
+        if (self.get_clock().now() - self.last_received_time).nanoseconds > 1e9:
+            self.get_logger().info('No IMU data for 1 second, resetting device...')
+            self.reset_device()
+
+    def reset_device(self):
+        # Logic to reset the device (e.g., toggle DTR)
+        if self.serial_port.is_open:
+            self.serial_port.close()
+        time.sleep(1)
+        self.serial_port.open()
 
     def handle_command(self, msg):
         command = msg.data
