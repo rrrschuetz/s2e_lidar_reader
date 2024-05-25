@@ -94,7 +94,6 @@ class fullDriveNode(Node):
         self._obstacle_chk = False
         G_parking_lot = 0
         G_cam_updates = 0
-        self._gyro_cnt = 0
 
         self._X = 0.0 
         self._Y = 0.0
@@ -127,7 +126,6 @@ class fullDriveNode(Node):
         self.MIN_DETECTIONS_TRIGGER = int(config['Parking']['min_detections_trigger'])
         self.RACE_SECTIONS = int(config['Parking']['race_sections'])
         self.GYRO_ACCURACY = float(config['Parking']['gyro_accuracy'])
-        self.LIDAR_CAL_ACCURACY = float(config['Parking']['lidar_cal_accuracy'])
         self.STOP_DISTANCE_MAX_TURN = float(config['Parking']['stop_distance_max_turn'])
         self.STOP_DISTANCE_MIN_TURN = float(config['Parking']['stop_distance_min_turn'])
         self.STOP_DISTANCE_PARK = float(config['Parking']['stop_distance_park'])
@@ -135,7 +133,6 @@ class fullDriveNode(Node):
         self.STOP_DISTANCE_MIN_FINAL = float(config['Parking']['stop_distance_min_final'])
         self.get_logger().info(f"Parking detection spot / trigger: {self.MIN_DETECTIONS_SPOT} / {self.MIN_DETECTIONS_TRIGGER}")
         self.get_logger().info(f"Number of race half rounds: {self.RACE_SECTIONS}")
-        self.get_logger().info(f"Parking accuracy gyro / lidar: {self.GYRO_ACCURACY} / {self.LIDAR_CAL_ACCURACY}")
         self.get_logger().info(f"Stop distances min / max / park: {self.STOP_DISTANCE_MIN_TURN} / {self.STOP_DISTANCE_MAX_TURN} / {self.STOP_DISTANCE_PARK}")
         self.get_logger().info(f"Stop position final min / max : {self.STOP_DISTANCE_MIN_FINAL} / {self.STOP_DISTANCE_MAX_FINAL}")
 
@@ -283,15 +280,12 @@ class fullDriveNode(Node):
         self._state = "RACE"
         G_tf_control = True
         G_parking_lot = 0
-        self._gyro_cnt = 0
-        self._section = 0
 
         #self._initial_heading = self._sense.gyro['yaw']
         self._initial_heading = self.roll
         self._start_heading = self._initial_heading
         self._last_heading = self._initial_heading
         self._total_heading_change = 0
-        self._race_heading_change = 0
         self.get_logger().info(f"Initial heading: {self._initial_heading} degrees")
         self._round_start_time = self.get_clock().now()
 
@@ -366,31 +360,12 @@ class fullDriveNode(Node):
             ########################
             if self._state == 'RACE' and G_tf_control:
 
-                # Round completion check
-                self._gyro_cnt += 1
-                if self._gyro_cnt >= 1:
-                    self._gyro_cnt = 0
-                    #self._current_heading = self._sense.gyro['yaw']
+                if True:
                     self._current_heading = self.roll
                     heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
                     self._total_heading_change += heading_change
-                    self._race_heading_change += heading_change
                     self._last_heading = self._current_heading
-                    #self.get_logger().info(f"Heading change: {heading_change}, total heading change: {self._total_heading_change}")
-
-                    #calibration = abs(self._cal_left/self._cal_right -1)
-                    #if calibration < 0.01:
-                    #    #self.get_logger().info(f"Calibration")
-                    #    G = 180 if G_clockwise else -180
-                    #    self._race_heading_change = self._section*G + self._total_heading_change
-
-                    #if abs(self._total_heading_change) >= 160 and calibration < 0.1:
-                    #    self._section += 1
-                    #    self.get_logger().info(f"Number of sections {self._section}, race heading change: {self._race_heading_change}, round heading change: {self._total_heading_change}, Distance: {self._front_dist}")
-                    #    self._total_heading_change = 0
-
-                    #if G_parking_lot > self.MIN_DETECTIONS_SPOT and self._section >= self.RACE_SECTIONS: #20 #6
-                    if G_parking_lot > self.MIN_DETECTIONS_SPOT and abs(self._race_heading_change) >= 350: #1070
+                    if G_parking_lot > self.MIN_DETECTIONS_SPOT and abs(self._total_heading_change) >= (self.RACE_SECTIONS*360-10):
                         self.get_logger().info(f"cam1/cam2 {sum(G_color1_m)}/{sum(G_color2_m)}")
                         if ((not G_clockwise and sum(G_color2_m) > self.MIN_DETECTIONS_TRIGGER) or (G_clockwise and sum(G_color1_m) > self.MIN_DETECTIONS_TRIGGER)):
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
@@ -403,11 +378,10 @@ class fullDriveNode(Node):
                             self._park_phase = 0
                             return
 
-                    #elif G_parking_lot <= 50 and self._section >= self.RACE_SECTIONS and abs(self._race_heading_change) > 1070 and calibration < 0.2 and self._front_dist < 1.6:
-                    elif G_parking_lot <= 50 and abs(self._race_heading_change) > 3050 and self._front_dist < 1.6:
+                    elif G_parking_lot <= self.MIN_DETECTIONS_SPOT and abs(self._total_heading_change) >= (self.RACE_SECTIONS*360-10) and self._front_dist < 1.6:
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
-                        self.get_logger().info(f"Race heading change: {self._race_heading_change}, round heading change: {self._total_heading_change}Distance: {self._front_dist}")
+                        self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
                         self.get_logger().info(f"Parking lot detections {G_parking_lot}")
                         self.prompt("Stopping ...")
                         self.stop()
@@ -503,21 +477,19 @@ class fullDriveNode(Node):
             elif self._state == 'PARK':
 
                 if self._park_phase == 0:
-                    #self._current_heading = self._sense.gyro['yaw']
                     self._current_heading = self.roll
                     heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
                     self._total_heading_change += heading_change
                     self._last_heading = self._current_heading
                     orientation = self._total_heading_change
                     if not G_clockwise:
-                        while orientation < -90: orientation += 90
-                        X = 1.0 if orientation > 0 else -1.0
-                    else:
                         while orientation > 90: orientation -= 90
                         X = 1.0 if orientation < 0 else -1.0
+                    else:
+                        while orientation < 90: orientation += 90
+                        X = 1.0 if orientation > 0 else -1.0
                     self.steer(X,False)
                     if abs(orientation) < self.GYRO_ACCURACY:  #5
-                        #self._park_phase = 1
                         X = 0
                         self.stop()
                         self.steer(0,True)
