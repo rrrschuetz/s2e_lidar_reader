@@ -69,6 +69,7 @@ class openmvH7Node(Node):
                         self.serial_port.reset_output_buffer()
             time.sleep(0.01)  # Small sleep to prevent excessive CPU usage
 
+
     def timer_callback(self):
         msg = String()
         blob_data = []
