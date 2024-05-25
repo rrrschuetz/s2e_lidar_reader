@@ -14,7 +14,7 @@ import numpy as np
 import tensorflow as tf
 import pickle
 from Adafruit_PCA9685 import PCA9685
-from sense_hat import SenseHat
+#from sense_hat import SenseHat
 import RPi.GPIO as GPIO
 import usb.core
 import usb.util
@@ -151,8 +151,8 @@ class fullDriveNode(Node):
         self.pitch = 0   # Y
         self.yaw = 0     # Z
 
-        self._sense = SenseHat()
-        self.get_logger().info('Sense hat initialized ...')
+        #self._sense = SenseHat()
+        #self.get_logger().info('Sense hat initialized ...')
 
         # Initialize PCA9685
         self._pwm = PCA9685()
@@ -376,7 +376,7 @@ class fullDriveNode(Node):
                     self._total_heading_change += heading_change
                     self._race_heading_change += heading_change
                     self._last_heading = self._current_heading
-                    self.get_logger().info(f"Heading change: {heading_change}, total heading change: {self._total_heading_change}")
+                    #self.get_logger().info(f"Heading change: {heading_change}, total heading change: {self._total_heading_change}")
 
                     calibration = abs(self._cal_left/self._cal_right -1)
                     if calibration < 0.01:
