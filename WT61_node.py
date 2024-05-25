@@ -102,7 +102,9 @@ class ImuNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     imu_node = ImuNode()
-    rclpy.spin(imu_node)
+    executor = rclpy.executors.MultiThreadedExecutor()
+    executor.add_node(imu_node)
+    executor.spin()
     imu_node.destroy_node()
     rclpy.shutdown()
 
