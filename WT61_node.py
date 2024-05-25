@@ -32,8 +32,8 @@ class ImuNode(Node):
         self.declare_parameters(
             namespace='',
             parameters=[
-                ('port', '/dev/ttyUSB0'),
-                ('baud', 9600),
+                ('port', '/dev/ttyS0'),
+                ('baud', 115200),
             ]
         )
 
@@ -48,6 +48,7 @@ class ImuNode(Node):
         self.buff = bytearray()
 
         self.timer = self.create_timer(0.1, self.read_serial_data)
+        self.get_logger().info('WT61 configuration ready.')
 
     def read_serial_data(self):
         if self.serial_port.in_waiting:
@@ -73,6 +74,7 @@ class ImuNode(Node):
             yaw, pitch, roll = [x / 32768.0 * 180 for x in angle_data]  # Convert to degrees
             quat = quaternion_from_euler(roll, pitch, yaw)
             self.publish_imu_orientation(quat)
+            self.get_logger().info('Quaternion published.')
 
     def check_sum(self, packet):
         return sum(packet[:-1]) & 0xff == packet[-1]

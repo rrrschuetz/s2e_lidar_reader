@@ -7,6 +7,7 @@ from rclpy.executors import MultiThreadedExecutor
 from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDurabilityPolicy
 from sensor_msgs.msg import LaserScan
 from sensor_msgs.msg import Joy
+from sensor_msgs.msg import Imu
 from std_msgs.msg import String
 from std_msgs.msg import Bool
 import numpy as np
@@ -162,6 +163,13 @@ class fullDriveNode(Node):
             LaserScan,
             '/scan',
             self.lidar_callback,
+            qos_profile
+        )
+
+        self.subscription_imu = self.create_subscription(
+            Imu,
+            'wit/imu',
+            self.imu_callback,
             qos_profile
         )
 
@@ -577,7 +585,28 @@ class fullDriveNode(Node):
 
             self._processing = False
 
-       
+    def quaternion_to_euler(self,quaternion):
+        x, y, z, w = quaternion.x, quaternion.y, quaternion.z, quaternion.w
+        t0 = +2.0 * (w * x + y * z)
+        t1 = +1.0 - 2.0 * (x * x + y * y)
+        roll_x = math.atan2(t0, t1)
+
+        t2 = +2.0 * (w * y - z * x)
+        t2 = +1.0 if t2 > +1.0 else t2
+        t2 = -1.0 if t2 < -1.0 else t2
+        pitch_y = math.asin(t2)
+
+        t3 = +2.0 * (w * z + x * y)
+        t4 = +1.0 - 2.0 * (y * y + z * z)
+        yaw_z = math.atan2(t3, t4)
+
+        return roll_x, pitch_y, yaw_z  # in radians
+
+    def imu_callback(self, msg):
+        quaternion = msg.orientation
+        roll, pitch, yaw = self.quaternion_to_euler(quaternion)
+        self.get_logger().info('Roll: {:.2f}, Pitch: {:.2f}, Yaw: {:.2f}'.format(math.degrees(roll), math.degrees(pitch), math.degrees(yaw)))
+
     def joy_callback(self, msg):
         if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
 
@@ -707,6 +736,7 @@ class cameraNode(Node):
             self.get_logger().error(f"Faulty cam msg received: {msg.data} {e}")
         finally:
             self._busy = False
+
 
 def main(args=None):
     #global profiler
