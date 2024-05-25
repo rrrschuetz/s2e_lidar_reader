@@ -141,11 +141,11 @@ class SpeedControlNode(Node):
             self.get_logger().error("Received invalid speed setting")
 
     def timer_callback(self):
-        if not self.pid_steering: return
-
         current_time = self.get_clock().now()
         if (current_time - self.last_impulse_time).nanoseconds/1e9 >= 1:
             self.impulse_history_long.clear()
+
+        if not self.pid_steering: return
 
         self.impulse_count = sum(self.impulse_history)
         pid_output = self.pid(self.impulse_count)
