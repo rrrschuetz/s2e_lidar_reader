@@ -105,11 +105,11 @@ class SpeedControlNode(Node):
         return
 
     def impulse_callback(self, channel):
-        current_time = self.get_clock().now()
+        self.last_impulse_time = self.get_clock().now()
         self.impulse_history.append(1)
-        self.impulse_history_long.append(current_time)
+        self.impulse_history_long.append(self.last_impulse_time)
         while self.impulse_history_long:
-            duration_seconds = (current_time - self.impulse_history_long[0]).nanoseconds / 1e9
+            duration_seconds = (self.last_impulse_time - self.impulse_history_long[0]).nanoseconds / 1e9
             if duration_seconds > self.rolling_avg_period:
                 self.impulse_history_long.popleft()  # Remove old data
             else:
@@ -156,11 +156,11 @@ class SpeedControlNode(Node):
             self.get_logger().error("IOError I2C occurred: %s" % str(e))
 
         current_time = self.get_clock().now()
-        if (current_time - self.last_impulse_time).nanoseconds()/1e9 >= 1:
+        if (current_time - self.last_impulse_time).nanoseconds/1e9 >= 1:
             self.impulse_history_long.clear()
 
     def log_timer_callback(self):
-        self.get_logger().info(f"Speed: {sum(list(self.impulse_history_long)[1:])/self.rolling_avg_period} impulses/sec")
+        self.get_logger().info(f"Speed: {len(self.impulse_history_long)/self.rolling_avg_period} impulses/sec")
 
 def main(args=None):
     rclpy.init(args=args)
