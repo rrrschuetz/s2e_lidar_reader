@@ -48,6 +48,7 @@ class SpeedControlNode(Node):
 
         self.impulse_count = 0
         self.rolling_avg_size = 100  # Number of measurements for the rolling average
+        self.rolling_avg_period = 10
         self.impulse_history = collections.deque(maxlen=self.rolling_avg_size)
         self.impulse_history_long = collections.deque(maxlen=1000)
         self.last_impulse_time = self.get_clock().now()
@@ -56,7 +57,7 @@ class SpeedControlNode(Node):
 
         GPIO.add_event_detect(self.gpio_pin, GPIO.FALLING, callback=self.impulse_callback)
         self.timer = self.create_timer(0.2, self.timer_callback)
-        self.log_timer = self.create_timer(10.0, self.log_timer_callback)
+        self.log_timer = self.create_timer(self.rolling_avg_period, self.log_timer_callback)
 
         config = configparser.ConfigParser()
         config.read('/home/rrrschuetz/ros2_ws4/config.ini')
@@ -104,8 +105,11 @@ class SpeedControlNode(Node):
         return
 
     def impulse_callback(self, channel):
+        current_time = self.get_clock().now()
         self.impulse_history.append(1)
-        self.impulse_history_long.append(1)
+        self.impulse_history_long.append(current_time)
+        while self.impulse_history_long and (current_time - self.impulse_history_long[0] > self.rolling_average_period):
+            self.impulse_times.popleft()
 
     def set_speed_callback(self, msg):
         try:
@@ -152,7 +156,7 @@ class SpeedControlNode(Node):
             self.impulse_history_long.clear()
 
     def log_timer_callback(self):
-        self.get_logger().info(f"Speed: {sum(self.impulse_history)/10} per second")
+        self.get_logger().info(f"Speed: {sum(self.impulse_history)/self.rolling_avg_period} per second")
 
 def main(args=None):
     rclpy.init(args=args)
