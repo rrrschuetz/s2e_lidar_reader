@@ -48,9 +48,9 @@ class openmvH7Node(Node):
                             for existing_blob in self.consolidated_data[color_id]:
                                 x1_exist, x2_exist = existing_blob
                                 x1_exist = int(x1_exist)
-                                x2_exist = int(x2_exist)1
+                                x2_exist = int(x2_exist)
                                 if not (x2_new < x1_exist or x1_new > x2_exist):
-                                    existing_blob[1] = min(x1_exist, x1_new)
+                                    existing_blob[0] = min(x1_exist, x1_new)
                                     existing_blob[2] = max(x2_exist, x2_new)
                                     merged = True
                                     break
