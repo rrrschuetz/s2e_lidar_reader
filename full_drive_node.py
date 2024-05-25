@@ -378,18 +378,19 @@ class fullDriveNode(Node):
                     self._last_heading = self._current_heading
                     #self.get_logger().info(f"Heading change: {heading_change}, total heading change: {self._total_heading_change}")
 
-                    calibration = abs(self._cal_left/self._cal_right -1)
-                    if calibration < 0.01:
-                        #self.get_logger().info(f"Calibration")
-                        G = 180 if G_clockwise else -180
-                        self._race_heading_change = self._section*G + self._total_heading_change
+                    #calibration = abs(self._cal_left/self._cal_right -1)
+                    #if calibration < 0.01:
+                    #    #self.get_logger().info(f"Calibration")
+                    #    G = 180 if G_clockwise else -180
+                    #    self._race_heading_change = self._section*G + self._total_heading_change
 
-                    if abs(self._total_heading_change) >= 160 and calibration < 0.1:
-                        self._section += 1
-                        self.get_logger().info(f"Number of sections {self._section}, race heading change: {self._race_heading_change}, round heading change: {self._total_heading_change}, Distance: {self._front_dist}")
-                        self._total_heading_change = 0
+                    #if abs(self._total_heading_change) >= 160 and calibration < 0.1:
+                    #    self._section += 1
+                    #    self.get_logger().info(f"Number of sections {self._section}, race heading change: {self._race_heading_change}, round heading change: {self._total_heading_change}, Distance: {self._front_dist}")
+                    #    self._total_heading_change = 0
 
-                    if G_parking_lot > self.MIN_DETECTIONS_SPOT and self._section >= self.RACE_SECTIONS: #20 #6
+                    #if G_parking_lot > self.MIN_DETECTIONS_SPOT and self._section >= self.RACE_SECTIONS: #20 #6
+                    if G_parking_lot > self.MIN_DETECTIONS_SPOT and abs(self._race_heading_change) >= 350: #1070
                         self.get_logger().info(f"cam1/cam2 {sum(G_color1_m)}/{sum(G_color2_m)}")
                         if ((not G_clockwise and sum(G_color2_m) > self.MIN_DETECTIONS_TRIGGER) or (G_clockwise and sum(G_color1_m) > self.MIN_DETECTIONS_TRIGGER)):
                             duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
@@ -402,7 +403,8 @@ class fullDriveNode(Node):
                             self._park_phase = 0
                             return
 
-                    elif G_parking_lot <= 50 and self._section >= self.RACE_SECTIONS and abs(self._race_heading_change) > 1070 and calibration < 0.2 and self._front_dist < 1.6:
+                    #elif G_parking_lot <= 50 and self._section >= self.RACE_SECTIONS and abs(self._race_heading_change) > 1070 and calibration < 0.2 and self._front_dist < 1.6:
+                    elif G_parking_lot <= 50 and abs(self._race_heading_change) > 3050 and self._front_dist < 1.6:
                         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
                         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
                         self.get_logger().info(f"Race heading change: {self._race_heading_change}, round heading change: {self._total_heading_change}Distance: {self._front_dist}")
@@ -506,15 +508,15 @@ class fullDriveNode(Node):
                     heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
                     self._total_heading_change += heading_change
                     self._last_heading = self._current_heading
-                    orientation = abs(self._total_heading_change)
-                    if orientation > 120: orientation -= 90
-                    if orientation > 120: orientation -= 90
+                    orientation = self._total_heading_change
                     if not G_clockwise:
-                        X = 1.0 if orientation > 90 else -1.0
+                        while orientation < -90: orientation += 90
+                        X = 1.0 if orientation > 0 else -1.0
                     else:
-                        X = 1.0 if orientation < 90 else -1.0
+                        while orientation > 90: orientation -= 90
+                        X = 1.0 if orientation < 0 else -1.0
                     self.steer(X,False)
-                    if abs(orientation -90) < self.GYRO_ACCURACY:  #5
+                    if abs(orientation) < self.GYRO_ACCURACY:  #5
                         #self._park_phase = 1
                         X = 0
                         self.stop()
