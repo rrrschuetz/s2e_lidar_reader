@@ -5,6 +5,7 @@ from rclpy.node import Node
 from std_msgs.msg import String
 import RPi.GPIO as GPIO
 import collections
+import threading
 from simple_pid import PID
 from Adafruit_PCA9685 import PCA9685
 
@@ -44,13 +45,18 @@ class SpeedControlNode(Node):
         self.y_pwm = 0
         self.max_y = 350
         self.min_y = 250
+
         self.impulse_count = 0
         self.rolling_avg_size = 100  # Number of measurements for the rolling average
         self.impulse_history = collections.deque(maxlen=self.rolling_avg_size)
+        self.impulse_history_long = collections.deque(maxlen=1000)
+        self.last_impulse_time = self.get_clock().now()
+
         self.reset_pid()
 
         GPIO.add_event_detect(self.gpio_pin, GPIO.FALLING, callback=self.impulse_callback)
         self.timer = self.create_timer(0.2, self.timer_callback)
+        self.log_timer = self.create_timer(10.0, self.log_timer_callback)
 
         config = configparser.ConfigParser()
         config.read('/home/rrrschuetz/ros2_ws4/config.ini')
@@ -99,6 +105,7 @@ class SpeedControlNode(Node):
 
     def impulse_callback(self, channel):
         self.impulse_history.append(1)
+        self.impulse_history_long.append(1)
 
     def set_speed_callback(self, msg):
         try:
@@ -127,6 +134,7 @@ class SpeedControlNode(Node):
 
     def timer_callback(self):
         if not self.pid_steering: return
+
         self.impulse_count = sum(self.impulse_history)
         pid_output = self.pid(self.impulse_count)
         #self.get_logger().info(f"Impulses {self.impulse_count},pid_output {pid_output}")
@@ -138,7 +146,14 @@ class SpeedControlNode(Node):
             self.pwm.set_pwm(1, 0, self.y_pwm)
         except IOError as e:
             self.get_logger().error("IOError I2C occurred: %s" % str(e))
-        
+
+        current_time = self.get_clock().now()
+        if (current_time - self.last_impulse_time).seconds() >= 1:
+            self.impulse_history_long.clear()
+
+    def log_timer_callback(self):
+        self.get_logger().info(f"Speed: {sum(self.impulse_history)/10} per second")
+
 def main(args=None):
     rclpy.init(args=args)
     speed_control = SpeedControlNode()
