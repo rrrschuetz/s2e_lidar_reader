@@ -360,7 +360,7 @@ class fullDriveNode(Node):
             ########################
             if self._state == 'RACE' and G_tf_control:
 
-                self.get_logger().info(f"Total heading change: {self._total_heading_change}")
+                #self.get_logger().info(f"Total heading change: {self._total_heading_change}")
                 self._current_heading = self.roll
                 heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
                 self._total_heading_change += heading_change
