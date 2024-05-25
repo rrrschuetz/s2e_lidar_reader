@@ -46,16 +46,16 @@ class openmvH7Node(Node):
                             color_id, x1_new, x2_new = blob
                             merged = False
                             for existing_blob in self.consolidated_data[color_id]:
-                                _, x1_exist, x2_exist = existing_blob
+                                x1_exist, x2_exist = existing_blob
                                 x1_exist = int(x1_exist)
-                                x2_exist = int(x2_exist)
+                                x2_exist = int(x2_exist)1
                                 if not (x2_new < x1_exist or x1_new > x2_exist):
-                                    existing_blob[0] = min(x1_exist, x1_new)
-                                    existing_blob[1] = max(x2_exist, x2_new)
+                                    existing_blob[1] = min(x1_exist, x1_new)
+                                    existing_blob[2] = max(x2_exist, x2_new)
                                     merged = True
                                     break
                             if not merged:
-                                self.consolidated_data[color_id].append(blob)
+                                self.consolidated_data[color_id].append([x1_new, x2_new])
 
                     except Exception as e:
                         self.get_logger().error(f"Unexpected Error: {e}")
@@ -71,7 +71,7 @@ class openmvH7Node(Node):
         for color_id in color_ids:
             if color_id in self.consolidated_data:
                 for blob in self.consolidated_data[color_id]:
-                    _, x1, x2 = blob
+                    x1, x2 = blob
                     blob_data.append(f"{color_id},{x1},{x2}")
 
         msg.data = ",".join(blob_data)
