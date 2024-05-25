@@ -69,6 +69,7 @@ class ImuNode(Node):
     def process_packet(self, packet):
         if not self.check_sum(packet):
             self.get_logger().warn('Checksum failed')
+            self.reset_device()
             return
 
         data_type = packet[1]
@@ -91,11 +92,10 @@ class ImuNode(Node):
 
     def check_imu_data_timeout(self):
         if (self.get_clock().now() - self.last_received_time).nanoseconds > 1e9:
-            self.get_logger().info('No IMU data for 1 second, resetting device...')
             self.reset_device()
 
     def reset_device(self):
-        # Logic to reset the device (e.g., toggle DTR)
+        self.get_logger().info('No IMU data for 1 second, resetting device...')
         if self.serial_port.is_open:
             self.serial_port.close()
         time.sleep(1)
