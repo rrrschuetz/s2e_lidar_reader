@@ -51,7 +51,7 @@ class ImuNode(Node):
         self.baud_list = [4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800]
         index = self.baud_list.index(baud) +1
 
-        #unlock_imu_cmd = b'\xff\xaa\x69\x88\xb5'
+        #unlock_cmd = bytearray([0xFF, 0xAA, 0x69, 0x88, 0xB5])
         #self.serial_port.write(unlock_imu_cmd)
         #time.sleep(0.1)
 
