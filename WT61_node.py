@@ -78,7 +78,7 @@ class ImuNode(Node):
             yaw, pitch, roll = [x / 32768.0 * 180 for x in angle_data]  # Convert to degrees
             quat = quaternion_from_euler(roll, pitch, yaw)
             self.publish_imu_orientation(quat)
-            self.get_logger().info(f"Quaternion published: yaw: {yaw}, pitch: {pitch}, roll: {roll}")
+            #self.get_logger().info(f"Quaternion published: yaw: {yaw}, pitch: {pitch}, roll: {roll}")
 
     def check_sum(self, packet):
         return sum(packet[:-1]) & 0xff == packet[-1]
