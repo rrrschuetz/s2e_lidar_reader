@@ -140,6 +140,7 @@ class fullDriveNode(Node):
         self.pitch = 0   # Y
         self.pitch_min = 45
         self.pitch_max = -45
+        self.pitch_init = 777
         self.yaw = 0     # Z
 
         # Initialize PCA9685
@@ -322,6 +323,14 @@ class fullDriveNode(Node):
         else:
             return False
 
+    def race_report(self):
+        duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
+        self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
+        self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
+        self.get_logger().info(f"Parking lot detections {G_parking_lot}")
+        self.get_logger().info(f"Pitch min / max: {self.pitch_min-self.pitch_init} / {self.pitch_max-self.pitch_init}")
+        self.prompt(f"Pitch min / max: {self.pitch_min-self.pitch_init} / {self.pitch_max-self.pitch_init}")
+
     def lidar_callback(self, msg):
         global G_color1_r,G_color1_g,G_color2_r,G_color2_g,G_color1_m,G_color2_m
         global G_tf_control,G_parking_lot,G_clockwise,G_cam_updates
@@ -362,10 +371,7 @@ class fullDriveNode(Node):
                 if G_parking_lot > self.MIN_DETECTIONS_SPOT and abs(self._total_heading_change) >= (self.RACE_SECTIONS*360-10):
                     self.get_logger().info(f"cam1/cam2 {sum(G_color1_m)}/{sum(G_color2_m)}")
                     if ((not G_clockwise and sum(G_color2_m) > self.MIN_DETECTIONS_TRIGGER) or (G_clockwise and sum(G_color1_m) > self.MIN_DETECTIONS_TRIGGER)):
-                        duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
-                        self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
-                        self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
-                        self.get_logger().info(f"Parking lot detections {G_parking_lot}")
+                        self.race_report()
                         self.prompt("Parking ...")
                         self._state = "PARK"
                         self._processing = False
@@ -373,10 +379,7 @@ class fullDriveNode(Node):
                         return
 
                 elif G_parking_lot <= self.MIN_DETECTIONS_SPOT and abs(self._total_heading_change) >= (self.RACE_SECTIONS*360-10) and self._front_dist < 1.6:
-                    duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
-                    self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
-                    self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
-                    self.get_logger().info(f"Parking lot detections {G_parking_lot}")
+                    self.race_report()
                     self.prompt("Stopping ...")
                     self.stop()
                     self._state = "STOP"
@@ -575,10 +578,11 @@ class fullDriveNode(Node):
         self.pitch = math.degrees(self.pitch)
         self.yaw = math.degrees(self.yaw)
 
+        if self.pitch_init == 777: self.pitch_init = self.pitch
         self.pitch_min = min(self.pitch_min,self.pitch)
         self.pitch_max = min(self.pitch_max,self.pitch)
 
-        self.get_logger().info(f"Roll: {self.roll}, Pitch: {self.pitch}, Yaw: {self.yaw}")
+        #self.get_logger().info(f"Roll: {self.roll}, Pitch: {self.pitch}, Yaw: {self.yaw}")
 
     def joy_callback(self, msg):
         if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
