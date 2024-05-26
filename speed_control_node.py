@@ -23,6 +23,8 @@ class SpeedControlNode(Node):
     PID_Ki = 0.05
     PID_Kd = 0.00
     impulse_count_max = 20
+    rolling_avg_size = 100  # Number of measurements for the rolling average
+    rolling_avg_period = 5
 
     def __init__(self):
         super().__init__('speed_control')
@@ -47,8 +49,6 @@ class SpeedControlNode(Node):
         self.min_y = 250
 
         self.impulse_count = 0
-        self.rolling_avg_size = 100  # Number of measurements for the rolling average
-        self.rolling_avg_period = 10
         self.impulse_history = collections.deque(maxlen=self.rolling_avg_size)
         self.impulse_history_long = collections.deque(maxlen=1000)
         self.last_impulse_time = self.get_clock().now()
