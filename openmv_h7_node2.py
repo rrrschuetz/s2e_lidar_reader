@@ -11,12 +11,14 @@ class openmvH7Node(Node):
 
         config = configparser.ConfigParser()
         config.read('/home/rrrschuetz/ros2_ws4/config.ini')
+        self.cam_software_path = config['Hardware']['cam_software_path']
         self.interval = float(config['Hardware']['camera_timer'])
+        self.get_logger().info(f"Camera 2: Software path: {self.cam_software_path}")
         self.get_logger().info(f"Camera 2: timer interval: {self.interval}")
 
         self.serial_port = serial.Serial('/dev/ttyACM0', 115200, timeout=5)   #115200
         self.get_logger().info('OpenMV H7 2 connected' )
-        with open("/home/rrrschuetz/ros2_ws4/src/s2e_lidar_reader/s2e_lidar_reader/h7_cam_exec.py", 'rb') as file:
+        with open(self.cam_software_path, 'rb') as file:
             script_data = file.read()
             self.serial_port.write(script_data)
             self.get_logger().info('OpenMV H7 2 script sent' )
