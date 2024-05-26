@@ -271,6 +271,9 @@ class fullDriveNode(Node):
         self.speed_publisher_.publish(self._speed_msg)
         time.sleep(2.0)
 
+    def move_m(self, dist):
+        self.move(dist*100)
+
     def start_race(self):
         global G_tf_control,G_parking_lot
         self._state = "RACE"
@@ -395,8 +398,8 @@ class fullDriveNode(Node):
                         self.get_logger().info(f"Obstacle: {min_far_dist}, {min_near_dist}, distance: {self._front_dist}")
                         if not self.initial_race and (min_far_dist < 0.8 or min_near_dist < 0.2):
                             self._backward = True
-                            M = "R"+str(int((2.5 - self._front_dist) * 40))
-                            self.move(M)
+                            #M = "R"+str(int((2.5 - self._front_dist) * 40))
+                            self.move_m(1.5)
                             self._processing = False
                             return
                         else:
