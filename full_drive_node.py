@@ -400,7 +400,7 @@ class fullDriveNode(Node):
                         if not self.initial_race and (min_far_dist < 0.8 or min_near_dist < 0.2):
                             self._backward = True
                             #M = "R"+str(int((2.5 - self._front_dist) * 40))
-                            self.move_m(1.5)
+                            self.move_m(-1.5)
                             self._processing = False
                             return
                         else:
