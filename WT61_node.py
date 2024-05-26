@@ -69,7 +69,7 @@ class ImuNode(Node):
     def process_packet(self, packet):
         if not self.check_sum(packet):
             self.get_logger().warn('Checksum failed')
-            self.reset_device()
+            #self.reset_device()
             return
 
         data_type = packet[1]
