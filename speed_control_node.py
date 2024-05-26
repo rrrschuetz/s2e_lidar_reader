@@ -165,7 +165,7 @@ class SpeedControlNode(Node):
     def log_timer_callback(self):
         average_speed = len(self.impulse_history_long)/self.rolling_avg_period
         self.get_logger().warn(f"Speed: {average_speed}, minimum speed: {self.average_min_speed} impulses/sec")
-        if 0 < average_speed < self.average_min_speed:
+        if self.pid_steering and 0 < average_speed < self.average_min_speed:
             self.pid.setpoint += 1
             self.get_logger().info(f"setpoint increased to: {self.pid.setpoint}")
 
