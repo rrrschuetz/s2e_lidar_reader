@@ -25,6 +25,7 @@ class SpeedControlNode(Node):
     impulse_count_max = 20
     rolling_avg_size = 100  # Number of measurements for the rolling average
     rolling_avg_period = 5
+    average_min_speed = 25
 
     def __init__(self):
         super().__init__('speed_control')
@@ -71,13 +72,16 @@ class SpeedControlNode(Node):
 
         self.impulse_speed_fwd = int(config['Speed']['impulse_speed_fwd'])
         self.impulse_speed_rev = int(config['Speed']['impulse_speed_rev'])
+        self.average_min_speed = int(config['Speed']['average_min_speed'])
         self.get_logger().info(f"Impulse speed fwd / rev setting: {self.impulse_speed_fwd} / {self.impulse_speed_rev}")
+        self.get_logger().info(f"Average minimal speed: {self.average_min_speed}")
 
     def __del__(self):
         GPIO.output(self.relay_pin, GPIO.LOW)
         GPIO.cleanup()
 
     def reset_pid(self):
+        self.get_logger().info(f"PID reset.")
         self.pid = PID(self.PID_Kp, self.PID_Ki, self.PID_Kd, setpoint=0, output_limits = (self.pid_output_min,self.pid_output_max)) # 0.2/0.05/0.00
         self.pid.sample_time = 0.1
 
@@ -136,7 +140,6 @@ class SpeedControlNode(Node):
                 self.pid_steering = True
                 new_speedf = float(new_speed)
                 self.pid.setpoint = abs(new_speedf)  # Set PID setpoint to desired speed, including direction.
-                self.reverse = (new_speedf < 0)
         except ValueError:
             self.get_logger().error("Received invalid speed setting")
 
@@ -160,7 +163,11 @@ class SpeedControlNode(Node):
             self.get_logger().error("IOError I2C occurred: %s" % str(e))
 
     def log_timer_callback(self):
-        self.get_logger().info(f"Speed: {len(self.impulse_history_long)/self.rolling_avg_period} impulses/sec")
+        average_speed = len(self.impulse_history_long)/self.rolling_avg_period
+        self.get_logger().warn(f"Speed: {average_speed}, minimum speed: {self.average_min_speed} impulses/sec")
+        if 0 < average_speed < self.average_min_speed:
+            self.pid.setpoint += 1
+            self.get_logger().info(f"setpoint increased to: {self.pid.setpoint}")
 
 def main(args=None):
     rclpy.init(args=args)
