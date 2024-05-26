@@ -138,6 +138,8 @@ class fullDriveNode(Node):
         # Initialize compass
         self.roll = 0    # X
         self.pitch = 0   # Y
+        self.pitch_min = 45
+        self.pitch_max = -45
         self.yaw = 0     # Z
 
         # Initialize PCA9685
@@ -572,7 +574,11 @@ class fullDriveNode(Node):
         self.roll = math.degrees(self.roll)
         self.pitch = math.degrees(self.pitch)
         self.yaw = math.degrees(self.yaw)
-        #self.get_logger().info(f"Roll: {self.roll}, Pitch: {self.pitch}, Yaw: {self.yaw}")
+
+        self.pitch_min = min(self.pitch_min,self.pitch)
+        self.pitch_max = min(self.pitch_max,self.pitch)
+
+        self.get_logger().info(f"Roll: {self.roll}, Pitch: {self.pitch}, Yaw: {self.yaw}")
 
     def joy_callback(self, msg):
         if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
