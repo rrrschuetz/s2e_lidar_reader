@@ -47,6 +47,15 @@ class ImuNode(Node):
 
         self.buff = bytearray()
 
+        baud = 9600
+        self.baud_list = [4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800]
+        index = self.baud_list.index(baud) + 1
+        cmd = bytearray([0xff, 0xaa, 0x04, index, 0x00])
+        self.serial_port.write(cmd)
+        time.sleep(0.1)
+        self.serial_port.baudrate = baud
+        self.get_logger().info(f'Baud rate changed to {baud}')
+
         self.last_received_time = self.get_clock().now()
         self.timer = self.create_timer(0.1, self.check_imu_data_timeout)
         self.timer = self.create_timer(0.1, self.read_serial_data)
