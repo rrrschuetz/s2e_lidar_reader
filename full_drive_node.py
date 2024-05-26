@@ -149,6 +149,7 @@ class fullDriveNode(Node):
         self._pwm.set_pwm(0, 0, int(self.servo_neutral))
         self.get_logger().info('Steering unit initialized ...')
 
+        self._total_heading_change = 0
         self._round_start_time = self.get_clock().now()
         self._button_time = self.get_clock().now()
 
@@ -276,7 +277,6 @@ class fullDriveNode(Node):
         G_tf_control = True
         G_parking_lot = 0
 
-        #self._initial_heading = self._sense.gyro['yaw']
         self._initial_heading = self.roll
         self._start_heading = self._initial_heading
         self._last_heading = self._initial_heading
@@ -580,7 +580,7 @@ class fullDriveNode(Node):
 
         if self.pitch_init == 777: self.pitch_init = self.pitch
         self.pitch_min = min(self.pitch_min,self.pitch)
-        self.pitch_max = min(self.pitch_max,self.pitch)
+        self.pitch_max = max(self.pitch_max,self.pitch)
 
         #self.get_logger().info(f"Roll: {self.roll}, Pitch: {self.pitch}, Yaw: {self.yaw}")
 
