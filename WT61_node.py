@@ -33,7 +33,7 @@ class ImuNode(Node):
             namespace='',
             parameters=[
                 ('port', '/dev/ttyS0'),
-                ('baud', 115200,
+                ('baud', 115200),
             ]
         )  #115200
 
