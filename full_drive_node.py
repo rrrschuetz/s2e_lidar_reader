@@ -273,7 +273,7 @@ class fullDriveNode(Node):
 
     def move_m(self, dist):
         dir = "F" if dist >= 0 else "R"
-        self.move(dir+str(abs(int(dist*40))))
+        self.move(dir+str(abs(int(dist*67))))
 
     def start_race(self):
         global G_tf_control,G_parking_lot
