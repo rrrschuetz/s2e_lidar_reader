@@ -351,7 +351,7 @@ class fullDriveNode(Node):
         dist = self.scan_max_dist
         if len(self.section_means) > 0:
             dist = max(self.section_means[78:83])
-        return
+        return dist
         if dist > 1.0:  # and (self.pitch-self.pitch_init) < 0
             try:
                 while not self.distance_sensor.check_data_ready():
