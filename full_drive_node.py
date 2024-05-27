@@ -156,6 +156,7 @@ class fullDriveNode(Node):
             self.get_logger().error("VL53L5CX device is not alive")
         t = time.time()
         self.distance_sensor.init()
+        self.distance_sensor.set_resolution(8*8)
         self.get_logger().info(f"VL53L5CX device initialised ({time.time() - t:.1f}s)")
         self.distance_sensor.start_ranging()
         dist = self.front_dist()
@@ -358,7 +359,7 @@ class fullDriveNode(Node):
                     time.sleep(0.1)
                 ranging_data = self.distance_sensor.get_ranging_data()
                 dist = 0
-                for i in range(16):
+                for i in range(64):
                     self.get_logger().info(f"Zone : {i: >3d}, "
                         f"Status : {ranging_data.target_status[self.distance_sensor.nb_target_per_zone * i]: >3d}, "
                         f"Distance : {ranging_data.distance_mm[self.distance_sensor.nb_target_per_zone * i]: >4.0f} mm")
