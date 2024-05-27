@@ -13,7 +13,7 @@ import numpy as np
 import tensorflow as tf
 import pickle
 from Adafruit_PCA9685 import PCA9685
-import adafruit_vl53l1x, board, busio
+from vl53l5cx.vl53l5cx import VL53L5CX
 import RPi.GPIO as GPIO
 import usb.core
 import usb.util
@@ -151,13 +151,16 @@ class fullDriveNode(Node):
         self._pwm.set_pwm(0, 0, int(self.servo_neutral))
         self.get_logger().info('Steering unit initialized ...')
 
-        # Initialize VL53L1X distance sensor
-        i2c = busio.I2C(board.SCL, board.SDA)
-        self.dist_sensor = adafruit_vl53l1x.VL53L1X(i2c)
-        self.dist_sensor.distance_mode = adafruit_vl53l1x.DISTANCE_MODE_LONG  # Choose SHORT, MEDIUM, or LONG
-        self.dist_sensor.timing_budget = 100  # Timing budget in ms
-        self.get_logger().info('VL53L1X unit initialized ...')
-        
+        # Initialize VL53L5CX distance sensor
+        self.distance_sensor = VL53L5CX()
+        if not self.distance_sensor.is_alive():
+            self.get_logger().error("VL53L5CX device is not alive")
+        t = time.time()
+        self.distance_sensor.init()
+        sys.get_logger()info(f"VL53L5CX device initialised ({time.time() - t:.1f}s)")
+        self.distance_sensor.start_ranging()
+        dist = self.front_dist()
+
         self._total_heading_change = 0
         self._round_start_time = self.get_clock().now()
         self._button_time = self.get_clock().now()
@@ -345,14 +348,18 @@ class fullDriveNode(Node):
         self.prompt(f"Pitch min / max: {self.pitch_min-self.pitch_init} / {self.pitch_max-self.pitch_init}")
 
     def front_dist(self):
-         #self.get_logger().info(f"Distances: {self.section_means}")        
-
-        if (self.pitch-self.pitch_init) < 0:
-            dist = 0
-            for i in range(10):
-                dist += self.dist_sensor.range
-            dist /= 10
+        #if (self.pitch-self.pitch_init) < 0:
+        if True:
+            while not self.dist_sensor.check_data_ready():
+                sleep(0.1)
+            ranging_data = self.dist_sensor.get_ranging_data()
+            for i in range(16):
+                self.get_logger().info(f"Zone : {i: >3d}, "
+                    f"Status : {ranging_data.target_status[self.distance_sensor.nb_target_per_zone * i]: >3d}, "
+                    f"Distance : {ranging_data.distance_mm[self.distance_sensor.nb_target_per_zone * i]: >4.0f} mm")
+            dist = ranging_data.distance_mm[self.distance_sensor.nb_target_per_zone * 15]/1000
         else:
+            #self.get_logger().info(f"Distances: {self.section_means}")
             dist = max(self.section_means[78:83])
         return dist
 

@@ -9,8 +9,7 @@ import threading
 from simple_pid import PID
 import board, busio
 from Adafruit_PCA9685 import PCA9685
-import adafruit_ads1x15.ads1115 as ADS
-from adafruit_ads1x15.analog_in import AnalogIn
+import Adafruit_ADS1x15
 
 class SpeedControlNode(Node):
     reverse_pulse = 204
@@ -45,11 +44,9 @@ class SpeedControlNode(Node):
         self.pwm.set_pwm(1, 0, self.neutral_pulse)
         GPIO.output(self.relay_pin, GPIO.HIGH)
         self.get_logger().info('ESC calibrated.')
-        
-        i2c = busio.I2C(board.SCL, board.SDA)
-        ads = ADS.ADS1115(i2c)
-        self.chan = AnalogIn(ads, ADS.P0)      
-        self.get_logger().info(f"Battery voltage: {can.value}, {chan.voltage} V")
+
+        adc = Adafruit_ADS1x15.ADS1115()
+        #self.get_logger().info(f"Battery voltage: {can.value}, {chan.voltage} V")
         
         self.pid_steering = False
         self.motor_ctl = 1.2
@@ -104,12 +101,12 @@ class SpeedControlNode(Node):
             self.get_logger().info("move_to_impulse: No move!")
             return
 
-        if self.chan.voltage > 12.0:
-            power = self.impulse_speed_rev_high if impulse_goal < 0 else self.impulse_speed_fwd_high  
-        elif self.chan.voltage > 11.3:
-            power = self.impulse_speed_rev_med if impulse_goal < 0 else self.impulse_speed_fwd_med  
-        else:
-            power = self.impulse_speed_rev_low if impulse_goal < 0 else self.impulse_speed_fwd_low 
+        #if self.chan.voltage > 12.0:
+        #    power = self.impulse_speed_rev_high if impulse_goal < 0 else self.impulse_speed_fwd_high
+        #elif self.chan.voltage > 11.3:
+        #    power = self.impulse_speed_rev_med if impulse_goal < 0 else self.impulse_speed_fwd_med
+        #else:
+        #    power = self.impulse_speed_rev_low if impulse_goal < 0 else self.impulse_speed_fwd_low
 
         self.impulse_history.clear()
         self.impulse_count = 0
