@@ -49,7 +49,7 @@ class SpeedControlNode(Node):
         i2c = busio.I2C(board.SCL, board.SDA)
         ads = ADS.ADS1115(i2c)
         self.chan = AnalogIn(ads, ADS.P0)      
-        self.get_logger().info(f"Battery voltage: {can.value}, {chan.voltage} V')
+        self.get_logger().info(f"Battery voltage: {can.value}, {chan.voltage} V")
         
         self.pid_steering = False
         self.motor_ctl = 1.2
