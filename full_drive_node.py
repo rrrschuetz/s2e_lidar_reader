@@ -159,8 +159,7 @@ class fullDriveNode(Node):
         self.distance_sensor.init()
         self.get_logger().info(f"VL53L5CX device initialised ({time.time() - t:.1f}s)")
         self.distance_sensor.start_ranging()
-        while True:
-            dist = self.front_dist()
+        dist = self.front_dist()
 
         self._total_heading_change = 0
         self._round_start_time = self.get_clock().now()
