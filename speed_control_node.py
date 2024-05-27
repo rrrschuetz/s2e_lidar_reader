@@ -5,11 +5,11 @@ from rclpy.node import Node
 from std_msgs.msg import String
 import RPi.GPIO as GPIO
 import collections
-import threading
 from simple_pid import PID
-import board, busio
+#import board, busio
 from Adafruit_PCA9685 import PCA9685
-import Adafruit_ADS1x15
+#from adafruit_ads1x15.ads1x15 import ADS1115
+#from adafruit_ads1x15.analog_in import AnalogIn
 
 class SpeedControlNode(Node):
     reverse_pulse = 204
@@ -45,7 +45,9 @@ class SpeedControlNode(Node):
         GPIO.output(self.relay_pin, GPIO.HIGH)
         self.get_logger().info('ESC calibrated.')
 
-        adc = Adafruit_ADS1x15.ADS1115()
+        #i2c = busio.I2C(board.SCL, board.SDA)
+        #ads = ADS1115(i2c)
+        #chan = AnalogIn(ads, ADS1115.P0)
         #self.get_logger().info(f"Battery voltage: {can.value}, {chan.voltage} V")
         
         self.pid_steering = False
@@ -107,6 +109,8 @@ class SpeedControlNode(Node):
         #    power = self.impulse_speed_rev_med if impulse_goal < 0 else self.impulse_speed_fwd_med
         #else:
         #    power = self.impulse_speed_rev_low if impulse_goal < 0 else self.impulse_speed_fwd_low
+
+        power = self.impulse_speed_rev_med if impulse_goal < 0 else self.impulse_speed_fwd_med
 
         self.impulse_history.clear()
         self.impulse_count = 0
