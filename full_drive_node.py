@@ -351,7 +351,7 @@ class fullDriveNode(Node):
         #if (self.pitch-self.pitch_init) < 0:
         if True:
             while not self.distance_sensor.check_data_ready():
-                sleep(0.1)
+                time.sleep(0.1)
             ranging_data = self.distance_sensor.get_ranging_data()
             for i in range(16):
                 self.get_logger().info(f"Zone : {i: >3d}, "
