@@ -99,7 +99,7 @@ class fullDriveNode(Node):
         G_color1_m = np.zeros(HPIX, dtype=int)
         G_color2_m = np.zeros(HPIX, dtype=int)
 
-        self.section_means = np.array(161)
+        self.section_means = []
         self._front_dist = 0
         self._backward = False
 
@@ -159,7 +159,8 @@ class fullDriveNode(Node):
         self.distance_sensor.init()
         self.get_logger().info(f"VL53L5CX device initialised ({time.time() - t:.1f}s)")
         self.distance_sensor.start_ranging()
-        dist = self.front_dist()
+        while True:
+            dist = self.front_dist()
 
         self._total_heading_change = 0
         self._round_start_time = self.get_clock().now()
@@ -349,20 +350,24 @@ class fullDriveNode(Node):
 
     def front_dist(self):
         #self.get_logger().info(f"Distances: {self.section_means}")
-        dist = max(self.section_means[78:83])
-        if dist > 1.0:
-            #if (self.pitch-self.pitch_init) < 0:
-            if True:
+        dist = self.scan_max_dist
+        if len(self.section_means) > 0:
+            dist = max(self.section_means[78:83])
+        if dist > 1.0:  # and (self.pitch-self.pitch_init) < 0
+            try:
                 while not self.distance_sensor.check_data_ready():
                     time.sleep(0.1)
                 ranging_data = self.distance_sensor.get_ranging_data()
                 dist = 0
-                for i in range(4):
+                for i in range(16):
                     self.get_logger().info(f"Zone : {i: >3d}, "
                         f"Status : {ranging_data.target_status[self.distance_sensor.nb_target_per_zone * i]: >3d}, "
                         f"Distance : {ranging_data.distance_mm[self.distance_sensor.nb_target_per_zone * i]: >4.0f} mm")
                     dist += ranging_data.distance_mm[self.distance_sensor.nb_target_per_zone * i]
-                dist /= 4000
+                dist /= 16000
+            except Exception as e:
+                self.get_logger().error(f"distance measurement failed: {e}")
+
         return dist
 
     
