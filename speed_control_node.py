@@ -48,8 +48,8 @@ class SpeedControlNode(Node):
         
         i2c = busio.I2C(board.SCL, board.SDA)
         ads = ADS.ADS1115(i2c)
-        chan = AnalogIn(ads, ADS.P0)      
-        self.get_logger().info(f"Battery voltage: {can.value}, {str(chan.voltage)} V')
+        self.chan = AnalogIn(ads, ADS.P0)      
+        self.get_logger().info(f"Battery voltage: {can.value}, {chan.voltage} V')
         
         self.pid_steering = False
         self.motor_ctl = 1.2
@@ -78,10 +78,15 @@ class SpeedControlNode(Node):
         self.get_logger().info(f"PID min / max setting: {self.pid_output_min} / {self.pid_output_max}")
         self.get_logger().info(f"PID Kp / Ki / Kd: {self.PID_Kp} / {self.PID_Ki} / {self.PID_Kd}")
 
-        self.impulse_speed_fwd = int(config['Speed']['impulse_speed_fwd'])
-        self.impulse_speed_rev = int(config['Speed']['impulse_speed_rev'])
+        self.impulse_speed_fwd_low = int(config['Speed']['impulse_speed_fwd_low'])
+        self.impulse_speed_rev_low = int(config['Speed']['impulse_speed_rev_low'])
+        self.impulse_speed_fwd_med = int(config['Speed']['impulse_speed_fwd_med'])
+        self.impulse_speed_rev_med = int(config['Speed']['impulse_speed_rev_med'])
+        self.impulse_speed_fwd_high = int(config['Speed']['impulse_speed_fwd_high'])
+        self.impulse_speed_rev_high = int(config['Speed']['impulse_speed_rev_high'])
         self.average_min_speed = int(config['Speed']['average_min_speed'])
-        self.get_logger().info(f"Impulse speed fwd / rev setting: {self.impulse_speed_fwd} / {self.impulse_speed_rev}")
+        self.get_logger().info(f"Impulse speed fwd setting: {self.impulse_speed_fwd_high} / {self.impulse_speed_fwd_med}/ {self.impulse_speed_fwd_low}")
+        self.get_logger().info(f"Impulse speed rev setting: {self.impulse_speed_rev_high} / {self.impulse_speed_rev_med}/ {self.impulse_speed_rev_low}")
         self.get_logger().info(f"Average minimal speed: {self.average_min_speed}")
 
     def __del__(self):
@@ -98,7 +103,14 @@ class SpeedControlNode(Node):
         if impulse_goal == 0:
             self.get_logger().info("move_to_impulse: No move!")
             return
-        power = self.impulse_speed_rev if impulse_goal < 0 else self.impulse_speed_fwd   # -12/12
+
+        if self.chan.voltage > 12.0:
+            power = self.impulse_speed_rev_high if impulse_goal < 0 else self.impulse_speed_fwd_high  
+        elif self.chan.voltage > 11.3:
+            power = self.impulse_speed_rev_med if impulse_goal < 0 else self.impulse_speed_fwd_med  
+        else:
+            power = self.impulse_speed_rev_low if impulse_goal < 0 else self.impulse_speed_fwd_low 
+
         self.impulse_history.clear()
         self.impulse_count = 0
 
