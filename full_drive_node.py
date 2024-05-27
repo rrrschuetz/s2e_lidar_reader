@@ -13,6 +13,7 @@ import numpy as np
 import tensorflow as tf
 import pickle
 from Adafruit_PCA9685 import PCA9685
+import adafruit_vl53l1x, board, busio
 import RPi.GPIO as GPIO
 import usb.core
 import usb.util
@@ -98,6 +99,7 @@ class fullDriveNode(Node):
         G_color1_m = np.zeros(HPIX, dtype=int)
         G_color2_m = np.zeros(HPIX, dtype=int)
 
+        self.section_means = np.array(161)
         self._front_dist = 0
         self._backward = False
 
@@ -149,6 +151,13 @@ class fullDriveNode(Node):
         self._pwm.set_pwm(0, 0, int(self.servo_neutral))
         self.get_logger().info('Steering unit initialized ...')
 
+        # Initialize VL53L1X distance sensor
+        i2c = busio.I2C(board.SCL, board.SDA)
+        self.dist_sensor = adafruit_vl53l1x.VL53L1X(i2c)
+        self.dist_sensor.distance_mode = adafruit_vl53l1x.DISTANCE_MODE_LONG  # Choose SHORT, MEDIUM, or LONG
+        self.dist_sensor.timing_budget = 100  # Timing budget in ms
+        self.get_logger().info('VL53L1X unit initialized ...')
+        
         self._total_heading_change = 0
         self._round_start_time = self.get_clock().now()
         self._button_time = self.get_clock().now()
@@ -330,11 +339,24 @@ class fullDriveNode(Node):
     def race_report(self):
         duration_in_seconds = (self.get_clock().now() - self._round_start_time).nanoseconds * 1e-9
         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
-        self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self._front_dist}")
+        self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self.front_dist()}")
         self.get_logger().info(f"Parking lot detections {G_parking_lot}")
         self.get_logger().info(f"Pitch min / max: {self.pitch_min-self.pitch_init} / {self.pitch_max-self.pitch_init}")
         self.prompt(f"Pitch min / max: {self.pitch_min-self.pitch_init} / {self.pitch_max-self.pitch_init}")
 
+    def front_dist(self):
+         #self.get_logger().info(f"Distances: {self.section_means}")        
+
+        if (self.pitch-self.pitch_init) < 0:
+            dist = 0
+            for i in range(10):
+                dist += self.dist_sensor.range
+            dist /= 10
+        else:
+            dist = max(self.section_means[78:83])
+        return dist
+
+    
     def lidar_callback(self, msg):
         global G_color1_r,G_color1_g,G_color2_r,G_color2_g,G_color1_m,G_color2_m
         global G_tf_control,G_parking_lot,G_clockwise,G_cam_updates
@@ -354,13 +376,9 @@ class fullDriveNode(Node):
 
             num_sections = 161
             section_data = np.array_split(scan, num_sections)
-            section_means = [np.mean(section) for section in section_data]
-            self._front_dist = max(section_means[78:83])
-            self._cal_left = section_means[70]
-            self._cal_right = section_means[91]
-            min_far_dist = min(section_means[60:101])
-            min_near_dist = min(section_means[40:121])
-            #self.get_logger().info(f"Distances: {section_means}")
+            self.section_means = [np.mean(section) for section in section_data]
+            min_far_dist = min(self.section_means[60:101])
+            min_near_dist = min(self.section_means[40:121])
 
             ########################
             # RACE
@@ -382,13 +400,12 @@ class fullDriveNode(Node):
                         self._park_phase = 0
                         return
 
-                elif G_parking_lot <= self.MIN_DETECTIONS_SPOT and abs(self._total_heading_change) >= (self.RACE_SECTIONS*360-10) and self._front_dist < 1.6:
+                elif G_parking_lot <= self.MIN_DETECTIONS_SPOT and abs(self._total_heading_change) >= (self.RACE_SECTIONS*360-10) and self.front_dist() < 1.6:
                     self.race_report()
                     self.prompt("Stopping ...")
                     self.stop()
                     self._state = "STOP"
                     self._processing = False
-                    self._dist_list = []
                     self._stop_phase = 0
                     return
 
@@ -396,17 +413,15 @@ class fullDriveNode(Node):
                     if not self._obstacle_chk:
                         self._obstacle_chk = True
 
-                        self.get_logger().info(f"Obstacle: {min_far_dist}, {min_near_dist}, distance: {self._front_dist}")
+                        self.get_logger().info(f"Obstacle: {min_far_dist}, {min_near_dist}")
                         if not self.initial_race and (min_far_dist < 0.8 or min_near_dist < 0.2):
                             self._backward = True
-                            #M = "R"+str(int((2.5 - self._front_dist) * 40))
                             self.move_m(-1.5)
                             self._processing = False
                             return
                         else:
-                            if self._front_dist > 1.3:
-                                M = "F"+str(int((self._front_dist - 1.3) * 40))
-                                self.get_logger().info(f"Distance: {self._front_dist}, moving forward: {M}")
+                            if self.front_dist() > 1.3:
+                                M = "F"+str(int((self.front_dist() - 1.3) * 40))
                                 self.move(M)
                                 self._processing = False
                                 return
@@ -494,24 +509,17 @@ class fullDriveNode(Node):
                         X = 0
                         self.stop()
                         self.steer(0,True)
-                        self._dist_list = []
                         self._park_phase = 1
                     self.steer(X,False)
-                    self.get_logger().info(f"Front distance: {orientation} {self._front_dist}")
+                    self.get_logger().info(f"Heading: {orientation}")
 
                 elif self._park_phase == 1:
-                    self._dist_list.append(self._front_dist)
-                    if len(self._dist_list) > 10:
-                        dist = np.nanmean(np.array(self._dist_list))
-                        self.get_logger().info(f"Avg front distance: {dist} {self._dist_list}")
-                        if dist > self.STOP_DISTANCE_MAX_TURN: # 1.55
-                            self._dist_list = []
-                            self.move("F1")
-                        elif dist < self.STOP_DISTANCE_MIN_TURN: # 1.45
-                            self._dist_list = []
-                            self.move("R1")
-                        else:
-                            self._park_phase = 2
+                    if self.front_dist() > self.STOP_DISTANCE_MAX_TURN: # 1.55
+                        self.move("F1")
+                    elif self.front_dist() < self.STOP_DISTANCE_MIN_TURN: # 1.45
+                        self.move("R1")
+                    else:
+                        self._park_phase = 2
 
                 elif self._park_phase == 2:
                     X = -1.0 if G_clockwise else 1.0
@@ -521,7 +529,7 @@ class fullDriveNode(Node):
 
                 elif self._park_phase == 3:
                     self.get_logger().info(f"Side Distance: {min_near_dist}")
-                    if self._front_dist < self.STOP_DISTANCE_PARK and min_near_dist < self.STOP_DISTANCE_PARK:
+                    if self.front_dist() < self.STOP_DISTANCE_PARK and min_near_dist < self.STOP_DISTANCE_PARK:
                         self.stop_race()
                         self._state = "IDLE"
 
@@ -531,20 +539,14 @@ class fullDriveNode(Node):
             elif self._state == 'STOP':
 
                 if self._stop_phase == 0:
-                    self._dist_list.append(self._front_dist)
-                    if len(self._dist_list) > 10:
-                        dist = np.nanmean(np.array(self._dist_list))
-                        self.get_logger().info(f"Avg front distance: {dist} {self._dist_list}")
-                        if dist > self.STOP_DISTANCE_MAX_FINAL: # 1.6
-                            self.get_logger().info(f"Move forward")
-                            self._dist_list = []
-                            self.move("F1")
-                        elif dist < self.STOP_DISTANCE_MIN_FINAL: # 1.2
-                            self.get_logger().info(f"Move backward")
-                            self._dist_list = []
-                            self.move("R1")
-                        else:
-                            self._stop_phase = 1
+                    if self.front_dist() > self.STOP_DISTANCE_MAX_FINAL: # 1.6
+                        self.get_logger().info(f"Move forward")
+                        self.move("F1")
+                    elif self.front_dist() < self.STOP_DISTANCE_MIN_FINAL: # 1.2
+                        self.get_logger().info(f"Move backward")
+                        self.move("R1")
+                    else:
+                        self._stop_phase = 1
                 else:
                     self.stop_race()
                     self._state = "IDLE"
