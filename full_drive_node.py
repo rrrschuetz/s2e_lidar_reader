@@ -100,7 +100,6 @@ class fullDriveNode(Node):
         G_color2_m = np.zeros(HPIX, dtype=int)
 
         self.section_means = []
-        self._front_dist = 0
         self._backward = False
 
         self._speed_msg = String()
@@ -352,6 +351,7 @@ class fullDriveNode(Node):
         dist = self.scan_max_dist
         if len(self.section_means) > 0:
             dist = max(self.section_means[78:83])
+        return
         if dist > 1.0:  # and (self.pitch-self.pitch_init) < 0
             try:
                 while not self.distance_sensor.check_data_ready():
