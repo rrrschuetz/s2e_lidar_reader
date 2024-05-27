@@ -7,7 +7,10 @@ import RPi.GPIO as GPIO
 import collections
 import threading
 from simple_pid import PID
+import board, busio
 from Adafruit_PCA9685 import PCA9685
+import adafruit_ads1x15.ads1115 as ADS
+from adafruit_ads1x15.analog_in import AnalogIn
 
 class SpeedControlNode(Node):
     reverse_pulse = 204
@@ -37,12 +40,17 @@ class SpeedControlNode(Node):
         GPIO.setup(self.relay_pin, GPIO.OUT)
         GPIO.setup(self.gpio_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
-        self.get_logger().info('calibrating ESC')
         self.pwm = PCA9685()
         self.pwm.set_pwm_freq(50)  # Set frequency to 50Hz
         self.pwm.set_pwm(1, 0, self.neutral_pulse)
         GPIO.output(self.relay_pin, GPIO.HIGH)
-
+        self.get_logger().info('ESC calibrated.')
+        
+        i2c = busio.I2C(board.SCL, board.SDA)
+        ads = ADS.ADS1115(i2c)
+        chan = AnalogIn(ads, ADS.P0)      
+        self.get_logger().info(f"Battery voltage: {can.value}, {str(chan.voltage)} V')
+        
         self.pid_steering = False
         self.motor_ctl = 1.2
         self.y_pwm = 0
