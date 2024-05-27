@@ -348,19 +348,21 @@ class fullDriveNode(Node):
         self.prompt(f"Pitch min / max: {self.pitch_min-self.pitch_init} / {self.pitch_max-self.pitch_init}")
 
     def front_dist(self):
-        #if (self.pitch-self.pitch_init) < 0:
-        if True:
-            while not self.distance_sensor.check_data_ready():
-                time.sleep(0.1)
-            ranging_data = self.distance_sensor.get_ranging_data()
-            for i in range(16):
-                self.get_logger().info(f"Zone : {i: >3d}, "
-                    f"Status : {ranging_data.target_status[self.distance_sensor.nb_target_per_zone * i]: >3d}, "
-                    f"Distance : {ranging_data.distance_mm[self.distance_sensor.nb_target_per_zone * i]: >4.0f} mm")
-            dist = ranging_data.distance_mm[self.distance_sensor.nb_target_per_zone * 15]/1000
-        else:
-            #self.get_logger().info(f"Distances: {self.section_means}")
-            dist = max(self.section_means[78:83])
+        #self.get_logger().info(f"Distances: {self.section_means}")
+        dist = max(self.section_means[78:83])
+        if dist > 1.0:
+            #if (self.pitch-self.pitch_init) < 0:
+            if True:
+                while not self.distance_sensor.check_data_ready():
+                    time.sleep(0.1)
+                ranging_data = self.distance_sensor.get_ranging_data()
+                dist = 0
+                for i in range(4):
+                    self.get_logger().info(f"Zone : {i: >3d}, "
+                        f"Status : {ranging_data.target_status[self.distance_sensor.nb_target_per_zone * i]: >3d}, "
+                        f"Distance : {ranging_data.distance_mm[self.distance_sensor.nb_target_per_zone * i]: >4.0f} mm")
+                    dist += ranging_data.distance_mm[self.distance_sensor.nb_target_per_zone * i]
+                dist /= 4000
         return dist
 
     
