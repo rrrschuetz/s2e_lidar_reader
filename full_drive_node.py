@@ -101,6 +101,7 @@ class fullDriveNode(Node):
         G_color2_m = np.zeros(HPIX, dtype=int)
 
         self.section_means = []
+        self._front_dist = 0
         self._backward = False
 
         self._speed_msg = String()
@@ -346,28 +347,10 @@ class fullDriveNode(Node):
 
     def front_dist(self):
         #self.get_logger().info(f"Distances: {self.section_means}")
-        if len(self.section_means) > 0: # and dist < 1.0 and (self.pitch-self.pitch_init) < 0
+        if len(self.section_means) > 0 and dist < 1.2:  # and (self.pitch-self.pitch_init) < 0
             return max(self.section_means[78:83])
         else:
-            return self.front_dist_array()
-
-    def front_dist_array(self):
-        dist = 0
-        try:
-            while not self.distance_sensor.check_data_ready():
-                time.sleep(0.1)
-            ranging_data = self.distance_sensor.get_ranging_data()
-            line_output = ""
-            for i in range(64):
-                line_output += f"{ranging_data.distance_mm[self.distance_sensor.nb_target_per_zone * i]: >4.0f} mm "
-                dist += ranging_data.distance_mm[self.distance_sensor.nb_target_per_zone * i]
-                if (i + 1) % 8 == 0:
-                    self.get_logger().info(line_output.strip())
-                    line_output = ""
-            dist /= 16000
-        except Exception as e:
-            self.get_logger().error(f"distance measurement failed: {e}")
-        return dist
+            return self._front_dist
 
     def lidar_callback(self, msg):
         global G_color1_r,G_color1_g,G_color2_r,G_color2_g,G_color1_m,G_color2_m
@@ -633,7 +616,8 @@ class fullDriveNode(Node):
                 self.stop_race()
 
     def distance_sensor_callback(self, msg):
-        self.get_logger().info(f"Distance: {msg.data}")
+        #self.get_logger().info(f"Distance: {msg.data}")
+        self._front_dist = msg.data
 
     def collision_callback(self, msg):
         global G_tf_control
