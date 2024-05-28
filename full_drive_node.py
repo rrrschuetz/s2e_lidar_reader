@@ -158,9 +158,12 @@ class fullDriveNode(Node):
         self.distance_sensor.init()
         self.distance_sensor.set_resolution(8*8)
         self.distance_sensor.set_sharpener_percent(99)
+        #self.distance_sensor.set_ranging_frequency_hz(10)
+        #self.distance_sensor.set_integration_time_ms(90)
         self.get_logger().info(f"VL53L5CX device initialised ({time.time() - t:.1f}s)")
         self.distance_sensor.start_ranging()
         for i in range(10):
+            time.sleep(0.1)
             dist = self.front_dist()
 
         self._total_heading_change = 0
@@ -357,11 +360,11 @@ class fullDriveNode(Node):
             return self.front_dist_array()
 
     def front_dist_array(self):
+        dist = 0
         try:
             while not self.distance_sensor.check_data_ready():
                 time.sleep(0.1)
             ranging_data = self.distance_sensor.get_ranging_data()
-            dist = 0
             line_output = ""
             for i in range(64):
                 line_output += f"{ranging_data.distance_mm[self.distance_sensor.nb_target_per_zone * i]: >4.0f} mm "
