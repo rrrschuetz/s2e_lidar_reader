@@ -7,7 +7,7 @@ from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDur
 from sensor_msgs.msg import LaserScan
 from sensor_msgs.msg import Joy
 from sensor_msgs.msg import Imu
-from sensor_msgs.msg import Float32
+from std_msgs.msg import Float32
 from std_msgs.msg import String
 from std_msgs.msg import Bool
 import numpy as np
