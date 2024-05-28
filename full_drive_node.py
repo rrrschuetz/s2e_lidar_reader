@@ -7,6 +7,7 @@ from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDur
 from sensor_msgs.msg import LaserScan
 from sensor_msgs.msg import Joy
 from sensor_msgs.msg import Imu
+from sensor_msgs.msg import Float32
 from std_msgs.msg import String
 from std_msgs.msg import Bool
 import numpy as np
@@ -150,22 +151,6 @@ class fullDriveNode(Node):
         self._pwm.set_pwm(0, 0, int(self.servo_neutral))
         self.get_logger().info('Steering unit initialized ...')
 
-        # Initialize VL53L5CX distance sensor
-        self.distance_sensor = VL53L5CX()
-        if not self.distance_sensor.is_alive():
-            self.get_logger().error("VL53L5CX device is not alive")
-        t = time.time()
-        self.distance_sensor.init()
-        self.distance_sensor.set_resolution(8*8)
-        self.distance_sensor.set_sharpener_percent(99)
-        #self.distance_sensor.set_ranging_frequency_hz(10)
-        #self.distance_sensor.set_integration_time_ms(90)
-        self.get_logger().info(f"VL53L5CX device initialised ({time.time() - t:.1f}s)")
-        self.distance_sensor.start_ranging()
-        for i in range(10):
-            time.sleep(0.1)
-            dist = self.front_dist()
-
         self._total_heading_change = 0
         self._round_start_time = self.get_clock().now()
         self._button_time = self.get_clock().now()
@@ -195,6 +180,13 @@ class fullDriveNode(Node):
             Bool,
             'touch_button',
             self.touch_button_callback,
+            qos_profile
+        )
+
+        self.subscription_speed = self.create_subscription(
+            Float32,
+            'distance_sensor',
+            self.distance_sensor_callback,
             qos_profile
         )
 
@@ -639,6 +631,9 @@ class fullDriveNode(Node):
                 self.prompt("Shutting down ...")
                 self.get_logger().info('Stop button pressed!')
                 self.stop_race()
+
+    def distance_sensor_callback(self, msg):
+        self.get_logger().info(f"Distance: {msg.data}")
 
     def collision_callback(self, msg):
         global G_tf_control

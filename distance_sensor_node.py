@@ -16,8 +16,7 @@ class DistanceSensorNode(Node):  # Corrected class name
     def timer_callback(self):  # Removed unused parameter
         msg = Float32()
         msg.data = self.sensor.distance
-        self.publisher.publish(msg)
-        #                                                                                                                                                                                                                                                                                                              self.get_logger().info('Publishing: Distance in m "%f"' % msg.data)  # Corrected logging format
+        self.publisher.publish(msg)                                                                                                                                                                                                                                                                                      self.get_logger().info('Publishing: Distance in m "%f"' % msg.data)  # Corrected logging format
 
 def main(args=None):
     rclpy.init(args=args)
