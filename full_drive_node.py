@@ -159,7 +159,8 @@ class fullDriveNode(Node):
         self.distance_sensor.set_resolution(8*8)
         self.get_logger().info(f"VL53L5CX device initialised ({time.time() - t:.1f}s)")
         self.distance_sensor.start_ranging()
-        dist = self.front_dist()
+        for i in range(10):
+            dist = self.front_dist()
 
         self._total_heading_change = 0
         self._round_start_time = self.get_clock().now()
@@ -349,28 +350,29 @@ class fullDriveNode(Node):
 
     def front_dist(self):
         #self.get_logger().info(f"Distances: {self.section_means}")
-        dist = self.scan_max_dist
-        if len(self.section_means) > 0:
-            dist = max(self.section_means[78:83])
-        return dist
-        if dist > 1.0:  # and (self.pitch-self.pitch_init) < 0
-            try:
-                while not self.distance_sensor.check_data_ready():
-                    time.sleep(0.1)
-                ranging_data = self.distance_sensor.get_ranging_data()
-                dist = 0
-                for i in range(64):
-                    self.get_logger().info(f"Zone : {i: >3d}, "
-                        f"Status : {ranging_data.target_status[self.distance_sensor.nb_target_per_zone * i]: >3d}, "
-                        f"Distance : {ranging_data.distance_mm[self.distance_sensor.nb_target_per_zone * i]: >4.0f} mm")
-                    dist += ranging_data.distance_mm[self.distance_sensor.nb_target_per_zone * i]
-                dist /= 16000
-            except Exception as e:
-                self.get_logger().error(f"distance measurement failed: {e}")
+        if len(self.section_means) > 0: # and dist < 1.0 and (self.pitch-self.pitch_init) < 0
+            return max(self.section_means[78:83])
+        else:
+            return self.front_dist_array()
 
+    def front_dist_array(self):
+        try:
+            while not self.distance_sensor.check_data_ready():
+                time.sleep(0.1)
+            ranging_data = self.distance_sensor.get_ranging_data()
+            dist = 0
+            line_output = ""
+            for i in range(64):
+                line_output += f"{ranging_data.distance_mm[self.distance_sensor.nb_target_per_zone * i]: >4.0f} mm "
+                dist += ranging_data.distance_mm[self.distance_sensor.nb_target_per_zone * i]
+                if (i + 1) % 8 == 0:
+                    self.get_logger().info(line_output.strip())
+                    line_output = ""
+            dist /= 16000
+        except Exception as e:
+            self.get_logger().error(f"distance measurement failed: {e}")
         return dist
 
-    
     def lidar_callback(self, msg):
         global G_color1_r,G_color1_g,G_color2_r,G_color2_g,G_color1_m,G_color2_m
         global G_tf_control,G_parking_lot,G_clockwise,G_cam_updates
