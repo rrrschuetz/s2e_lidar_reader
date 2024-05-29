@@ -337,7 +337,7 @@ class fullDriveNode(Node):
         #self.get_logger().info(f"Distances: {self.section_means}")
         if len(self.section_means) > 0:
             dist = max(self.section_means[78:83])
-            if dist < 1.2: return dist
+            if dist < 1.0: return dist
         return self._front_dist
 
     def lidar_callback(self, msg):
@@ -574,7 +574,7 @@ class fullDriveNode(Node):
                 self.stop_race()
 
     def distance_sensor_callback(self, msg):
-        #self.get_logger().info(f"Distance: {msg.data}")
+        self.get_logger().info(f"Distance: {msg.data}")
         self._front_dist = msg.data
 
     def collision_callback(self, msg):
@@ -714,15 +714,12 @@ class imuNode(Node):
 
     def imu_callback(self, msg):
         global G_roll, G_pitch, G_yaw
-
         quaternion = msg.orientation
         roll, pitch, yaw = self.quaternion_to_euler(quaternion)
         G_roll = math.degrees(roll)
         G_pitch = math.degrees(pitch)
         G_yaw = math.degrees(yaw)
-
-        self.get_logger().info(f"Roll: {G_roll}, Pitch: {G_pitch}, Yaw: {G_yaw}")
-
+        #self.get_logger().info(f"Roll: {G_roll}, Pitch: {G_pitch}, Yaw: {G_yaw}")
 
 def main(args=None):
 
