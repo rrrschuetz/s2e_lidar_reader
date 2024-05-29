@@ -682,7 +682,7 @@ class cameraNode(Node):
 
 class imuNode(Node):
     def __init__(self):
-        super().__init__()
+        super().__init__("imu_node")
 
         qos_profile = QoSProfile(
             depth=1,
@@ -692,7 +692,7 @@ class imuNode(Node):
 
         self.subscription = self.create_subscription(
             Float32,
-            name,
+            'wit/imu',
             self.imu_callback,
             qos_profile
         )
