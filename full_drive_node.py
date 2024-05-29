@@ -242,7 +242,6 @@ class fullDriveNode(Node):
 
         self.log_timer = self.create_timer(10, self.log_timer_callback)
 
-        self.get_logger().info(f"Test distance sensor: {self.front_dist()}")
         self.prompt("Ready!")
         self.get_logger().info('Ready.')
 
