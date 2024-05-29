@@ -69,7 +69,7 @@ class ImuNode(Node):
     def process_packet(self, packet):
         if not self.check_sum(packet):
             self.get_logger().warn('Checksum failed')
-            self.reset_device()
+            #self.reset_device()
             return
 
         data_type = packet[1]
@@ -79,6 +79,7 @@ class ImuNode(Node):
             quat = quaternion_from_euler(roll, pitch, yaw)
             self.publish_imu_orientation(quat)
             #self.get_logger().info(f"Quaternion published: yaw: {yaw}, pitch: {pitch}, roll: {roll}")
+            self.get_logger().info(f"Roll published: {roll}")
 
     def check_sum(self, packet):
         return sum(packet[:-1]) & 0xff == packet[-1]
