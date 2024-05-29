@@ -5,7 +5,6 @@ from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDurabilityPolicy
 from sensor_msgs.msg import LaserScan
-from sensor_msgs.msg import Joy
 from sensor_msgs.msg import Imu
 from std_msgs.msg import Float32
 from std_msgs.msg import String
@@ -158,20 +157,6 @@ class fullDriveNode(Node):
             self.lidar_callback,
             qos_profile
         )
-
-        self.subscription_joy = self.create_subscription(
-            Joy,
-            'joy',
-            self.joy_callback,
-            qos_profile
-        )
-
-       self.subscription_lidar = self.create_subscription(
-            String,
-            'collision',
-            self.collision_callback,
-            qos_profile
-       )
 
         self.get_logger().info('Messages subscribed ...')
 
@@ -531,23 +516,6 @@ class fullDriveNode(Node):
 
             self._processing = False
 
-    def joy_callback(self, msg):
-        if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
-
-            # Check if 'A' button is pressed - switch on AI steering, counterclockwise
-            if msg.buttons[0] == 1:
-                self.start_race()
-
-            # Check if 'B' button is pressed - switch off AI steering
-            elif msg.buttons[1] == 1:
-                self.get_logger().info('emergency shutdown initiated by supervisor')
-                self.stop_race()
-
-        elif hasattr(msg, 'axes') and len(msg.axes) > 5:
-            self._X = msg.axes[2]
-            self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl_fwd))
-
-
     def collision_callback(self, msg):
         global G_tf_control
         self.get_logger().info('Collision msg received')
@@ -730,18 +698,17 @@ class touchButtonNode(Node):
             self.touch_button_callback,
             qos_profile
         )
+        self._button_time = None
 
     def touch_button_callback(self, msg):
         global G_tf_control
         if not G_tf_control:
             self._button_time = self.get_clock().now()
-            self.prompt("Starting ...")
             self.get_logger().info('Start button pressed!')
             self.start_race()
         else:
             duration_in_seconds = (self.get_clock().now() - self._button_time).nanoseconds * 1e-9
             if duration_in_seconds > 5:
-                self.prompt("Shutting down ...")
                 self.get_logger().info('Stop button pressed!')
                 self.stop_race()
 
