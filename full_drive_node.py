@@ -38,6 +38,7 @@ G_cam_updates = 0
 G_roll = 0.0
 G_pitch = 0.0
 G_yaw = 0.0
+G_front_dist = 0.0
 
 class fullDriveNode(Node):
 
@@ -105,7 +106,6 @@ class fullDriveNode(Node):
         G_color2_m = np.zeros(HPIX, dtype=int)
 
         self.section_means = []
-        self._front_dist = 0
         self._backward = False
 
         self._speed_msg = String()
@@ -170,13 +170,6 @@ class fullDriveNode(Node):
             Bool,
             'touch_button',
             self.touch_button_callback,
-            qos_profile
-        )
-
-        self.subscription_speed = self.create_subscription(
-            Float32,
-            'distance_sensor',
-            self.distance_sensor_callback,
             qos_profile
         )
 
@@ -334,11 +327,12 @@ class fullDriveNode(Node):
         self.get_logger().info(f"Parking lot detections {G_parking_lot}")
 
     def front_dist(self):
+        global G_front_dist
         #self.get_logger().info(f"Distances: {self.section_means}")
         if len(self.section_means) > 0:
             dist = max(self.section_means[78:83])
             if dist < 1.0: return dist
-        return self._front_dist
+        return G_front_dist
 
     def lidar_callback(self, msg):
         global G_color1_r,G_color1_g,G_color2_r,G_color2_g,G_color1_m,G_color2_m
@@ -573,10 +567,6 @@ class fullDriveNode(Node):
                 self.get_logger().info('Stop button pressed!')
                 self.stop_race()
 
-    def distance_sensor_callback(self, msg):
-        self.get_logger().info(f"Distance: {msg.data}")
-        self._front_dist = msg.data
-
     def collision_callback(self, msg):
         global G_tf_control
         self.get_logger().info('Collision msg received')
@@ -721,6 +711,29 @@ class imuNode(Node):
         G_yaw = math.degrees(yaw)
         #self.get_logger().info(f"Roll: {G_roll}, Pitch: {G_pitch}, Yaw: {G_yaw}")
 
+class distanceNode(Node):
+    def __init__(self):
+        super().__init__("distance_node")
+
+        qos_profile = QoSProfile(
+            depth=1,
+            history=QoSHistoryPolicy.KEEP_LAST,
+            reliability=QoSReliabilityPolicy.BEST_EFFORT,
+            durability=QoSDurabilityPolicy.VOLATILE)
+
+        self.subscription_speed = self.create_subscription(
+            Float32,
+            'distance_sensor',
+            self.distance_sensor_callback,
+            qos_profile
+        )
+
+    def distance_sensor_callback(self, msg):
+        global G_front_dist
+        self.get_logger().info(f"Distance: {msg.data}")
+        G_front_dist = msg.data
+
+
 def main(args=None):
 
     rclpy.init(args=args)
@@ -728,13 +741,15 @@ def main(args=None):
     cam1_node = cameraNode('openmv_topic1')
     cam2_node = cameraNode('openmv_topic2')
     imu_node = imuNode()
+    distance_node = distanceNode()
 
     # Use MultiThreadedExecutor to allow parallel callback execution
-    executor = MultiThreadedExecutor(num_threads=4)
+    executor = MultiThreadedExecutor(num_threads=6)
     executor.add_node(full_drive_node)
     executor.add_node(cam1_node)
     executor.add_node(cam2_node)
     executor.add_node(imu_node)
+    executor.add_node(distance_node)
 
     try:
         while rclpy.ok():
@@ -745,6 +760,7 @@ def main(args=None):
         cam1_node.destroy_node()
         cam2_node.destroy_node()
         imu_node.destroy_node()
+        distance_node.destroy_node()
         #rclpy.shutdown()
 
     try:
