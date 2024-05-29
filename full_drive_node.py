@@ -166,14 +166,7 @@ class fullDriveNode(Node):
             qos_profile
         )
 
-        self.subscription_speed = self.create_subscription(
-            Bool,
-            'touch_button',
-            self.touch_button_callback,
-            qos_profile
-        )
-
-        self.subscription_lidar = self.create_subscription(
+       self.subscription_lidar = self.create_subscription(
             String,
             'collision',
             self.collision_callback,
@@ -554,19 +547,6 @@ class fullDriveNode(Node):
             self._X = msg.axes[2]
             self._pwm.set_pwm(0, 0, int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl_fwd))
 
-    def touch_button_callback(self, msg):
-        global G_tf_control
-        if not G_tf_control:
-            self._button_time = self.get_clock().now()
-            self.prompt("Starting ...")
-            self.get_logger().info('Start button pressed!')
-            self.start_race()
-        else:
-            duration_in_seconds = (self.get_clock().now() - self._button_time).nanoseconds * 1e-9
-            if duration_in_seconds > 5:
-                self.prompt("Shutting down ...")
-                self.get_logger().info('Stop button pressed!')
-                self.stop_race()
 
     def collision_callback(self, msg):
         global G_tf_control
@@ -734,6 +714,36 @@ class distanceNode(Node):
         G_front_dist = msg.data
         #self.get_logger().info(f"Distance: {msg.data}")
 
+class touchButtonNode(Node):
+    def __init__(self):
+        super().__init__("touch_button_node")
+
+        qos_profile = QoSProfile(
+            depth=1,
+            history=QoSHistoryPolicy.KEEP_LAST,
+            reliability=QoSReliabilityPolicy.BEST_EFFORT,
+            durability=QoSDurabilityPolicy.VOLATILE)
+
+        self.subscription_speed = self.create_subscription(
+            Bool,
+            'touch_button',
+            self.touch_button_callback,
+            qos_profile
+        )
+
+    def touch_button_callback(self, msg):
+        global G_tf_control
+        if not G_tf_control:
+            self._button_time = self.get_clock().now()
+            self.prompt("Starting ...")
+            self.get_logger().info('Start button pressed!')
+            self.start_race()
+        else:
+            duration_in_seconds = (self.get_clock().now() - self._button_time).nanoseconds * 1e-9
+            if duration_in_seconds > 5:
+                self.prompt("Shutting down ...")
+                self.get_logger().info('Stop button pressed!')
+                self.stop_race()
 
 def main(args=None):
 
@@ -743,6 +753,7 @@ def main(args=None):
     cam2_node = cameraNode('openmv_topic2')
     imu_node = imuNode()
     distance_node = distanceNode()
+    touch_button_node = touchButtonNode()
 
     # Use MultiThreadedExecutor to allow parallel callback execution
     executor = MultiThreadedExecutor(num_threads=6)
@@ -751,6 +762,7 @@ def main(args=None):
     executor.add_node(cam2_node)
     executor.add_node(imu_node)
     executor.add_node(distance_node)
+    executor.add_node(touch_button_node)
 
     try:
         while rclpy.ok():
@@ -762,6 +774,7 @@ def main(args=None):
         cam2_node.destroy_node()
         imu_node.destroy_node()
         distance_node.destroy_node()
+        touch_button_node.destroy_node()
         #rclpy.shutdown()
 
     try:
