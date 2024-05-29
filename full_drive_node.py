@@ -263,7 +263,8 @@ class fullDriveNode(Node):
     def stop(self):
         self._speed_msg.data = "STOP"
         self.speed_publisher_.publish(self._speed_msg)
-@classmethod
+
+    @classmethod
     def stop_race(self):
         global G_tf_control
         self._state = "IDLE"
