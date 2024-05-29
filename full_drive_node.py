@@ -384,6 +384,7 @@ class fullDriveNode(Node):
                     self._state = "STOP"
                     self._processing = False
                     self._stop_phase = 0
+                    self.steer(0,True)
                     return
 
                 try:
@@ -730,8 +731,8 @@ class distanceNode(Node):
 
     def distance_sensor_callback(self, msg):
         global G_front_dist
-        self.get_logger().info(f"Distance: {msg.data}")
         G_front_dist = msg.data
+        #self.get_logger().info(f"Distance: {msg.data}")
 
 
 def main(args=None):
