@@ -332,8 +332,6 @@ class fullDriveNode(Node):
         self.get_logger().info(f"Race in {duration_in_seconds} sec completed!")
         self.get_logger().info(f"Heading change: {self._total_heading_change} Distance: {self.front_dist()}")
         self.get_logger().info(f"Parking lot detections {G_parking_lot}")
-        self.get_logger().info(f"Pitch min / max: {self.pitch_min-self.pitch_init} / {self.pitch_max-self.pitch_init}")
-        self.prompt(f"Pitch min / max: {self.pitch_min-self.pitch_init} / {self.pitch_max-self.pitch_init}")
 
     def front_dist(self):
         #self.get_logger().info(f"Distances: {self.section_means}")
