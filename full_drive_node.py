@@ -681,8 +681,8 @@ class cameraNode(Node):
 
 
 class imuNode(Node):
-    def __init__(self, name):
-        super().__init__(name)
+    def __init__(self):
+        super().__init__()
 
         qos_profile = QoSProfile(
             depth=1,
