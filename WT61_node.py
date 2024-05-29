@@ -46,10 +46,11 @@ class ImuNode(Node):
         self.cali_sub = self.create_subscription(String, 'wit/cali', self.handle_command, 10)
 
         self.buff = bytearray()
+        self.count = 0
 
         self.last_received_time = self.get_clock().now()
-        self.timer = self.create_timer(0.1, self.check_imu_data_timeout)
-        self.timer = self.create_timer(0.1, self.read_serial_data)
+        self.timer = self.create_timer(1.0, self.check_imu_data_timeout)
+        self.timer = self.create_timer(0.2, self.read_serial_data)
         self.get_logger().info('WT61 configuration ready.')
 
     def read_serial_data(self):
@@ -78,18 +79,21 @@ class ImuNode(Node):
             yaw, pitch, roll = [x / 32768.0 * 180 for x in angle_data]  # Convert to degrees
             quat = quaternion_from_euler(roll, pitch, yaw)
             self.publish_imu_orientation(quat)
-            #self.get_logger().info(f"Quaternion published: yaw: {yaw}, pitch: {pitch}, roll: {roll}")
-            self.get_logger().info(f"Roll published: {roll}")
 
     def check_sum(self, packet):
         return sum(packet[:-1]) & 0xff == packet[-1]
 
     def publish_imu_orientation(self, quat):
+        self.count +=1
+        if self.count < 10: return
+        self.count = 0
         imu_msg = Imu()
         imu_msg.header.stamp = self.get_clock().now().to_msg()
         imu_msg.header.frame_id = 'base_link'
         imu_msg.orientation = quat
         self.imu_pub.publish(imu_msg)
+        #self.get_logger().info(f"Quaternion published: yaw: {yaw}, pitch: {pitch}, roll: {roll}")
+        self.get_logger().info(f"Roll published: {roll}")
 
     def check_imu_data_timeout(self):
         if (self.get_clock().now() - self.last_received_time).nanoseconds > 1e9:

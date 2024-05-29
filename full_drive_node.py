@@ -584,7 +584,7 @@ class fullDriveNode(Node):
         self.pitch_min = min(self.pitch_min,self.pitch)
         self.pitch_max = max(self.pitch_max,self.pitch)
 
-        #self.get_logger().info(f"Roll: {self.roll}, Pitch: {self.pitch}, Yaw: {self.yaw}")
+        self.get_logger().info(f"Roll: {self.roll}, Pitch: {self.pitch}, Yaw: {self.yaw}")
 
     def joy_callback(self, msg):
         if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
