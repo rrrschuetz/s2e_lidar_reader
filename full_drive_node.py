@@ -35,6 +35,10 @@ G_clockwise = False
 G_parking_lot = 0
 G_cam_updates = 0
 
+G_roll = 0.0
+G_pitch = 0.0
+G_yaw = 0.0
+
 class fullDriveNode(Node):
 
     OBSTACLE_RACE_PATH_CC = "/home/rrrschuetz/test/model.tflite"
@@ -137,14 +141,6 @@ class fullDriveNode(Node):
         self.DONGLE_ID2 = str(config['Hardware']['dongle_id2'])
         self.get_logger().info(f"Left / right camera IDs: {G_LEFT_CAM_ID} / {G_RIGHT_CAM_ID}")
         self.get_logger().info(f"Dongle ID: {self.DONGLE_ID1}:{self.DONGLE_ID2}")
-
-        # Initialize compass
-        self.roll = 0    # X
-        self.pitch = 0   # Y
-        self.pitch_min = 45
-        self.pitch_max = -45
-        self.pitch_init = 777
-        self.yaw = 0     # Z
 
         # Initialize PCA9685
         self._pwm = PCA9685()
@@ -287,12 +283,12 @@ class fullDriveNode(Node):
         self.move(dir+str(abs(int(dist*67))))
 
     def start_race(self):
-        global G_tf_control,G_parking_lot
+        global G_tf_control,G_parking_lot, G_roll
         self._state = "RACE"
         G_tf_control = True
         G_parking_lot = 0
 
-        self._initial_heading = self.roll
+        self._initial_heading = G_roll
         self._start_heading = self._initial_heading
         self._last_heading = self._initial_heading
         self._total_heading_change = 0
@@ -355,7 +351,7 @@ class fullDriveNode(Node):
 
     def lidar_callback(self, msg):
         global G_color1_r,G_color1_g,G_color2_r,G_color2_g,G_color1_m,G_color2_m
-        global G_tf_control,G_parking_lot,G_clockwise,G_cam_updates
+        global G_tf_control,G_parking_lot,G_clockwise,G_cam_updates, G_roll
 
         if self._processing:
             self.get_logger().info('Scan skipped')
@@ -382,7 +378,7 @@ class fullDriveNode(Node):
             if self._state == 'RACE' and G_tf_control:
 
                 #self.get_logger().info(f"Total heading change: {self._total_heading_change}")
-                self._current_heading = self.roll
+                self._current_heading = G_roll
                 heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
                 self._total_heading_change += heading_change
                 self._last_heading = self._current_heading
@@ -489,7 +485,7 @@ class fullDriveNode(Node):
             elif self._state == 'PARK':
 
                 if self._park_phase == 0:
-                    self._current_heading = self.roll
+                    self._current_heading = G_roll
                     heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
                     self._total_heading_change += heading_change
                     self._last_heading = self._current_heading
@@ -555,36 +551,6 @@ class fullDriveNode(Node):
                 pass
 
             self._processing = False
-
-    def quaternion_to_euler(self,quaternion):
-        x, y, z, w = quaternion.x, quaternion.y, quaternion.z, quaternion.w
-        t0 = +2.0 * (w * x + y * z)
-        t1 = +1.0 - 2.0 * (x * x + y * y)
-        roll_x = math.atan2(t0, t1)
-
-        t2 = +2.0 * (w * y - z * x)
-        t2 = +1.0 if t2 > +1.0 else t2
-        t2 = -1.0 if t2 < -1.0 else t2
-        pitch_y = math.asin(t2)
-
-        t3 = +2.0 * (w * z + x * y)
-        t4 = +1.0 - 2.0 * (y * y + z * z)
-        yaw_z = math.atan2(t3, t4)
-
-        return roll_x, pitch_y, yaw_z  # in radians
-
-    def imu_callback(self, msg):
-        quaternion = msg.orientation
-        self.roll, self.pitch, self.yaw = self.quaternion_to_euler(quaternion)
-        self.roll = math.degrees(self.roll)
-        self.pitch = math.degrees(self.pitch)
-        self.yaw = math.degrees(self.yaw)
-
-        if self.pitch_init == 777: self.pitch_init = self.pitch
-        self.pitch_min = min(self.pitch_min,self.pitch)
-        self.pitch_max = max(self.pitch_max,self.pitch)
-
-        self.get_logger().info(f"Roll: {self.roll}, Pitch: {self.pitch}, Yaw: {self.yaw}")
 
     def joy_callback(self, msg):
         if hasattr(msg, 'buttons') and len(msg.buttons) > 0:
@@ -721,18 +687,66 @@ class cameraNode(Node):
             self._busy = False
 
 
+class imuNode(Node):
+    def __init__(self, name):
+        super().__init__(name)
+
+        qos_profile = QoSProfile(
+            depth=1,
+            history=QoSHistoryPolicy.KEEP_LAST,
+            reliability=QoSReliabilityPolicy.BEST_EFFORT,
+            durability=QoSDurabilityPolicy.VOLATILE)
+
+        self.subscription = self.create_subscription(
+            Float32,
+            name,
+            self.imu_callback,
+            qos_profile
+        )
+
+    def quaternion_to_euler(self,quaternion):
+        x, y, z, w = quaternion.x, quaternion.y, quaternion.z, quaternion.w
+        t0 = +2.0 * (w * x + y * z)
+        t1 = +1.0 - 2.0 * (x * x + y * y)
+        roll_x = math.atan2(t0, t1)
+
+        t2 = +2.0 * (w * y - z * x)
+        t2 = +1.0 if t2 > +1.0 else t2
+        t2 = -1.0 if t2 < -1.0 else t2
+        pitch_y = math.asin(t2)
+
+        t3 = +2.0 * (w * z + x * y)
+        t4 = +1.0 - 2.0 * (y * y + z * z)
+        yaw_z = math.atan2(t3, t4)
+
+        return roll_x, pitch_y, yaw_z  # in radians
+
+    def imu_callback(self, msg):
+        global G_roll, G_pitch, G_yaw
+
+        quaternion = msg.orientation
+        roll, pitch, yaw = self.quaternion_to_euler(quaternion)
+        G_roll = math.degrees(roll)
+        G_pitch = math.degrees(pitch)
+        G_yaw = math.degrees(yaw)
+
+        self.get_logger().info(f"Roll: {G_roll}, Pitch: {G_pitch}, Yaw: {G_yaw}")
+
+
 def main(args=None):
 
     rclpy.init(args=args)
     full_drive_node = fullDriveNode()
     cam1_node = cameraNode('openmv_topic1')
     cam2_node = cameraNode('openmv_topic2')
+    imu_node = imuNode()
 
     # Use MultiThreadedExecutor to allow parallel callback execution
     executor = MultiThreadedExecutor(num_threads=4)
     executor.add_node(full_drive_node)
     executor.add_node(cam1_node)
     executor.add_node(cam2_node)
+    executor.add_node(imu_node)
 
     try:
         while rclpy.ok():
@@ -742,6 +756,7 @@ def main(args=None):
         full_drive_node.destroy_node()
         cam1_node.destroy_node()
         cam2_node.destroy_node()
+        imu_node.destroy_node()
         #rclpy.shutdown()
 
     try:

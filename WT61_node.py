@@ -70,7 +70,7 @@ class ImuNode(Node):
     def process_packet(self, packet):
         if not self.check_sum(packet):
             self.get_logger().warn('Checksum failed')
-            #self.reset_device()
+            self.reset_device()
             return
 
         data_type = packet[1]
@@ -94,7 +94,7 @@ class ImuNode(Node):
         imu_msg.header.frame_id = 'base_link'
         imu_msg.orientation = quat
         self.imu_pub.publish(imu_msg)
-        self.get_logger().info("Imu msg published.")
+        #self.get_logger().info("Imu msg published.")
 
     def check_imu_data_timeout(self):
         if (self.get_clock().now() - self.last_received_time).nanoseconds > 1e9:
