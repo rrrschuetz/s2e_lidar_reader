@@ -171,7 +171,7 @@ class fullDriveNode(Node):
             'collision',
             self.collision_callback,
             qos_profile
-        )
+       )
 
         self.get_logger().info('Messages subscribed ...')
 
