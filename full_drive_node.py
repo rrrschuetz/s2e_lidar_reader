@@ -690,8 +690,8 @@ class imuNode(Node):
             reliability=QoSReliabilityPolicy.BEST_EFFORT,
             durability=QoSDurabilityPolicy.VOLATILE)
 
-        self.subscription = self.create_subscription(
-            Float32,
+        self.subscription_imu = self.create_subscription(
+            Imu,
             'wit/imu',
             self.imu_callback,
             qos_profile
