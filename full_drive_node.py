@@ -240,10 +240,12 @@ class fullDriveNode(Node):
         self._output_detailsu = self._interpreter.get_output_details()
         self.get_logger().info('clockwise prediction model loaded')
 
+        self.log_timer = self.create_timer(10, self.log_timer_callback)
+
+        self.get_logger().info(f"Test distance sensor: {self.front_dist()}")
         self.prompt("Ready!")
         self.get_logger().info('Ready.')
 
-        self.log_timer = self.create_timer(10, self.log_timer_callback)
 
     def __del__(self):
         self.get_logger().info('Switch off ESC')
