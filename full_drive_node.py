@@ -246,6 +246,7 @@ class fullDriveNode(Node):
         dir = "F" if dist >= 0 else "R"
         self.move(dir+str(abs(int(dist*67))))
 
+    @classmethod
     def start_race(self):
         global G_tf_control,G_parking_lot, G_roll
         self._state = "RACE"
@@ -262,7 +263,7 @@ class fullDriveNode(Node):
     def stop(self):
         self._speed_msg.data = "STOP"
         self.speed_publisher_.publish(self._speed_msg)
-
+@classmethod
     def stop_race(self):
         global G_tf_control
         self._state = "IDLE"
@@ -705,12 +706,12 @@ class touchButtonNode(Node):
         if not G_tf_control:
             self._button_time = self.get_clock().now()
             self.get_logger().info('Start button pressed!')
-            self.start_race()
+            fullDriveNode.start_race()
         else:
             duration_in_seconds = (self.get_clock().now() - self._button_time).nanoseconds * 1e-9
             if duration_in_seconds > 5:
                 self.get_logger().info('Stop button pressed!')
-                self.stop_race()
+                fullDriveNode.stop_race()
 
 def main(args=None):
 
