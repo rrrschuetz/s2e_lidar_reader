@@ -104,7 +104,6 @@ class fullDriveNode(Node):
 
         self._X = 0.0 
         self._Y = 0.0
-        self._Xtrim = 0.0
         HPIX = 320
         G_color1_g = np.zeros(HPIX, dtype=int)
         G_color1_r = np.zeros(HPIX, dtype=int)
