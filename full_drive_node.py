@@ -200,6 +200,13 @@ class fullDriveNode(Node):
         self._output_detailsu = self._interpreter.get_output_details()
         self.get_logger().info('clockwise prediction model loaded')
 
+        # touch button
+        self.gpio_pin = 5
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(self.gpio_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        GPIO.add_event_detect(self.gpio_pin, GPIO.FALLING, callback=self.gpio_callbac)
+        self._button_time = 0
+
         self.log_timer = self.create_timer(10, self.log_timer_callback)
 
         self.prompt("Ready!")
@@ -246,7 +253,6 @@ class fullDriveNode(Node):
         dir = "F" if dist >= 0 else "R"
         self.move(dir+str(abs(int(dist*67))))
 
-    @classmethod
     def start_race(self):
         global G_tf_control,G_parking_lot, G_roll
         self._state = "RACE"
@@ -264,7 +270,6 @@ class fullDriveNode(Node):
         self._speed_msg.data = "STOP"
         self.speed_publisher_.publish(self._speed_msg)
 
-    @classmethod
     def stop_race(self):
         global G_tf_control
         self._state = "IDLE"
@@ -518,6 +523,19 @@ class fullDriveNode(Node):
 
             self._processing = False
 
+    def gpio_callback(self, channel):
+        global G_tf_control
+        if not G_tf_control:
+
+        self._button_time = self.get_clock().now()
+        self.get_logger().info('Start button pressed!')
+        self.start_race()
+        else:
+            duration_in_seconds = (self.get_clock().now() - self._button_time).nanoseconds * 1e-9
+            if duration_in_seconds > 5:
+                self.get_logger().info('Stop button pressed!')
+                self.stop_race()
+
     def collision_callback(self, msg):
         global G_tf_control
         self.get_logger().info('Collision msg received')
@@ -528,7 +546,6 @@ class fullDriveNode(Node):
         self.reset()
         G_tf_control = True
         return
-
 
 class cameraNode(Node):
     def __init__(self, name):
@@ -684,35 +701,6 @@ class distanceNode(Node):
         G_front_dist = msg.data
         #self.get_logger().info(f"Distance: {msg.data}")
 
-class touchButtonNode(Node):
-    def __init__(self):
-        super().__init__("touch_button_node")
-
-        qos_profile = QoSProfile(
-            depth=1,
-            history=QoSHistoryPolicy.KEEP_LAST,
-            reliability=QoSReliabilityPolicy.BEST_EFFORT,
-            durability=QoSDurabilityPolicy.VOLATILE)
-
-        self.subscription_speed = self.create_subscription(
-            Bool,
-            'touch_button',
-            self.touch_button_callback,
-            qos_profile
-        )
-        self._button_time = None
-
-    def touch_button_callback(self, msg):
-        global G_tf_control
-        if not G_tf_control:
-            self._button_time = self.get_clock().now()
-            self.get_logger().info('Start button pressed!')
-            fullDriveNode.start_race()
-        else:
-            duration_in_seconds = (self.get_clock().now() - self._button_time).nanoseconds * 1e-9
-            if duration_in_seconds > 5:
-                self.get_logger().info('Stop button pressed!')
-                fullDriveNode.stop_race()
 
 def main(args=None):
 
@@ -722,7 +710,6 @@ def main(args=None):
     cam2_node = cameraNode('openmv_topic2')
     imu_node = imuNode()
     distance_node = distanceNode()
-    touch_button_node = touchButtonNode()
 
     # Use MultiThreadedExecutor to allow parallel callback execution
     executor = MultiThreadedExecutor(num_threads=6)
@@ -731,7 +718,6 @@ def main(args=None):
     executor.add_node(cam2_node)
     executor.add_node(imu_node)
     executor.add_node(distance_node)
-    executor.add_node(touch_button_node)
 
     try:
         while rclpy.ok():
@@ -743,7 +729,6 @@ def main(args=None):
         cam2_node.destroy_node()
         imu_node.destroy_node()
         distance_node.destroy_node()
-        touch_button_node.destroy_node()
         #rclpy.shutdown()
 
     try:
