@@ -360,6 +360,7 @@ class fullDriveNode(Node):
             self.section_means = [np.mean(section) for section in section_data]
             min_far_dist = min(self.section_means[60:101])
             min_near_dist = min(self.section_means[40:121])
+            side_dist = min(self.section_means[0:10],self.section_means[150:161])
 
             ########################
             # RACE
@@ -395,18 +396,18 @@ class fullDriveNode(Node):
                     if not self._obstacle_chk:
                         self._obstacle_chk = True
 
-                        self.get_logger().info(f"Obstacle: {min_far_dist}, {min_near_dist}")
-                        if not self.initial_race and (min_far_dist < 0.8 or min_near_dist < 0.2):
+                        self.get_logger().info(f"Obstacle: {side_dist} {min_far_dist}, {min_near_dist}")
+                        if self.inital_race and side_dist < 0.15:
+                            self.move_m(0.5)
+                        elif not self.initial_race and (min_far_dist < 0.8 or min_near_dist < 0.2):
                             self._backward = True
                             self.move_m(-1.5)
-                            self._processing = False
-                            return
                         else:
                             if self.front_dist() > 1.3:
                                 M = "F"+str(int((self.front_dist() - 1.3) * 40))
                                 self.move(M)
-                                self._processing = False
-                                return
+                        self._processing = False
+                        return
 
                     elif not self._clockwise_def:
                         self._clockwise_def = True
