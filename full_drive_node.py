@@ -204,7 +204,7 @@ class fullDriveNode(Node):
         self.gpio_pin = 5
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.gpio_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.add_event_detect(self.gpio_pin, GPIO.FALLING, callback=self.gpio_callbac)
+        GPIO.add_event_detect(self.gpio_pin, GPIO.FALLING, callback=self.gpio_callback)
         self._button_time = 0
 
         self.log_timer = self.create_timer(10, self.log_timer_callback)
@@ -527,9 +527,9 @@ class fullDriveNode(Node):
         global G_tf_control
         if not G_tf_control:
 
-        self._button_time = self.get_clock().now()
-        self.get_logger().info('Start button pressed!')
-        self.start_race()
+            self._button_time = self.get_clock().now()
+            self.get_logger().info('Start button pressed!')
+            self.start_race()
         else:
             duration_in_seconds = (self.get_clock().now() - self._button_time).nanoseconds * 1e-9
             if duration_in_seconds > 5:
