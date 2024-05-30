@@ -215,7 +215,7 @@ class fullDriveNode(Node):
         GPIO.add_event_detect(self.gpio_pin, GPIO.FALLING, callback=self.gpio_callback)
         self._button_time = 0
 
-        self.log_timer = self.create_timer(10, self.log_timer_callback)
+        #self.log_timer = self.create_timer(10, self.log_timer_callback)
 
         self.prompt("Ready!")
         self.get_logger().info('Ready.')
@@ -709,7 +709,7 @@ class distanceNode(Node):
     def distance_sensor_callback(self, msg):
         global G_front_dist, G_tf_control, G_collision_detect
         G_front_dist = msg.data
-        self.get_logger().info(f"Distance: {msg.data}")
+        #self.get_logger().info(f"Distance: {msg.data}")
 
         if G_tf_control and G_collision_detect > 0 and G_front_dist < G_collision_detect:
             self.get_logger().info('Collision detected, push back')
