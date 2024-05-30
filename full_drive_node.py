@@ -140,7 +140,7 @@ class fullDriveNode(Node):
         self.get_logger().info(f"Stop distances min / max / park: {self.STOP_DISTANCE_MIN_TURN} / {self.STOP_DISTANCE_MAX_TURN} / {self.STOP_DISTANCE_PARK}")
         self.get_logger().info(f"Stop position final min / max : {self.STOP_DISTANCE_MIN_FINAL} / {self.STOP_DISTANCE_MAX_FINAL}")
 
-        G_collision_detect = float(config['Parking']['collisioin_detect'])
+        G_collision_detect = float(config['Parking']['collision_detect'])
         self.get_logger().info(f"Collision detection distance: {G_collision_detect}")
 
         G_LEFT_CAM_ID = str(config['Hardware']['left_cam_id'])
