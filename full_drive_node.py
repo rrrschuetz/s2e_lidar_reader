@@ -343,7 +343,7 @@ class fullDriveNode(Node):
         global G_tf_control,G_parking_lot,G_clockwise,G_cam_updates, G_roll
 
         if self._processing:
-            self.get_logger().info('Scan skipped')
+            self.get_logger().warn('Scan skipped')
             return
         else:
             self._processing = True
