@@ -484,7 +484,7 @@ class fullDriveNode(Node):
                         while orientation < 90: orientation += 90
                         X = 1.0 if orientation > 0 else -1.0
                     self.steer(X,False)
-                    if abs(orientation) < self.GYRO_ACCURACY:  #5
+                    if abs(orientation-90) < self.GYRO_ACCURACY:  #5
                         X = 0
                         self.stop()
                         self.steer(0,True)
