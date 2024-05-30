@@ -332,11 +332,11 @@ class fullDriveNode(Node):
 
     def front_dist(self):
         global G_front_dist
+        dist = 0
         #self.get_logger().info(f"Distances: {self.section_means}")
         if len(self.section_means) > 0:
             dist = max(self.section_means[78:83])
-            if dist < 0.8: return dist
-        return G_front_dist
+        return max(dist,G_front_dist)
 
     def lidar_callback(self, msg):
         global G_color1_r,G_color1_g,G_color2_r,G_color2_g,G_color1_m,G_color2_m
