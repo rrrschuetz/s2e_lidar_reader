@@ -294,7 +294,7 @@ class fullDriveNode(Node):
         self._state = "IDLE"
         G_tf_control = False
         self._processing = False
-        G_pwm.set_pwm(0, 0, int(self.servo_neutral))
+        self.steer(0,False)
         self.stop()
         self.motor_off()
         self.get_logger().info(f"ROS2 shutdown requested")
@@ -459,9 +459,7 @@ class fullDriveNode(Node):
                     self._X = predictions[0, 0]
                     self._Y = predictions[0, 1]
                     #self.get_logger().info('Predicted axes: "%s"' % predictions)
-
-                    XX = int(G_servo_neutral+(self._X+self._Xtrim)*G_servo_ctl_fwd)
-                    G_pwm.set_pwm(0, 0, XX)
+                    self.steer(self._X,False)
 
                 except ValueError as e:
                     self.get_logger().error('Model rendered nan: %s' % str(e))
