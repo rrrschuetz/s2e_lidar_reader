@@ -129,7 +129,6 @@ class s2eLidarReader(Node):
             10
         )
 
-        self.get_logger().info('calibrating ESC')
         self.prompt("Ready!")
         self.get_logger().info('Ready.')
 
