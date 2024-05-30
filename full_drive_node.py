@@ -88,7 +88,7 @@ class fullDriveNode(Node):
         servo_min = 260  # Min pulse length out of 4096
         servo_max = 380  # Max pulse length out of 4096
         G_servo_neutral = int((servo_max+servo_min)/2)
-        G_servo_ctl_fwd = int(-(servo_max-servo_min)/2 * 1.0)
+        G_servo_ctl_fwd = int(-(servo_max-servo_min)/2 * 1.1)
         self.servo_ctl_rev = int(-(servo_max-servo_min)/2 * 1.0)
         G_FWD_SPEED = "5"
         G_FWD_SPEEDU = "5"
