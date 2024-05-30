@@ -38,6 +38,7 @@ G_roll = 0.0
 G_pitch = 0.0
 G_yaw = 0.0
 G_front_dist = 0.0
+G_collision_detect = 0.0
 G_pwm = None
 G_speed_publisher = None
 G_FWD_SPEED = ""
@@ -71,6 +72,7 @@ class fullDriveNode(Node):
         global G_tf_control,G_parking_lot,G_clockwise,G_cam_updates
         global G_LEFT_CAM_ID, G_RIGHT_CAM_ID
         global G_speed_publisher, G_pwm, G_servo_neutral, G_servo_ctl_fwd, G_FWD_SPEED, G_FWD_SPEEDU
+        global G_collision_detect
 
         super().__init__('full_drive_node')
         self.publisher_ = self.create_publisher(String, 'main_logger', 10)
@@ -137,6 +139,9 @@ class fullDriveNode(Node):
         self.get_logger().info(f"Number of race half rounds: {self.RACE_SECTIONS}")
         self.get_logger().info(f"Stop distances min / max / park: {self.STOP_DISTANCE_MIN_TURN} / {self.STOP_DISTANCE_MAX_TURN} / {self.STOP_DISTANCE_PARK}")
         self.get_logger().info(f"Stop position final min / max : {self.STOP_DISTANCE_MIN_FINAL} / {self.STOP_DISTANCE_MAX_FINAL}")
+
+        G_collision_detect = float(config['Parking']['collisioin_detect'])
+        self.get_logger().info(f"Collision detection distance: {G_collision_detect}")
 
         G_LEFT_CAM_ID = str(config['Hardware']['left_cam_id'])
         G_RIGHT_CAM_ID = str(config['Hardware']['right_cam_id'])
@@ -700,11 +705,11 @@ class distanceNode(Node):
         )
 
     def distance_sensor_callback(self, msg):
-        global G_front_dist, G_tf_control
+        global G_front_dist, G_tf_control, G_collision_detect
         G_front_dist = msg.data
         self.get_logger().info(f"Distance: {msg.data}")
 
-        if G_front_dist < 0.05:
+        if G_collision_detect > 0 and G_front_dist < G_collision_detect:
             self.get_logger().info('Collision detected, push back')
             G_tf_control = False
             fullDriveNode.steer(0.0,True)
