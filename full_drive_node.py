@@ -480,11 +480,13 @@ class fullDriveNode(Node):
                     if not G_clockwise:
                         while orientation > 90: orientation -= 90
                         X = 1.0 if orientation < 0 else -1.0
+                        gap = abs(orientation - 90)
                     else:
-                        while orientation < 90: orientation += 90
+                        while orientation < 0: orientation += 90
                         X = 1.0 if orientation > 0 else -1.0
+                        gap = abs(orientation - 0)
                     self.steer(X,False)
-                    if abs(orientation-90) < self.GYRO_ACCURACY:  #5
+                    if gap < self.GYRO_ACCURACY:  #5
                         X = 0
                         self.stop()
                         self.steer(0,True)
