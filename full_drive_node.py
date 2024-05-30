@@ -493,9 +493,11 @@ class fullDriveNode(Node):
                     self.get_logger().info(f"Heading: {orientation}")
 
                 elif self._park_phase == 1:
-                    if self.front_dist() > self.STOP_DISTANCE_MAX_TURN: # 1.55
+                    dist = self.front_dist()
+                    self.get_logger().info(f"Front distance: {dist}")
+                    if dist > self.STOP_DISTANCE_MAX_TURN: # 1.55
                         self.move("F1")
-                    elif self.front_dist() < self.STOP_DISTANCE_MIN_TURN: # 1.45
+                    elif dist < self.STOP_DISTANCE_MIN_TURN: # 1.45
                         self.move("R1")
                     else:
                         self._park_phase = 2
