@@ -360,7 +360,7 @@ class fullDriveNode(Node):
             self.section_means = [np.mean(section) for section in section_data]
             min_far_dist = min(self.section_means[60:101])
             min_near_dist = min(self.section_means[40:121])
-            side_dist = min(self.section_means[0:10],self.section_means[150:161])
+            side_dist = min(self.section_means[0:11] + self.section_means[150:161])
 
             ########################
             # RACE
