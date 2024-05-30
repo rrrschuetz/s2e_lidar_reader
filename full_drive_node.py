@@ -372,7 +372,7 @@ class fullDriveNode(Node):
                 self._total_heading_change += heading_change
                 self._last_heading = self._current_heading
                 if G_parking_lot > self.MIN_DETECTIONS_SPOT and abs(self._total_heading_change) >= (self.RACE_SECTIONS*360-10):
-                    self.get_logger().info(f"cam1/cam2 {sum(G_color1_m)}/{sum(G_color2_m)}")
+                    #self.get_logger().info(f"cam1/cam2 {sum(G_color1_m)}/{sum(G_color2_m)}")
                     if ((not G_clockwise and sum(G_color2_m) > self.MIN_DETECTIONS_TRIGGER) or (G_clockwise and sum(G_color1_m) > self.MIN_DETECTIONS_TRIGGER)):
                         self.race_report()
                         self.prompt("Parking ...")
@@ -493,11 +493,11 @@ class fullDriveNode(Node):
                         self.steer(0,True)
                         self._park_phase = 1
                     self.steer(X,False)
-                    self.get_logger().info(f"Heading: {orientation}")
+                    #self.get_logger().info(f"Heading: {orientation}")
 
                 elif self._park_phase == 1:
                     dist = self.front_dist()
-                    self.get_logger().info(f"Front distance: {dist}")
+                    #self.get_logger().info(f"Front distance: {dist}")
                     if dist > self.STOP_DISTANCE_MAX_TURN: # 1.55
                         self.move("F1")
                     elif dist < self.STOP_DISTANCE_MIN_TURN: # 1.45
@@ -512,7 +512,7 @@ class fullDriveNode(Node):
                     self._park_phase = 3
 
                 elif self._park_phase == 3:
-                    self.get_logger().info(f"Side Distance: {min_near_dist}")
+                    #self.get_logger().info(f"Side Distance: {min_near_dist}")
                     if self.front_dist() < self.STOP_DISTANCE_PARK and min_near_dist < self.STOP_DISTANCE_PARK:
                         self.stop_race()
                         self._state = "IDLE"
