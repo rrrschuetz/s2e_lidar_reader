@@ -66,6 +66,7 @@ class fullDriveNode(Node):
     scan_max_dist = 2.8
     motor_ctl = -20
     relay_pin = 17
+    gpio_pin = 5
 
     def __init__(self):
         global G_color1_r,G_color1_g,G_color2_r,G_color2_g,G_color1_m,G_color2_m
@@ -209,7 +210,6 @@ class fullDriveNode(Node):
         self.get_logger().info('clockwise prediction model loaded')
 
         # touch button
-        self.gpio_pin = 5
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.gpio_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         GPIO.add_event_detect(self.gpio_pin, GPIO.FALLING, callback=self.gpio_callback)
@@ -234,6 +234,7 @@ class fullDriveNode(Node):
         self.publisher_.publish(msg)
 
     def motor_off(self):
+        self.get_logger().info("motor_off called.")
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.relay_pin, GPIO.OUT)
         GPIO.output(self.relay_pin, GPIO.LOW)
@@ -708,7 +709,7 @@ class distanceNode(Node):
     def distance_sensor_callback(self, msg):
         global G_front_dist, G_tf_control, G_collision_detect
         G_front_dist = msg.data
-        #self.get_logger().info(f"Distance: {msg.data}")
+        self.get_logger().info(f"Distance: {msg.data}")
 
         if G_tf_control and G_collision_detect > 0 and G_front_dist < G_collision_detect:
             self.get_logger().info('Collision detected, push back')
