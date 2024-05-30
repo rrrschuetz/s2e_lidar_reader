@@ -709,7 +709,7 @@ class distanceNode(Node):
         G_front_dist = msg.data
         #self.get_logger().info(f"Distance: {msg.data}")
 
-        if G_collision_detect > 0 and G_front_dist < G_collision_detect:
+        if G_tf_control and G_collision_detect > 0 and G_front_dist < G_collision_detect:
             self.get_logger().info('Collision detected, push back')
             G_tf_control = False
             fullDriveNode.steer(0.0,True)
