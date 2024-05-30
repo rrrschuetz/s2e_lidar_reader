@@ -334,7 +334,7 @@ class fullDriveNode(Node):
         #self.get_logger().info(f"Distances: {self.section_means}")
         if len(self.section_means) > 0:
             dist = max(self.section_means[78:83])
-            if dist < 1.0: return dist
+            if dist < 0.8: return dist
         return G_front_dist
 
     def lidar_callback(self, msg):
@@ -714,7 +714,7 @@ class distanceNode(Node):
             self.get_logger().info('Collision detected, push back')
             G_tf_control = False
             fullDriveNode.steer(0.0,True)
-            fullDriveNode.move("R15")
+            fullDriveNode.move("R20")
             fullDriveNode.reset()
             G_tf_control = True
             return
