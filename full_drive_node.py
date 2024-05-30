@@ -397,7 +397,7 @@ class fullDriveNode(Node):
                         self._obstacle_chk = True
 
                         self.get_logger().info(f"Obstacle: {side_dist} {min_far_dist}, {min_near_dist}")
-                        if self.inital_race and side_dist < 0.15:
+                        if self.initial_race and side_dist < 0.15:
                             self.move_m(0.5)
                         elif not self.initial_race and (min_far_dist < 0.8 or min_near_dist < 0.2):
                             self._backward = True
