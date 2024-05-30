@@ -38,6 +38,12 @@ G_roll = 0.0
 G_pitch = 0.0
 G_yaw = 0.0
 G_front_dist = 0.0
+G_pwm = None
+G_speed_publisher = None
+G_FWD_SPEED = ""
+G_FWD_SPEEDU = ""
+G_servo_neutral = 0
+G_servo_ctl_fwd = 0
 
 class fullDriveNode(Node):
 
@@ -56,34 +62,35 @@ class fullDriveNode(Node):
     HFOV = 70.8
     num_scan = 1620
     num_scan2 = 810
-    scan_min_dist = 0.30
     scan_max_dist = 2.8
-    servo_min = 260  # Min pulse length out of 4096
-    servo_max = 380  # Max pulse length out of 4096
-    servo_neutral = int((servo_max+servo_min)/2)
-    servo_ctl_fwd = int(-(servo_max-servo_min)/2 * 1.0)
-    servo_ctl_rev = int(-(servo_max-servo_min)/2 * 1.0)
     motor_ctl = -20
     relay_pin = 17
-    FWD_SPEED = "5"
-    FWD_SPEEDU = "5"
-    REV_SPEED = "-5"
 
     def __init__(self):
         global G_color1_r,G_color1_g,G_color2_r,G_color2_g,G_color1_m,G_color2_m
         global G_tf_control,G_parking_lot,G_clockwise,G_cam_updates
         global G_LEFT_CAM_ID, G_RIGHT_CAM_ID
+        global G_speed_publisher, G_pwm, G_servo_neutral, G_servo_ctl_fwd, G_FWD_SPEED, G_FWD_SPEEDU
 
         super().__init__('full_drive_node')
         self.publisher_ = self.create_publisher(String, 'main_logger', 10)
-        self.speed_publisher_ = self.create_publisher(String, 'set_speed', 10)
+        G_speed_publisher = self.create_publisher(String, 'set_speed', 10)
 
         qos_profile = QoSProfile(
                 depth=1, 
                 history=QoSHistoryPolicy.KEEP_LAST, 
                 reliability=QoSReliabilityPolicy.BEST_EFFORT,
                 durability=QoSDurabilityPolicy.VOLATILE)
-    
+
+        servo_min = 260  # Min pulse length out of 4096
+        servo_max = 380  # Max pulse length out of 4096
+        G_servo_neutral = int((servo_max+servo_min)/2)
+        G_servo_ctl_fwd = int(-(servo_max-servo_min)/2 * 1.0)
+        self.servo_ctl_rev = int(-(servo_max-servo_min)/2 * 1.0)
+        G_FWD_SPEED = "5"
+        G_FWD_SPEEDU = "5"
+        self.REV_SPEED = "-5"
+
         self._state = 'IDLE'
         self._processing = False
         G_tf_control = False
@@ -106,9 +113,6 @@ class fullDriveNode(Node):
 
         self.section_means = []
         self._backward = False
-
-        self._speed_msg = String()
-        self._speed_msg.data = "0"
 
         config = configparser.ConfigParser()
         config.read('/home/rrrschuetz/ros2_ws4/config.ini')
@@ -142,9 +146,9 @@ class fullDriveNode(Node):
         self.get_logger().info(f"Dongle ID: {self.DONGLE_ID1}:{self.DONGLE_ID2}")
 
         # Initialize PCA9685
-        self._pwm = PCA9685()
-        self._pwm.set_pwm_freq(50)  # Set frequency to 50Hz
-        self._pwm.set_pwm(0, 0, int(self.servo_neutral))
+        G_pwm = PCA9685()
+        G_pwm.set_pwm_freq(50)  # Set frequency to 50Hz
+        G_pwm.set_pwm(0, 0, int(G_servo_neutral))
         self.get_logger().info('Steering unit initialized ...')
 
         self._total_heading_change = 0
@@ -172,16 +176,16 @@ class fullDriveNode(Node):
             self.RACE_PATH_CW = self.INITIAL_RACE_PATH_CW
             self.SCALER_PATH_CC = self.INITIAL_SCALER_PATH_CC
             self.SCALER_PATH_CW = self.INITIAL_SCALER_PATH_CW
-            self.FWD_SPEED = FWD_SPEED_initial
-            self.FWD_SPEEDU = FWD_SPEEDU_initial
+            G_FWD_SPEED = FWD_SPEED_initial
+            G_FWD_SPEEDU = FWD_SPEEDU_initial
         else:
             self.get_logger().info('Obstacle race mode activated ...')
             self.RACE_PATH_CC = self.OBSTACLE_RACE_PATH_CC
             self.RACE_PATH_CW = self.OBSTACLE_RACE_PATH_CW
             self.SCALER_PATH_CC = self.OBSTACLE_SCALER_PATH_CC
             self.SCALER_PATH_CW = self.OBSTACLE_SCALER_PATH_CW
-            self.FWD_SPEED = FWD_SPEED_obstacle
-            self.FWD_SPEEDU = FWD_SPEEDU_obstacle
+            G_FWD_SPEED = FWD_SPEED_obstacle
+            G_FWD_SPEEDU = FWD_SPEEDU_obstacle
 
         # Load the trained racing model and the scaler counterclockwise and clockwise
         with open(self.SCALER_PATH_CC, 'rb') as f:
@@ -231,22 +235,29 @@ class fullDriveNode(Node):
         GPIO.output(self.relay_pin, GPIO.LOW)
         GPIO.cleanup()
 
+    @classmethod
     def reset(self):
-        global G_clockwise
-        self._speed_msg.data = "RESET"
-        self.speed_publisher_.publish(self._speed_msg)
+        global G_clockwise, G_speed_publisher, G_FWD_SPEED, G_FWD_SPEEDU
+        msg = String()
+        msg.data = "RESET"
+        G_speed_publisher.publish(msg)
         # lower speed for clockwise race, speed measurement at inner wheel !
-        self._speed_msg.data = self.FWD_SPEED if not G_clockwise else self.FWD_SPEEDU
-        self.speed_publisher_.publish(self._speed_msg)
+        msg.data = G_FWD_SPEED if not G_clockwise else G_FWD_SPEEDU
+        G_speed_publisher.publish(msg)
 
+    @classmethod
     def steer(self,X,sleep):
-        XX = int(self.servo_neutral+X*self.servo_ctl_fwd)
-        self._pwm.set_pwm(0, 0, XX)
+        global G_pwm, G_servo_neutral, G_servo_ctl_fwd
+        XX = int(G_servo_neutral+X*G_servo_ctl_fwd)
+        G_pwm.set_pwm(0, 0, XX)
         if sleep: time.sleep(1.0)
 
+    @classmethod
     def move(self, dist):
-        self._speed_msg.data = dist
-        self.speed_publisher_.publish(self._speed_msg)
+        global G_speed_publisher
+        msg = String()
+        msg.data = dist
+        G_speed_publisher.publish(msg)
         time.sleep(2.0)
 
     def move_m(self, dist):
@@ -266,16 +277,19 @@ class fullDriveNode(Node):
         self.get_logger().info(f"Initial heading: {self._initial_heading} degrees")
         self._round_start_time = self.get_clock().now()
 
+    @classmethod
     def stop(self):
-        self._speed_msg.data = "STOP"
-        self.speed_publisher_.publish(self._speed_msg)
+        global G_speed_publisher
+        msg = String()
+        msg.data = "STOP"
+        G_speed_publisher.publish(msg)
 
     def stop_race(self):
-        global G_tf_control
+        global G_tf_control, G_pwm
         self._state = "IDLE"
         G_tf_control = False
         self._processing = False
-        self._pwm.set_pwm(0, 0, int(self.servo_neutral))
+        G_pwm.set_pwm(0, 0, int(self.servo_neutral))
         self.stop()
         self.motor_off()
         self.get_logger().info(f"ROS2 shutdown requested")
@@ -441,8 +455,8 @@ class fullDriveNode(Node):
                     self._Y = predictions[0, 1]
                     #self.get_logger().info('Predicted axes: "%s"' % predictions)
 
-                    XX = int(self.servo_neutral+(self._X+self._Xtrim)*self.servo_ctl_fwd)
-                    self._pwm.set_pwm(0, 0, XX)
+                    XX = int(G_servo_neutral+(self._X+self._Xtrim)*G_servo_ctl_fwd)
+                    G_pwm.set_pwm(0, 0, XX)
 
                 except ValueError as e:
                     self.get_logger().error('Model rendered nan: %s' % str(e))
@@ -535,17 +549,6 @@ class fullDriveNode(Node):
             if duration_in_seconds > 5:
                 self.get_logger().info('Stop button pressed!')
                 self.stop_race()
-
-    def collision_callback(self, msg):
-        global G_tf_control
-        self.get_logger().info('Collision msg received')
-        self._processing = False
-        G_tf_control = False
-        self.steer(0.0,True)
-        self.move("R15")
-        self.reset()
-        G_tf_control = True
-        return
 
 class cameraNode(Node):
     def __init__(self, name):
@@ -697,9 +700,18 @@ class distanceNode(Node):
         )
 
     def distance_sensor_callback(self, msg):
-        global G_front_dist
+        global G_front_dist, G_tf_control
         G_front_dist = msg.data
-        #self.get_logger().info(f"Distance: {msg.data}")
+        self.get_logger().info(f"Distance: {msg.data}")
+
+        if G_front_dist < 0.05:
+            self.get_logger().info('Collision detected, push back')
+            G_tf_control = False
+            fullDriveNode.steer(0.0,True)
+            fullDriveNode.move("R15")
+            fullDriveNode.reset()
+            G_tf_control = True
+            return
 
 
 def main(args=None):
