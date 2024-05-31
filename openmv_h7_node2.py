@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-import serial, time, threading, configparser
+import serial, time, threading, configparser, os
 
 class openmvH7Node(Node):
     def __init__(self):
@@ -10,7 +10,7 @@ class openmvH7Node(Node):
         self.publisher_log_ = self.create_publisher(String, 'main_logger', 10)
 
         config = configparser.ConfigParser()
-        config.read('~/ros2_ws4/config.ini')
+        config.read(os.path.expanduser('~/ros2_ws4/config.ini'))
         self.cam_software_path = config['Hardware']['cam_software_path']
         self.interval = float(config['Hardware']['camera_timer'])
         self.get_logger().info(f"Camera 2: Software path: {self.cam_software_path}")

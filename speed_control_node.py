@@ -68,7 +68,7 @@ class SpeedControlNode(Node):
         self.log_timer = self.create_timer(self.rolling_avg_period, self.log_timer_callback)
 
         config = configparser.ConfigParser()
-        config.read('~/ros2_ws4/config.ini')
+        config.read(os.path.expanduser('~/ros2_ws4/config.ini'))
         self.pid_output_max = int(config['Speed']['pid_output_max'])
         self.pid_output_min = int(config['Speed']['pid_output_min'])
         self.PID_Kp = float(config['Speed']['pid_Kp'])

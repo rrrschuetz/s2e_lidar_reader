@@ -10,7 +10,7 @@ class openmvH7Node(Node):
         self.publisher_log_ = self.create_publisher(String, 'main_logger', 10)
 
         config = configparser.ConfigParser()
-        config.read('~/ros2_ws4/config.ini')
+        config.read(os.path.expanduser('~/ros2_ws4/config.ini'))
         self.cam_software_path = config['Hardware']['cam_software_path']
         self.interval = float(config['Hardware']['camera_timer'])
         self.get_logger().info(f"Camera 1: Software path: {self.cam_software_path}")

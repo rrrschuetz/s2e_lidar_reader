@@ -59,7 +59,7 @@ class s2eLidarReader(Node):
             durability=QoSDurabilityPolicy.VOLATILE)
 
         config = configparser.ConfigParser()
-        config.read('~/ros2_ws4/config.ini')
+        config.read(os.path.expanduser('~/ros2_ws4/config.ini'))
 
         FWD_SPEED_initial = str(config['Speed']['forward_initial_counterclockwise'])
         FWD_SPEEDU_initial = str(config['Speed']['forward_initial_clockwise'])
