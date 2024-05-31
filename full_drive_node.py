@@ -1,6 +1,5 @@
 import time, configparser
 import rclpy, math
-from rclpy.time import Time
 from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDurabilityPolicy
@@ -8,12 +7,10 @@ from sensor_msgs.msg import LaserScan
 from sensor_msgs.msg import Imu
 from std_msgs.msg import Float32
 from std_msgs.msg import String
-from std_msgs.msg import Bool
 import numpy as np
 import tensorflow as tf
 import pickle
 from Adafruit_PCA9685 import PCA9685
-from vl53l5cx.vl53l5cx import VL53L5CX
 import RPi.GPIO as GPIO
 import usb.core
 import usb.util
@@ -48,15 +45,15 @@ G_servo_ctl_fwd = 0
 
 class fullDriveNode(Node):
 
-    OBSTACLE_RACE_PATH_CC = "/home/rrrschuetz/test/model.tflite"
-    OBSTACLE_RACE_PATH_CW = "/home/rrrschuetz/test/modelu.tflite"
-    INITIAL_RACE_PATH_CC = "/home/rrrschuetz/test/model_i.tflite"
-    INITIAL_RACE_PATH_CW = "/home/rrrschuetz/test/model_iu.tflite"
+    OBSTACLE_RACE_PATH_CC = "~/test/model.tflite"
+    OBSTACLE_RACE_PATH_CW = "~/test/modelu.tflite"
+    INITIAL_RACE_PATH_CC = "~/test/model_i.tflite"
+    INITIAL_RACE_PATH_CW = "~/test/model_iu.tflite"
 
-    OBSTACLE_SCALER_PATH_CC = "/home/rrrschuetz/test/scaler.pkl"
-    OBSTACLE_SCALER_PATH_CW = "/home/rrrschuetz/test/scaleru.pkl"
-    INITIAL_SCALER_PATH_CC = "/home/rrrschuetz/test/scaler_i.pkl"
-    INITIAL_SCALER_PATH_CW = "/home/rrrschuetz/test/scaler_iu.pkl"
+    OBSTACLE_SCALER_PATH_CC = "~/test/scaler.pkl"
+    OBSTACLE_SCALER_PATH_CW = "~/test/scaleru.pkl"
+    INITIAL_SCALER_PATH_CC = "~/test/scaler_i.pkl"
+    INITIAL_SCALER_PATH_CW = "~/test/scaler_iu.pkl"
 
     initial_race = False
     VPIX = 200
@@ -117,7 +114,7 @@ class fullDriveNode(Node):
         self._backward = False
 
         config = configparser.ConfigParser()
-        config.read('/home/rrrschuetz/ros2_ws4/config.ini')
+        config.read('~/ros2_ws4/config.ini')
 
         FWD_SPEED_initial = str(config['Speed']['forward_initial_counterclockwise'])
         FWD_SPEEDU_initial = str(config['Speed']['forward_initial_clockwise'])

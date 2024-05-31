@@ -12,7 +12,6 @@ import numpy as np
 import tensorflow as tf
 import pickle
 from Adafruit_PCA9685 import PCA9685
-from sense_hat import SenseHat
 import RPi.GPIO as GPIO
 import usb.core
 import usb.util
@@ -60,7 +59,7 @@ class s2eLidarReader(Node):
             durability=QoSDurabilityPolicy.VOLATILE)
 
         config = configparser.ConfigParser()
-        config.read('/home/rrrschuetz/ros2_ws4/config.ini')
+        config.read('~/ros2_ws4/config.ini')
 
         FWD_SPEED_initial = str(config['Speed']['forward_initial_counterclockwise'])
         FWD_SPEEDU_initial = str(config['Speed']['forward_initial_clockwise'])
@@ -83,7 +82,7 @@ class s2eLidarReader(Node):
         labels = ['X', 'Y'] + scan_labels + col1_g_labels + col2_g_labels + col1_r_labels + col2_r_labels
         line = ','.join(labels) + '\n'
 
-        filepath = '/home/rrrschuetz/test/file.txt'
+        filepath = '~/test/file.txt'
         labels = os.path.exists(filepath)
         with open(filepath, 'a') as f:
             if not labels: f.write(line)

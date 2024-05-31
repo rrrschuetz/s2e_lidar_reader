@@ -5,7 +5,6 @@ from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDur
 from sensor_msgs.msg import LaserScan
 from sensor_msgs.msg import Joy
 from std_msgs.msg import String
-from std_msgs.msg import Bool
 import numpy as np
 from Adafruit_PCA9685 import PCA9685
 import RPi.GPIO as GPIO
@@ -42,7 +41,7 @@ class s2eLidarReaderParkingNode(Node):
     labels = ['X', 'Y'] + scan_labels + col1_g_labels + col2_g_labels + col1_r_labels + col2_r_labels + col1_m_labels + col2_m_labels
     line = ','.join(labels) + '\n'
 
-    filepath = '/home/rrrschuetz/test/file_p.txt'
+    filepath = '~/test/file_p.txt'
     labels = os.path.exists(filepath)
     with open(filepath, 'a') as f:
         if not labels: f.write(line)
