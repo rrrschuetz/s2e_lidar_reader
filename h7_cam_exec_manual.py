@@ -47,7 +47,7 @@ while True:
     try:
         img = sensor.snapshot()
         img.lens_corr(strength=2.6, zoom=1.0)
-        img.gamma_corr(gamma = 2.0)
+        #img.gamma_corr(gamma = 2.0)
 
         blob_entries = []
         blobs = img.find_blobs(thresholds,0,roi,pixels_threshold=160, merge=False)
