@@ -13,8 +13,7 @@ class SpeedControlNode(Node):
     reverse_pulse = 204
     neutral_pulse = 310
     forward_pulse = 409
-    base_fwd = 6   # 10
-    base_rev = -4
+    base_speed = 6   # 10
     gpio_pin = 22
     relay_pin = 17
     pid_output_min = 4
@@ -51,6 +50,9 @@ class SpeedControlNode(Node):
         #total_voltage = value1+value2+value3
         #self.get_logger().info(f"Battery voltage cell 1/2/3/total: {value1:.2f} V / {value2:.2f} V / {value3:.2f} V / {total_voltage:.2f} V")
 
+        self.reverse = False
+        self.impulse_target = 0
+        self.move_to_impulse = False
         self.pid_steering = False
         self.motor_ctl = 1.2
         self.y_pwm = 0
@@ -99,39 +101,45 @@ class SpeedControlNode(Node):
         self.pid = PID(self.PID_Kp, self.PID_Ki, self.PID_Kd, setpoint=0, output_limits = (self.pid_output_min,self.pid_output_max)) # 0.2/0.05/0.00
         self.pid.sample_time = 0.1
 
-    def move_to_impulse(self, impulse_goal):
+    def move_to_impulse(self, num):
         self.get_logger().info("move_to_impulse called: %s" % impulse_goal)
         if impulse_goal == 0:
             self.get_logger().info("move_to_impulse: No move!")
             return
 
-        #if self.chan.voltage > 12.0:
-        #    power = self.impulse_speed_rev_high if impulse_goal < 0 else self.impulse_speed_fwd_high
-        #elif self.chan.voltage > 11.3:
-        #    power = self.impulse_speed_rev_med if impulse_goal < 0 else self.impulse_speed_fwd_med
-        #else:
-        #    power = self.impulse_speed_rev_low if impulse_goal < 0 else self.impulse_speed_fwd_low
-
-        power = self.impulse_speed_rev_med if impulse_goal < 0 else self.impulse_speed_fwd_med
-
+        self.pid_steering = True
+        self.move_to_impulse = True
+        self.impulse_target = num
         self.impulse_history.clear()
         self.impulse_count = 0
+        self.reset_pid()
+        self.pid.setpoint = 5
 
-        self.y_pwm = self.neutral_pulse + power
-        self.pwm.set_pwm(1, 0, self.y_pwm)
+        #power = self.impulse_speed_rev_med if impulse_goal < 0 else self.impulse_speed_fwd_med
+        #self.y_pwm = self.neutral_pulse + power
+        #self.pwm.set_pwm(1, 0, self.y_pwm)
 
-        while self.impulse_count < abs(impulse_goal):
-            self.impulse_count += sum(self.impulse_history)
-            self.impulse_history.clear()
-            time.sleep(0.1)
+        #while self.impulse_count < abs(impulse_goal):
+        #    self.impulse_count += sum(self.impulse_history)
+        #    self.impulse_history.clear()
+        #    time.sleep(0.1)
 
-        self.y_pwm = self.neutral_pulse
-        self.pwm.set_pwm(1, 0, self.y_pwm)
+        #self.y_pwm = self.neutral_pulse
+        #self.pwm.set_pwm(1, 0, self.y_pwm)
 
-        self.get_logger().info("impulses moved: %s" % self.impulse_count)
+        s#elf.get_logger().info("impulses moved: %s" % self.impulse_count)
         return
 
     def impulse_callback(self, channel):
+        if self.move_to_impulse:
+            if self.impulse_target > 0: self.impulse_target -=1
+            elif self.impulse_target < 0: self.impulse_target +=1
+            else:
+                self.pwm.set_pwm(1, 0, self.neutral_pulse-2)
+                self.reverse = False
+                self.pid_steering = False
+                self.move_to_impulse = False
+
         self.last_impulse_time = self.get_clock().now()
         self.impulse_history.append(1)
         self.impulse_history_long.append(self.last_impulse_time)
@@ -152,12 +160,14 @@ class SpeedControlNode(Node):
                 self.impulse_history.clear()
                 self.reset_pid()
             elif new_speed.startswith('F'):
-                self.pid_steering = False
-                self.get_logger().info(f"Received move forward command {new_speed}" )
+                #self.pid_steering = True #False
+                self.get_logger().info(f"Received move forward command {new_speed}")
+                self.reverse = False
                 self.move_to_impulse(int(new_speed[1:]))
             elif new_speed.startswith('R'):
-                self.pid_steering = False
+                #self.pid_steering = True # False
                 self.get_logger().info(f"Received move backward command {new_speed}")
+                self.reverse = True
                 self.move_to_impulse(-int(new_speed[1:]))
             else:
                 self.pid_steering = True
@@ -171,12 +181,13 @@ class SpeedControlNode(Node):
         if (current_time - self.last_impulse_time).nanoseconds/1e9 >= 1:
             self.impulse_history_long.clear()
 
-        if not self.pid_steering: return
+        #if not self.pid_steering: return
 
         self.impulse_count = sum(self.impulse_history)
         pid_output = self.pid(self.impulse_count)
         #self.get_logger().info(f"Impulses {self.impulse_count},pid_output {pid_output}")
-        self.y_pwm = self.neutral_pulse + self.base_fwd + int(pid_output * self.motor_ctl)
+        dir = -1 if self.reverse else 1
+        self.y_pwm = self.neutral_pulse + (self.base_fwd + int(pid_output * self.motor_ctl))*dir
         self.y_pwm = min(self.max_y, self.y_pwm)  # Ensure PWM is within forward range.
         self.impulse_history.clear()  # Clear history after each measurement
         try:
