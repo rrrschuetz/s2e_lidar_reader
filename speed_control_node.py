@@ -3,6 +3,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 import RPi.GPIO as GPIO
+import gpiozero
 import collections
 from simple_pid import PID
 #import board, busio
@@ -37,6 +38,126 @@ class SpeedControlNode(Node):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.relay_pin, GPIO.OUT)
         GPIO.setup(self.gpio_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+
+INPUT=0
+OUTPUT=1
+#     LINE_REQ_DIR_AS_IS = 1
+#     LINE_REQ_DIR_IN = 2
+#     LINE_REQ_DIR_OUT = 3
+#     LINE_REQ_EV_BOTH_EDGES = 6
+#     LINE_REQ_EV_FALLING_EDGE = 4
+#     LINE_REQ_EV_RISING_EDGE = 5
+#     LINE_REQ_FLAG_ACTIVE_LOW = 4
+#     LINE_REQ_FLAG_BIAS_DISABLE = 8
+#     LINE_REQ_FLAG_BIAS_PULL_DOWN = 16
+#     LINE_REQ_FLAG_BIAS_PULL_UP = 32
+#     LINE_REQ_FLAG_OPEN_DRAIN = 1
+#     LINE_REQ_FLAG_OPEN_SOURCE = 2
+
+#     ACTIVE_HIGH = 1
+#     ACTIVE_LOW = 2
+#     BIAS_AS_IS = 1
+#     BIAS_DISABLE = 2
+#     BIAS_PULL_DOWN = 4
+#     BIAS_PULL_UP = 3
+#     DIRECTION_INPUT = 1
+#     DIRECTION_OUTPUT = 2
+
+def setup_gpio(gpio, direction, pud):
+# def setup_gpio(gpio, direction, pud=0):  # optional pud
+  """
+  Set gpio as an input or an output
+  direction: 0=IN, 1=OUT
+  pud: 0=None 1=Up 2=Down
+  """
+  line = chip.get_line(gpio)
+  gpiomap[gpio] = line
+  if direction:
+    line.request(consumer="p_gpio", type=gpiod.LINE_REQ_DIR_OUT)
+  else:
+    f = gpiod.LINE_REQ_FLAG_BIAS_DISABLE
+    if pud==1:
+      f = gpiod.LINE_REQ_FLAG_BIAS_PULL_UP
+    if pud==2:
+      f = gpiod.LINE_REQ_FLAG_BIAS_PULL_DOWN
+    line.request("p_gpio", gpiod.LINE_REQ_DIR_IN, f)
+    print('pud= ', pud, 'bias= ', line.bias())
+
+def input_gpio(gpio):
+  """
+  Input from a GPIO channel.
+  Returns HIGH=1=True or LOW=0=False
+  """
+  return gpiomap[gpio].get_value()
+
+def output_gpio(gpio, value):
+  """
+  Output to a GPIO channel.
+  value - 0/1 or False/True or LOW/HIGH
+  """
+  gpiomap[gpio].set_value(value)
+
+def gpio_function(gpio):
+  """
+  Returns the current GPIO direction
+  Only works if gpio in use
+  Returns 0,1 (IN, OUT)
+  """
+  if gpio in gpiomap:
+    return gpiomap[gpio].direction() - 1
+  return 0
+
+def get_pullupdn(gpio):
+  """
+  Return the current GPIO pull
+  Only works if gpio in use
+  Returns
+  0:None/Unknown
+  1:Up
+  2:Down
+  """
+  if gpio in gpiomap:
+    return gpiomap[gpio].bias()-2
+  return 0
+
+ #  Dummy functions
+def setup():
+  pass
+
+def cleanup():
+  pass
+
+#-------------
+import time
+
+def main():
+  global chip
+  SigOUT = 12
+  SigIN = 13
+  LOOPS = 20000
+  setup_gpio(SigOUT, 1, 0)
+#   setup_gpio(SigIN, 0, 0)
+#   setup_gpio(SigIN, 0, 1)
+  setup_gpio(SigIN, 0, 2)
+
+  t0 = time.time()
+
+  for i in range(LOOPS):
+    output_gpio(SigOUT, 1)
+    output_gpio(SigOUT, 0)
+
+  t1 = time.time()
+
+  print("gpiod Python\t{:>10.0f} toggles per second".format((1.0 * LOOPS) / (t1 - t0)))
+  output_gpio(SigOUT, 1)
+  print("{}".format(input_gpio(SigIN)))
+  print('SigIN function= ', gpio_function(SigIN))
+  print('SigOUT function= ', gpio_function(SigOUT))
+  print('pud= ', get_pullupdn(SigIN))
+  print('pud= ', get_pullupdn(4))
+
+if __name__ == '__main__':
+    main()
 
         self.pwm = PCA9685()
         self.pwm.set_pwm_freq(50)  # Set frequency to 50Hz
@@ -88,6 +209,7 @@ class SpeedControlNode(Node):
         self.get_logger().info(f"Average minimal speed: {self.average_min_speed}")
 
     def __del__(self):
+        GPIO.setup(self.relay_pin, GPIO.OUT)
         GPIO.output(self.relay_pin, GPIO.LOW)
         GPIO.cleanup()
 
