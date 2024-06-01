@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-import serial, time, threading, configparser
+import serial, time, threading, configparser, os
 
 class openmvH7Node(Node):
     def __init__(self):
