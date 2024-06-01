@@ -7,7 +7,7 @@ import gpiozero
 import collections
 from simple_pid import PID
 from Adafruit_PCA9685 import PCA9685
-import Adafruit_ADS1x15
+#import Adafruit_ADS1x15
 
 class SpeedControlNode(Node):
     reverse_pulse = 204
@@ -43,13 +43,13 @@ class SpeedControlNode(Node):
         GPIO.output(self.relay_pin, GPIO.HIGH)
         self.get_logger().info('ESC calibrated.')
 
-        GAIN = 2
-        adc = Adafruit_ADS1x15.ADS1115()
-        value1 = adc.read_adc(0, gain=GAIN)*6.144/32767
-        value2 = adc.read_adc(1, gain=GAIN)*6.144/32767
-        value3 = adc.read_adc(2, gain=GAIN)*6.144/32767
-        total_voltage = value1+value2+value3
-        self.get_logger().info(f"Battery voltage cell 1/2/3/total: {value1:.2f} V / {value2:.2f} V / {value3:.2f} V / {total_voltage:.2f} V")
+        #GAIN = 2
+        #adc = Adafruit_ADS1x15.ADS1115()
+        #value1 = adc.read_adc(0, gain=GAIN)*6.144/32767
+        #value2 = adc.read_adc(1, gain=GAIN)*6.144/32767
+        #value3 = adc.read_adc(2, gain=GAIN)*6.144/32767
+        #total_voltage = value1+value2+value3
+        #self.get_logger().info(f"Battery voltage cell 1/2/3/total: {value1:.2f} V / {value2:.2f} V / {value3:.2f} V / {total_voltage:.2f} V")
 
         self.pid_steering = False
         self.motor_ctl = 1.2
