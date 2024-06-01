@@ -39,25 +39,6 @@ class SpeedControlNode(Node):
         GPIO.setup(self.relay_pin, GPIO.OUT)
         GPIO.setup(self.gpio_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
-  t0 = time.time()
-
-  for i in range(LOOPS):
-    output_gpio(SigOUT, 1)
-    output_gpio(SigOUT, 0)
-
-  t1 = time.time()
-
-  print("gpiod Python\t{:>10.0f} toggles per second".format((1.0 * LOOPS) / (t1 - t0)))
-  output_gpio(SigOUT, 1)
-  print("{}".format(input_gpio(SigIN)))
-  print('SigIN function= ', gpio_function(SigIN))
-  print('SigOUT function= ', gpio_function(SigOUT))
-  print('pud= ', get_pullupdn(SigIN))
-  print('pud= ', get_pullupdn(4))
-
-if __name__ == '__main__':
-    main()
-
         self.pwm = PCA9685()
         self.pwm.set_pwm_freq(50)  # Set frequency to 50Hz
         self.pwm.set_pwm(1, 0, self.neutral_pulse)
