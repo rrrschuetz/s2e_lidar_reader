@@ -103,7 +103,7 @@ class SpeedControlNode(Node):
 
     def move_to_impulse(self, num):
         self.get_logger().info("move_to_impulse called: %s" % impulse_goal)
-        if impulse_goal == 0:
+        if num == 0:
             self.get_logger().info("move_to_impulse: No move!")
             return
 
@@ -181,7 +181,7 @@ class SpeedControlNode(Node):
         if (current_time - self.last_impulse_time).nanoseconds/1e9 >= 1:
             self.impulse_history_long.clear()
 
-        #if not self.pid_steering: return
+        if not self.pid_steering: return
 
         self.impulse_count = sum(self.impulse_history)
         pid_output = self.pid(self.impulse_count)
