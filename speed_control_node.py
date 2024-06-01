@@ -6,10 +6,8 @@ import RPi.GPIO as GPIO
 import gpiozero
 import collections
 from simple_pid import PID
-import board, busio
 from Adafruit_PCA9685 import PCA9685
-from adafruit_ads1x15.ads1x15 import ADS1115
-from adafruit_ads1x15.analog_in import AnalogIn
+import Adafruit_ADS1x15
 
 class SpeedControlNode(Node):
     reverse_pulse = 204
@@ -45,13 +43,13 @@ class SpeedControlNode(Node):
         GPIO.output(self.relay_pin, GPIO.HIGH)
         self.get_logger().info('ESC calibrated.')
 
-        i2c = busio.I2C(board.SCL, board.SDA)
-        ads = ADS1115(i2c)
-        chan1 = AnalogIn(ads, ADS1115.P0)
-        chan2 = AnalogIn(ads, ADS1115.P1)
-        chan3 = AnalogIn(ads, ADS1115.P2)
-        total_voltage = chan1.voltage+chan2.voltage+chan3.voltage
-        self.get_logger().info(f"Battery voltage cell 1/2/3/total: {chan1.voltage} / {chan2.voltage} / {chan3.voltage} / {total_voltage} V")
+        GAIN = 2
+        adc = Adafruit_ADS1x15.ADS1115()
+        value1 = adc.read_adc(0, gain=GAIN)*6.144/32767
+        value2 = adc.read_adc(1, gain=GAIN)*6.144/32767
+        value3 = adc.read_adc(2, gain=GAIN)*6.144/32767
+        total_voltage = value1+value2+value3
+        self.get_logger().info(f"Battery voltage cell 1/2/3/total: {value1:.2f} V / {value2:.2f} V / {value3:.2f} V / {total_voltage:.2f} V")
 
         self.pid_steering = False
         self.motor_ctl = 1.2
