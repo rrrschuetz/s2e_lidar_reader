@@ -52,7 +52,7 @@ class SpeedControlNode(Node):
 
         self.reverse = False
         self.impulse_target = 0
-        self.move_to_impulse = False
+        self.move_to_impulse_mode = False
         self.pid_steering = False
         self.motor_ctl = 1.2
         self.y_pwm = 0
@@ -108,7 +108,7 @@ class SpeedControlNode(Node):
             return
 
         self.pid_steering = True
-        self.move_to_impulse = True
+        self.move_to_impulse_mode = True
         self.impulse_target = num
         self.impulse_history.clear()
         self.impulse_count = 0
@@ -131,14 +131,14 @@ class SpeedControlNode(Node):
         return
 
     def impulse_callback(self, channel):
-        if self.move_to_impulse:
+        if self.move_to_impulse_mode:
             if self.impulse_target > 0: self.impulse_target -=1
             elif self.impulse_target < 0: self.impulse_target +=1
             else:
                 self.pwm.set_pwm(1, 0, self.neutral_pulse-2)
                 self.reverse = False
                 self.pid_steering = False
-                self.move_to_impulse = False
+                self.move_to_impulse_mode = False
 
         self.last_impulse_time = self.get_clock().now()
         self.impulse_history.append(1)
