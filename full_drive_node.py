@@ -190,7 +190,7 @@ class fullDriveNode(Node):
             G_FWD_SPEEDU = FWD_SPEEDU_obstacle
 
         # Load the trained racing model and the scaler counterclockwise and clockwise
-        with open(self.SCALER_PATH_CC, 'rb') as f:
+        with open(os.path.expanduser(self.SCALER_PATH_CC), 'rb') as f:
             self._scaler = pickle.load(f)
         self._interpreter = tf.lite.Interpreter(model_path=self.RACE_PATH_CC)
         self._interpreter.allocate_tensors()
