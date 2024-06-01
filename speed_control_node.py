@@ -102,7 +102,7 @@ class SpeedControlNode(Node):
         self.pid.sample_time = 0.1
 
     def move_to_impulse(self, num):
-        self.get_logger().info("move_to_impulse called: %s" % impulse_goal)
+        self.get_logger().info("move_to_impulse called: %s" % num)
         if num == 0:
             self.get_logger().info("move_to_impulse: No move!")
             return
