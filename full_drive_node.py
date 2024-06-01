@@ -198,7 +198,7 @@ class fullDriveNode(Node):
         self._output_details = self._interpreter.get_output_details()
         self.get_logger().info('counterclockwise prediction model loaded')
 
-        with open(self.SCALER_PATH_CW, 'rb') as f:
+        with open(os.path.expanduser(self.SCALER_PATH_CW), 'rb')= as f:
             self._scaleru = pickle.load(f)
         self._interpreteru = tf.lite.Interpreter(self.RACE_PATH_CW)
         self._interpreteru.allocate_tensors()
