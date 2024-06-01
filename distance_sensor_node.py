@@ -2,17 +2,14 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32
 from gpiozero import DistanceSensor
-#from gpiozero.pins.pigpio import PiGPIOFactory
-from gpiozero.pins.native import NativeFactory
+from gpiozero.pins.pigpio import PiGPIOFactory
 
 class DistanceSensorNode(Node):  # Corrected class name
     def __init__(self):
         super().__init__('distance_sensor_node')
         self.publisher = self.create_publisher(Float32, 'distance_sensor', 10)  # Corrected message type
 
-        myFactory = NativeFactory()
-        #self.sensor = DistanceSensor(echo=12, trigger=11, max_distance=2, pin_factory=PiGPIOFactory())
-        self.sensor = DistanceSensor(echo=12, trigger=11, max_distance=2, pin_factory=myFactory())
+        self.sensor = DistanceSensor(echo=12, trigger=11, max_distance=2, pin_factory=PiGPIOFactory())
         self.timer = self.create_timer(0.1, self.timer_callback)  # Check every 0.1 second
 
     def timer_callback(self):  # Removed unused parameter
