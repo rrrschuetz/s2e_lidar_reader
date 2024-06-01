@@ -192,7 +192,7 @@ class fullDriveNode(Node):
         # Load the trained racing model and the scaler counterclockwise and clockwise
         with open(os.path.expanduser(self.SCALER_PATH_CC), 'rb') as f:
             self._scaler = pickle.load(f)
-        self._interpreter = tf.lite.Interpreter(model_path=self.RACE_PATH_CC)
+        self._interpreter = tf.lite.Interpreter(model_path = os.path.expanduser(self.RACE_PATH_CC))
         self._interpreter.allocate_tensors()
         self._input_details = self._interpreter.get_input_details()
         self._output_details = self._interpreter.get_output_details()
@@ -200,7 +200,7 @@ class fullDriveNode(Node):
 
         with open(os.path.expanduser(self.SCALER_PATH_CW), 'rb') as f:
             self._scaleru = pickle.load(f)
-        self._interpreteru = tf.lite.Interpreter(self.RACE_PATH_CW)
+        self._interpreteru = tf.lite.Interpreter(model_path = os.path.expanduser(self.RACE_PATH_CW))
         self._interpreteru.allocate_tensors()
         self._input_detailsu = self._interpreter.get_input_details()
         self._output_detailsu = self._interpreter.get_output_details()
