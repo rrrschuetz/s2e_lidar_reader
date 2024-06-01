@@ -187,7 +187,7 @@ class SpeedControlNode(Node):
         pid_output = self.pid(self.impulse_count)
         #self.get_logger().info(f"Impulses {self.impulse_count},pid_output {pid_output}")
         dir = -1 if self.reverse else 1
-        self.y_pwm = self.neutral_pulse + (self.base_fwd + int(pid_output * self.motor_ctl))*dir
+        self.y_pwm = self.neutral_pulse + (self.base_speed + int(pid_output * self.motor_ctl))*dir
         self.y_pwm = min(self.max_y, self.y_pwm)  # Ensure PWM is within forward range.
         self.impulse_history.clear()  # Clear history after each measurement
         try:
