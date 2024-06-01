@@ -18,7 +18,7 @@ class openmvH7Node(Node):
 
         self.serial_port = serial.Serial('/dev/ttyACM0', 115200, timeout=5)   #115200
         self.get_logger().info('OpenMV H7 2 connected' )
-        with open(self.cam_software_path, 'rb') as file:
+        with open(os.path.expanduser(self.cam_software_path), 'rb') as file:
             script_data = file.read()
             self.serial_port.write(script_data)
             self.get_logger().info('OpenMV H7 2 script sent' )
