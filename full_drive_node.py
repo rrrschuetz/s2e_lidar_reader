@@ -212,7 +212,7 @@ class fullDriveNode(Node):
         GPIO.add_event_detect(self.gpio_pin, GPIO.FALLING, callback=self.gpio_callback)
         self._button_time = 0
 
-        #self.log_timer = self.create_timer(10, self.log_timer_callback)
+        self.log_timer = self.create_timer(10, self.log_timer_callback)
 
         self.prompt("Ready!")
         self.get_logger().info('Ready.')
