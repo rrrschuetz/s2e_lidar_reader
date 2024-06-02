@@ -80,15 +80,15 @@ class SpeedControlNode(Node):
         self.get_logger().info(f"PID min / max setting: {self.pid_output_min} / {self.pid_output_max}")
         self.get_logger().info(f"PID Kp / Ki / Kd: {self.PID_Kp} / {self.PID_Ki} / {self.PID_Kd}")
 
-        self.impulse_speed_fwd_low = int(config['Speed']['impulse_speed_fwd_low'])
-        self.impulse_speed_rev_low = int(config['Speed']['impulse_speed_rev_low'])
-        self.impulse_speed_fwd_med = int(config['Speed']['impulse_speed_fwd_med'])
-        self.impulse_speed_rev_med = int(config['Speed']['impulse_speed_rev_med'])
-        self.impulse_speed_fwd_high = int(config['Speed']['impulse_speed_fwd_high'])
-        self.impulse_speed_rev_high = int(config['Speed']['impulse_speed_rev_high'])
+        #self.impulse_speed_fwd_low = int(config['Speed']['impulse_speed_fwd_low'])
+        #self.impulse_speed_rev_low = int(config['Speed']['impulse_speed_rev_low'])
+        #self.impulse_speed_fwd_med = int(config['Speed']['impulse_speed_fwd_med'])
+        #self.impulse_speed_rev_med = int(config['Speed']['impulse_speed_rev_med'])
+        #self.impulse_speed_fwd_high = int(config['Speed']['impulse_speed_fwd_high'])
+        #self.impulse_speed_rev_high = int(config['Speed']['impulse_speed_rev_high'])
         self.average_min_speed = int(config['Speed']['average_min_speed'])
-        self.get_logger().info(f"Impulse speed fwd setting: {self.impulse_speed_fwd_high} / {self.impulse_speed_fwd_med}/ {self.impulse_speed_fwd_low}")
-        self.get_logger().info(f"Impulse speed rev setting: {self.impulse_speed_rev_high} / {self.impulse_speed_rev_med}/ {self.impulse_speed_rev_low}")
+        #self.get_logger().info(f"Impulse speed fwd setting: {self.impulse_speed_fwd_high} / {self.impulse_speed_fwd_med}/ {self.impulse_speed_fwd_low}")
+        #self.get_logger().info(f"Impulse speed rev setting: {self.impulse_speed_rev_high} / {self.impulse_speed_rev_med}/ {self.impulse_speed_rev_low}")
         self.get_logger().info(f"Average minimal speed: {self.average_min_speed}")
 
     def __del__(self):
