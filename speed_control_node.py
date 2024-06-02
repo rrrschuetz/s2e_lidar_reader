@@ -36,9 +36,9 @@ class SpeedControlNode(Node):
         self.pwm = PCA9685()
         self.pwm.set_pwm_freq(50)  # Set frequency to 50Hz
         self.pwm.set_pwm(1, 0, self.neutral_pulse)
-        GPIO.output(self.relay_pin, GPIO.HIGH)
 
         GPIO.setup(self.relay_pin, GPIO.OUT)
+        GPIO.output(self.relay_pin, GPIO.HIGH)
         GPIO.setup(self.gpio_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         self.get_logger().info('ESC calibrated.')
 
