@@ -264,6 +264,7 @@ class fullDriveNode(Node):
         time.sleep(5.0)
 
     def move_m(self, dist):
+        if dist == np.nan: return
         dir = "F" if dist >= 0 else "R"
         self.move(dir+str(abs(int(dist*130))))
 
@@ -334,6 +335,7 @@ class fullDriveNode(Node):
         #self.get_logger().info(f"Distances: {self.section_means}")
         if len(self.section_means) > 0:
             dist = max(self.section_means[78:83])
+            if dist == np.nan: dist = 0
         return max(dist,G_front_dist)
 
     def lidar_callback(self, msg):
@@ -372,8 +374,8 @@ class fullDriveNode(Node):
                 self._total_heading_change += heading_change
                 self._last_heading = self._current_heading
                 if G_parking_lot > self.MIN_DETECTIONS_SPOT and abs(self._total_heading_change) >= (self.RACE_SECTIONS*360-10):
-                    #self.get_logger().info(f"cam1/cam2 {sum(G_color1_m)}/{sum(G_color2_m)}")
-                    if ((not G_clockwise and sum(G_color2_m) > self.MIN_DETECTIONS_TRIGGER) or (G_clockwise and sum(G_color1_m) > self.MIN_DETECTIONS_TRIGGER)):
+                    if ((not G_clockwise and sum(G_color2_m) > self.MIN_DETECTIONS_TRIGGER) or
+                            (G_clockwise and sum(G_color1_m) > self.MIN_DETECTIONS_TRIGGER)):
                         self.race_report()
                         self.prompt("Parking ...")
                         self._state = "PARK"
@@ -381,7 +383,9 @@ class fullDriveNode(Node):
                         self._park_phase = 0
                         return
 
-                elif G_parking_lot <= self.MIN_DETECTIONS_SPOT and abs(self._total_heading_change) >= (self.RACE_SECTIONS*360-10) and self.front_dist() < 1.6:
+                elif G_parking_lot <= self.MIN_DETECTIONS_SPOT and \
+                        abs(self._total_heading_change) >= (self.RACE_SECTIONS*360-10) and \
+                        self.front_dist() < 1.6:
                     self.race_report()
                     self.prompt("Stopping ...")
                     self.stop()
@@ -422,7 +426,7 @@ class fullDriveNode(Node):
                         if self._backward:
                             self._backward = False
                             self.steer(-1.0 if G_clockwise else 1.0,True)
-                            self.move_m(0.3)
+                            self.move_m(0.4)
                             time.sleep(5)
 
                         self.reset()
@@ -713,8 +717,9 @@ class distanceNode(Node):
         if G_tf_control and G_collision_detect > 0 and G_front_dist < G_collision_detect:
             self.get_logger().info('Collision detected, push back')
             G_tf_control = False
+            fullDriveNode.steer(0.0,False)
             fullDriveNode.steer(0.0,True)
-            fullDriveNode.move("R20")
+            fullDriveNode.move("R30")
             fullDriveNode.reset()
             G_tf_control = True
             return
