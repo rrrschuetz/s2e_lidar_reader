@@ -68,7 +68,7 @@ class SpeedControlNode(Node):
         self.PID_Kp = float(config['Speed']['pid_Kp'])
         self.PID_Ki = float(config['Speed']['pid_Ki'])
         self.PID_Kd = float(config['Speed']['pid_Kd'])
-        self.break_intensity = float(config['Speed']['break_intensity'])
+        self.break_intensity = int(config['Speed']['break_intensity'])
         self.average_min_speed = int(config['Speed']['average_min_speed'])
 
         self.get_logger().info(f"PID min / max setting: {self.pid_output_min} / {self.pid_output_max}")
