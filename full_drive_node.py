@@ -362,6 +362,8 @@ class fullDriveNode(Node):
             min_near_dist = min(self.section_means[40:121])
             side_dist_left = min(self.section_means[0:11])
             side_dist_right = min(self.section_means[150:161])
+            fwd_side_dist_left = min(self.section_means[30:41])
+            fwd_side_dist_right = min(self.section_means[120:131])
 
             ########################
             # RACE
@@ -503,11 +505,13 @@ class fullDriveNode(Node):
 
                 elif self._park_phase == 1:
                     dist = self.front_dist()
+                    delta = 10 if (G_clockwise and fwd_side_dist_left < fwd_side_dist_right) or \
+                        (not G_clockwise and fwd_side_dist_left > fwd_side_dist_right) else 0
                     #self.get_logger().info(f"Front distance: {dist}")
-                    if self.STOP_DISTANCE_MIN_TURN < dist < self.STOP_DISTANCE_MAX_TURN: # 1.45 < dist < 1.55
+                    if self.STOP_DISTANCE_MIN_TURN < dist+delta < self.STOP_DISTANCE_MAX_TURN: # 1.45 < dist < 1.55
                         self._park_phase = 2
                     else:
-                        self.move_m(dist-(self.STOP_DISTANCE_MIN_TURN+self.STOP_DISTANCE_MAX_TURN)/2)
+                        self.move_m(dist+delta-(self.STOP_DISTANCE_MIN_TURN+self.STOP_DISTANCE_MAX_TURN)/2)
 
                 elif self._park_phase == 2:
                     X = -1.0 if G_clockwise else 1.0
