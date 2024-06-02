@@ -351,7 +351,7 @@ class fullDriveNode(Node):
 
             scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
             scan[scan == np.inf] = np.nan
-            scan[scan > self.scan_max_dist] = np.nan
+            #scan[scan > self.scan_max_dist] = np.nan
 
             num_sections = 161
             section_data = np.array_split(scan, num_sections)
@@ -419,6 +419,8 @@ class fullDriveNode(Node):
                             sum_right_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
                             G_clockwise = (sum_left_half <= sum_right_half)
                             self.get_logger().info(f"Decide clockwise mode 2: {sum_left_half}, {sum_right_half}")
+                            self.get_logger().info(f"Left side: {scan[self.num_scan2]}")
+                            self.get_logger().info(f"Right side: {scan[self.num_scan2+1:self.num_scan]}")
 
                         self.get_logger().info(f"Clockwise: {G_clockwise}")
                         if self._backward:
