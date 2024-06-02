@@ -419,8 +419,8 @@ class fullDriveNode(Node):
                             sum_right_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
                             G_clockwise = (sum_left_half <= sum_right_half)
                             self.get_logger().info(f"Decide clockwise mode 2: {sum_left_half}, {sum_right_half}")
-                            self.get_logger().info(f"Left side: {scan[0:self.num_scan2]}")
-                            self.get_logger().info(f"Right side: {scan[self.num_scan2+1:self.num_scan]}")
+                            #self.get_logger().info(f"Left side: {scan[0:self.num_scan2]}")
+                            #self.get_logger().info(f"Right side: {scan[self.num_scan2+1:self.num_scan]}")
 
                         self.get_logger().info(f"Clockwise: {G_clockwise}")
                         if self._backward:

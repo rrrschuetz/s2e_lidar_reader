@@ -132,7 +132,7 @@ class SpeedControlNode(Node):
                 self.reverse = False
 
                 self.pwm.set_pwm(1, 0, self.neutral_pulse + break_impulse)
-                time.sleep(1.0)
+                time.sleep(0.5)
                 self.pwm.set_pwm(1, 0, self.neutral_pulse)
 
         self.last_impulse_time = self.get_clock().now()
@@ -151,7 +151,7 @@ class SpeedControlNode(Node):
             if new_speed == "STOP":
                 self.pid_steering = False
                 self.pwm.set_pwm(1, 0, self.neutral_pulse-self.break_intensity)  # brake mode
-                time.sleep(1.0)
+                time.sleep(0.5)
                 self.pwm.set_pwm(1, 0, self.neutral_pulse)
             elif new_speed =="RESET":
                 self.impulse_history.clear()
