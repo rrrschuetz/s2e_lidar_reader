@@ -136,7 +136,7 @@ class SpeedControlNode(Node):
             if self.impulse_target > 0: self.impulse_target -=1
             elif self.impulse_target < 0: self.impulse_target +=1
             else:
-                break_impulse = 2 if self.reverse else +2
+                break_impulse = 10 if self.reverse else -10
                 self.pwm.set_pwm(1, 0, self.neutral_pulse + break_impulse)
                 self.reverse = False
                 self.pid_steering = False
