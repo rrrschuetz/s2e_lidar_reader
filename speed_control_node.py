@@ -1,4 +1,4 @@
-import time, configparser, os
+import time, configparser, os, signal
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
@@ -77,9 +77,13 @@ class SpeedControlNode(Node):
         self.get_logger().info(f"Average minimal speed: {self.average_min_speed}")
 
     def __del__(self):
+        self.cleanup()
+
+    def cleanup(self):
         GPIO.setup(self.relay_pin, GPIO.OUT)
         GPIO.output(self.relay_pin, GPIO.LOW)
         GPIO.cleanup()
+        self.get_logger().info('Cleanup complete.')
 
     def reset_pid(self):
         self.get_logger().info(f"PID reset.")
@@ -121,14 +125,15 @@ class SpeedControlNode(Node):
             if self.impulse_target > 0: self.impulse_target -=1
             elif self.impulse_target < 0: self.impulse_target +=1
             else:
+                self.get_logger().info("impulses target reached.")
                 break_impulse = self.break_intensity if self.reverse else -self.break_intensity
-                self.pwm.set_pwm(1, 0, self.neutral_pulse + break_impulse)
-                time.sleep(0.5)
-                self.pwm.set_pwm(1, 0, self.neutral_pulse)
-                self.reverse = False
                 self.pid_steering = False
                 self.move_to_impulse_mode = False
-                self.get_logger().info("impulses target reached.")
+                self.reverse = False
+
+                self.pwm.set_pwm(1, 0, self.neutral_pulse + break_impulse)
+                time.sleep(1.0)
+                self.pwm.set_pwm(1, 0, self.neutral_pulse)
 
         self.last_impulse_time = self.get_clock().now()
         self.impulse_history.append(1)
@@ -146,7 +151,7 @@ class SpeedControlNode(Node):
             if new_speed == "STOP":
                 self.pid_steering = False
                 self.pwm.set_pwm(1, 0, self.neutral_pulse-self.break_intensity)  # brake mode
-                time.sleep(0.5)
+                time.sleep(1.0)
                 self.pwm.set_pwm(1, 0, self.neutral_pulse)
             elif new_speed =="RESET":
                 self.impulse_history.clear()
@@ -195,6 +200,12 @@ class SpeedControlNode(Node):
             self.pid.setpoint += 1
             self.get_logger().info(f"setpoint increased to: {self.pid.setpoint}")
 
+def signal_handler(signal_received, frame, node):
+    # Handle any additional cleanup if necessary
+    node.get_logger().info('Signal caught, cleaning up...')
+    node.cleanup()
+    rclpy.shutdown()
+
 def main(args=None):
     rclpy.init(args=args)
     speed_control = SpeedControlNode()
@@ -203,6 +214,22 @@ def main(args=None):
     GPIO.setup(self.relay_pin, GPIO.OUT)
     GPIO.output(self.relay_pin, GPIO.LOW)
     GPIO.cleanup()
+    rclpy.shutdown()
+
+def main(args=None):
+    rclpy.init(args=args)
+    speed_control = SpeedControlNode()
+
+    # Setup the signal handler
+    signal.signal(signal.SIGINT, lambda sig, frame: signal_handler(sig, frame, speed_control))
+
+    try:
+        rclpy.spin(speed_control)
+    finally:
+        # If shutdown wasn't caused by SIGINT
+        speed_control.cleanup()
+
+    speed_control.destroy_node()
     rclpy.shutdown()
 
 if __name__ == '__main__':
