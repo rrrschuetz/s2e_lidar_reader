@@ -1,4 +1,5 @@
 import rclpy
+import numpy as np
 from rclpy.node import Node
 from std_msgs.msg import Float32
 from gpiozero import DistanceSensor
@@ -15,6 +16,7 @@ class DistanceSensorNode(Node):  # Corrected class name
     def timer_callback(self):  # Removed unused parameter
         msg = Float32()
         msg.data = self.sensor.distance
+        if msg.data == np.nan: msg.data = 0
         self.publisher.publish(msg)
         #self.get_logger().info('Publishing: Distance in m "%f"' % msg.data)  # Corrected logging format
 
