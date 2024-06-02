@@ -351,7 +351,7 @@ class fullDriveNode(Node):
 
             scan = np.array(msg.ranges[self.num_scan+self.num_scan2:]+msg.ranges[:self.num_scan2])
             scan[scan == np.inf] = np.nan
-            #scan[scan > self.scan_max_dist] = np.nan
+            scan[scan > self.scan_max_dist] = np.nan
 
             num_sections = 161
             section_data = np.array_split(scan, num_sections)
