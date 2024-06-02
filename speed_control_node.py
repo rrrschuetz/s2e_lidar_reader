@@ -132,6 +132,7 @@ class SpeedControlNode(Node):
 
     def impulse_callback(self, channel):
         if self.move_to_impulse_mode:
+            self.get_logger().info(f"impulses to go {self.impulse_target}.")
             if self.impulse_target > 0: self.impulse_target -=1
             elif self.impulse_target < 0: self.impulse_target +=1
             else:

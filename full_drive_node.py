@@ -260,11 +260,11 @@ class fullDriveNode(Node):
         msg = String()
         msg.data = dist
         G_speed_publisher.publish(msg)
-        time.sleep(2.0)
+        time.sleep(5.0)
 
     def move_m(self, dist):
         dir = "F" if dist >= 0 else "R"
-        self.move(dir+str(abs(int(dist*67))))
+        self.move(dir+str(abs(int(dist*130))))
 
     def start_race(self):
         global G_tf_control,G_parking_lot, G_roll
@@ -399,7 +399,7 @@ class fullDriveNode(Node):
                             self.move_m(self.front_dist() - 0.6)
                         elif not self.initial_race and (min_far_dist < 0.8 or min_near_dist < 0.2):
                             self._backward = True
-                            self.move_m(-1.5)
+                            self.move_m(self.front_dist() - 2.5)
                         else:
                             if self.front_dist() > 1.3:
                                 self.move_m(self.front_dist() - 1.3)
@@ -416,10 +416,7 @@ class fullDriveNode(Node):
                         if self._backward:
                             self._backward = False
                             self.steer(-1.0 if G_clockwise else 1.0,True)
-                            self.move("F2")
-                            self.move("F2")
-                            self.move("F2")
-                            self.move("R2")
+                            self.move_m(0.2)
 
                         self.reset()
 
@@ -496,12 +493,10 @@ class fullDriveNode(Node):
                 elif self._park_phase == 1:
                     dist = self.front_dist()
                     #self.get_logger().info(f"Front distance: {dist}")
-                    if dist > self.STOP_DISTANCE_MAX_TURN: # 1.55
-                        self.move("F1")
-                    elif dist < self.STOP_DISTANCE_MIN_TURN: # 1.45
-                        self.move("R1")
-                    else:
+                    if self.STOP_DISTANCE_MIN_TURN < dist < self.STOP_DISTANCE_MAX_TURN: # 1.45 < dist < 1.55
                         self._park_phase = 2
+                    else:
+                        self.move_m(dist-(self.STOP_DISTANCE_MIN_TURN+self.STOP_DISTANCE_MAX_TURN)/2)
 
                 elif self._park_phase == 2:
                     X = -1.0 if G_clockwise else 1.0
@@ -521,14 +516,13 @@ class fullDriveNode(Node):
             elif self._state == 'STOP':
 
                 if self._stop_phase == 0:
-                    if self.front_dist() > self.STOP_DISTANCE_MAX_FINAL: # 1.6
-                        self.get_logger().info(f"Move forward")
-                        self.move("F1")
-                    elif self.front_dist() < self.STOP_DISTANCE_MIN_FINAL: # 1.2
-                        self.get_logger().info(f"Move backward")
-                        self.move("R1")
-                    else:
+                    dist = self.front_dist()
+                    #self.get_logger().info(f"Front distance: {dist}")
+                    if self.STOP_DISTANCE_MIN_FINAL < dist < self.STOP_DISTANCE_MAX_FINAL: # 1.2 < dist < 1.6
                         self._stop_phase = 1
+                    else:
+                        self.move_m(dist-(self.STOP_DISTANCE_MIN_FINAL+self.STOP_DISTANCE_MAX_FINAL)/2)
+
                 else:
                     self.stop_race()
                     self._state = "IDLE"
