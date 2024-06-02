@@ -411,7 +411,7 @@ class fullDriveNode(Node):
                     elif not self._clockwise_def:
                         self._clockwise_def = True
 
-                        if min(side_fist_left,side_dist_right) < 0.15:
+                        if min(side_dist_left,side_dist_right) < 0.15:
                             G_clockwise = side_dist_left > side_dist_right
                         else:
                             sum_first_half = np.nansum(scan[self.num_scan2])
