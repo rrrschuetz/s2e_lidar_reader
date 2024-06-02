@@ -127,7 +127,7 @@ class SpeedControlNode(Node):
         #self.y_pwm = self.neutral_pulse
         #self.pwm.set_pwm(1, 0, self.y_pwm)
 
-        s#elf.get_logger().info("impulses moved: %s" % self.impulse_count)
+        #self.get_logger().info("impulses moved: %s" % self.impulse_count)
         return
 
     def impulse_callback(self, channel):
@@ -139,6 +139,7 @@ class SpeedControlNode(Node):
                 self.reverse = False
                 self.pid_steering = False
                 self.move_to_impulse_mode = False
+                self.get_logger().info("impulses target reached.")
 
         self.last_impulse_time = self.get_clock().now()
         self.impulse_history.append(1)
