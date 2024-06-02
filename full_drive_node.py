@@ -336,6 +336,7 @@ class fullDriveNode(Node):
         if len(self.section_means) > 0:
             dist = max(self.section_means[78:83])
             if dist == np.nan: dist = 0
+        if G_front_dist == np.nan: G_front_dist = 0
         return max(dist,G_front_dist)
 
     def lidar_callback(self, msg):
@@ -505,8 +506,8 @@ class fullDriveNode(Node):
 
                 elif self._park_phase == 1:
                     dist = self.front_dist()
-                    delta = 10 if (G_clockwise and fwd_side_dist_left < fwd_side_dist_right) or \
-                        (not G_clockwise and fwd_side_dist_left > fwd_side_dist_right) else 0
+                    delta = 0.10 if (G_clockwise and fwd_side_dist_left < fwd_side_dist_right) or \
+                        (not G_clockwise and fwd_side_dist_left > fwd_side_dist_right) else 0.00
                     #self.get_logger().info(f"Front distance: {dist}")
                     if self.STOP_DISTANCE_MIN_TURN < dist+delta < self.STOP_DISTANCE_MAX_TURN: # 1.45 < dist < 1.55
                         self._park_phase = 2
