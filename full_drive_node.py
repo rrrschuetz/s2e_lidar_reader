@@ -399,7 +399,7 @@ class fullDriveNode(Node):
                             self.move_m(self.front_dist() - 0.6)
                         elif not self.initial_race and (min_far_dist < 0.8 or min_near_dist < 0.2):
                             self._backward = True
-                            self.move_m(self.front_dist() - 2.5)
+                            self.move_m(self.front_dist() - 2.1)
                         else:
                             if self.front_dist() > 1.3:
                                 self.move_m(self.front_dist() - 1.3)
@@ -416,7 +416,8 @@ class fullDriveNode(Node):
                         if self._backward:
                             self._backward = False
                             self.steer(-1.0 if G_clockwise else 1.0,True)
-                            self.move_m(0.2)
+                            self.move_m(0.3)
+                            time.sleep(5)
 
                         self.reset()
 
