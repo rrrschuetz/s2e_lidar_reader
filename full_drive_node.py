@@ -396,15 +396,11 @@ class fullDriveNode(Node):
                         self._obstacle_chk = True
 
                         self.get_logger().info(f"Obstacle: {min(side_dist_left,side_dist_right)}, {min_far_dist}, {min_near_dist}")
-                        if self.initial_race and min(side_dist_left,side_dist_right) < 0.15:
-                            self.get_logger().info('Close to wall, moving forward.')
-                            self.move_m(self.front_dist() - 0.6)
-                        elif not self.initial_race and (min_far_dist < 0.8 or min_near_dist < 0.2):
+                        if not self.initial_race and (min_far_dist < 0.8 or min_near_dist < 0.2):
                             self._backward = True
                             self.move_m(self.front_dist() - 2.3 )
-                        else:
-                            if self.front_dist() > 1.3:
-                                self.move_m(self.front_dist() - 1.3)
+                        elif not self.initial_race and self.front_dist() > 1.3:
+                            self.move_m(self.front_dist() - 1.3)
                         self._processing = False
                         return
 
