@@ -395,7 +395,7 @@ class fullDriveNode(Node):
                     if not self._obstacle_chk:
                         self._obstacle_chk = True
 
-                        self.get_logger().info(f"Obstacle: {side_dist_left}, {side_dist_right}, {min_far_dist}, {min_near_dist}")
+                        self.get_logger().info(f"Obstacle: {min(side_dist_left,side_dist_right)}, {min_far_dist}, {min_near_dist}")
                         if self.initial_race and min(side_dist_left,side_dist_right) < 0.15:
                             self.get_logger().info('Close to wall, moving forward.')
                             self.move_m(self.front_dist() - 0.6)
@@ -413,13 +413,14 @@ class fullDriveNode(Node):
 
                         if min(side_dist_left,side_dist_right) < 0.15:
                             G_clockwise = side_dist_left > side_dist_right
+                            self.get_logger().info(f"Decide clockwise mode 1: {side_dist_left}, {side_dist_right}")
                         else:
-                            sum_first_half = np.nansum(scan[self.num_scan2])
-                            sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
-                            G_clockwise = (sum_first_half <= sum_second_half)
+                            sum_left_half = np.nansum(scan[self.num_scan2])
+                            sum_right_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
+                            G_clockwise = (sum_left_half <= sum_right_half)
+                            self.get_logger().info(f"Decide clockwise mode 2: {sum_left_half}, {sum_right_half}")
 
-                        self.get_logger().info('lidar_callback: clockwise "%s" ' % G_clockwise)
-
+                        self.get_logger().info(f"Clockwise: {G_clockwise}")
                         if self._backward:
                             self._backward = False
                             self.steer(-1.0 if G_clockwise else 1.0,True)
