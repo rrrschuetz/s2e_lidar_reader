@@ -358,7 +358,8 @@ class fullDriveNode(Node):
             self.section_means = [np.mean(section) for section in section_data]
             min_far_dist = min(self.section_means[60:101])
             min_near_dist = min(self.section_means[40:121])
-            side_dist = min(self.section_means[0:11] + self.section_means[150:161])
+            side_dist_left = min(self.section_means[0:11])
+            side_dist_right = min(self.section_means[150:161])
 
             ########################
             # RACE
@@ -394,8 +395,8 @@ class fullDriveNode(Node):
                     if not self._obstacle_chk:
                         self._obstacle_chk = True
 
-                        self.get_logger().info(f"Obstacle: {side_dist} {min_far_dist}, {min_near_dist}")
-                        if self.initial_race and side_dist < 0.15:
+                        self.get_logger().info(f"Obstacle: {side_dist_left}, {side_dist_right}, {min_far_dist}, {min_near_dist}")
+                        if self.initial_race and min(side_dist_left,side_dist_right) < 0.15:
                             self.get_logger().info('Close to wall, moving forward.')
                             self.move_m(self.front_dist() - 0.6)
                         elif not self.initial_race and (min_far_dist < 0.8 or min_near_dist < 0.2):
@@ -409,9 +410,14 @@ class fullDriveNode(Node):
 
                     elif not self._clockwise_def:
                         self._clockwise_def = True
-                        sum_first_half = np.nansum(scan[200:self.num_scan2])
-                        sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan-200])
-                        G_clockwise = (sum_first_half <= sum_second_half)
+
+                        if min(side_fist_left,side_dist_right) < 0.15:
+                            G_clockwise = side_dist_left > side_dist_right
+                        else:
+                            sum_first_half = np.nansum(scan[self.num_scan2])
+                            sum_second_half = np.nansum(scan[self.num_scan2+1:self.num_scan])
+                            G_clockwise = (sum_first_half <= sum_second_half)
+
                         self.get_logger().info('lidar_callback: clockwise "%s" ' % G_clockwise)
 
                         if self._backward:
