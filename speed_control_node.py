@@ -7,7 +7,6 @@ import gpiozero
 import collections
 from simple_pid import PID
 from Adafruit_PCA9685 import PCA9685
-#import Adafruit_ADS1x15
 
 class SpeedControlNode(Node):
     reverse_pulse = 204
@@ -42,14 +41,6 @@ class SpeedControlNode(Node):
         GPIO.setup(self.gpio_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         self.get_logger().info('ESC calibrated.')
 
-        #GAIN = 2
-        #adc = Adafruit_ADS1x15.ADS1115()
-        #value1 = adc.read_adc(0, gain=GAIN)*6.144/32767
-        #value2 = adc.read_adc(1, gain=GAIN)*6.144/32767
-        #value3 = adc.read_adc(2, gain=GAIN)*6.144/32767
-        #total_voltage = value1+value2+value3
-        #self.get_logger().info(f"Battery voltage cell 1/2/3/total: {value1:.2f} V / {value2:.2f} V / {value3:.2f} V / {total_voltage:.2f} V")
-
         self.reverse = False
         self.impulse_target = 0
         self.move_to_impulse_mode = False
@@ -77,18 +68,12 @@ class SpeedControlNode(Node):
         self.PID_Kp = float(config['Speed']['pid_Kp'])
         self.PID_Ki = float(config['Speed']['pid_Ki'])
         self.PID_Kd = float(config['Speed']['pid_Kd'])
+        self.break_intensity = float(config['Speed']['break_intensity'])
+        self.average_min_speed = int(config['Speed']['average_min_speed'])
+
         self.get_logger().info(f"PID min / max setting: {self.pid_output_min} / {self.pid_output_max}")
         self.get_logger().info(f"PID Kp / Ki / Kd: {self.PID_Kp} / {self.PID_Ki} / {self.PID_Kd}")
-
-        #self.impulse_speed_fwd_low = int(config['Speed']['impulse_speed_fwd_low'])
-        #self.impulse_speed_rev_low = int(config['Speed']['impulse_speed_rev_low'])
-        #self.impulse_speed_fwd_med = int(config['Speed']['impulse_speed_fwd_med'])
-        #self.impulse_speed_rev_med = int(config['Speed']['impulse_speed_rev_med'])
-        #self.impulse_speed_fwd_high = int(config['Speed']['impulse_speed_fwd_high'])
-        #self.impulse_speed_rev_high = int(config['Speed']['impulse_speed_rev_high'])
-        self.average_min_speed = int(config['Speed']['average_min_speed'])
-        #self.get_logger().info(f"Impulse speed fwd setting: {self.impulse_speed_fwd_high} / {self.impulse_speed_fwd_med}/ {self.impulse_speed_fwd_low}")
-        #self.get_logger().info(f"Impulse speed rev setting: {self.impulse_speed_rev_high} / {self.impulse_speed_rev_med}/ {self.impulse_speed_rev_low}")
+        self.get_logger().info(f"Break intensity: {self.break_intensity}")
         self.get_logger().info(f"Average minimal speed: {self.average_min_speed}")
 
     def __del__(self):
@@ -136,8 +121,10 @@ class SpeedControlNode(Node):
             if self.impulse_target > 0: self.impulse_target -=1
             elif self.impulse_target < 0: self.impulse_target +=1
             else:
-                break_impulse = 10 if self.reverse else -10
+                break_impulse = self.break_intensity if self.reverse else -self.break_intensity
                 self.pwm.set_pwm(1, 0, self.neutral_pulse + break_impulse)
+                time.sleep(0.5)
+                self.pwm.set_pwm(1, 0, self.neutral_pulse)
                 self.reverse = False
                 self.pid_steering = False
                 self.move_to_impulse_mode = False
@@ -158,7 +145,9 @@ class SpeedControlNode(Node):
             new_speed = msg.data  # Assuming speed is passed as a string.
             if new_speed == "STOP":
                 self.pid_steering = False
-                self.pwm.set_pwm(1, 0, self.neutral_pulse-2)  # brake mode
+                self.pwm.set_pwm(1, 0, self.neutral_pulse-self.break_intensity)  # brake mode
+                time.sleep(0.5)
+                self.pwm.set_pwm(1, 0, self.neutral_pulse)
             elif new_speed =="RESET":
                 self.impulse_history.clear()
                 self.reset_pid()
