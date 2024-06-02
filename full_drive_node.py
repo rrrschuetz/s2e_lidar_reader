@@ -230,8 +230,9 @@ class fullDriveNode(Node):
         msg.data = message
         self.publisher_.publish(msg)
 
+    @classmethod
     def motor_off(self):
-        self.get_logger().info("motor_off called.")
+        #self.get_logger().info("motor_off called.")
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.relay_pin, GPIO.OUT)
         GPIO.output(self.relay_pin, GPIO.LOW)
@@ -745,6 +746,7 @@ def main(args=None):
         #rclpy.shutdown()
 
     try:
+        fullDriveNode.motor_off()
         with open('/tmp/ros2_pipe', 'w') as pipe:
             pipe.write('shutdown\n')
     except:
