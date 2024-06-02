@@ -209,16 +209,6 @@ def signal_handler(signal_received, frame, node):
 def main(args=None):
     rclpy.init(args=args)
     speed_control = SpeedControlNode()
-    rclpy.spin(speed_control)
-    speed_control.destroy_node()
-    GPIO.setup(self.relay_pin, GPIO.OUT)
-    GPIO.output(self.relay_pin, GPIO.LOW)
-    GPIO.cleanup()
-    rclpy.shutdown()
-
-def main(args=None):
-    rclpy.init(args=args)
-    speed_control = SpeedControlNode()
 
     # Setup the signal handler
     signal.signal(signal.SIGINT, lambda sig, frame: signal_handler(sig, frame, speed_control))
