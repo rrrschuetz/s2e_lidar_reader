@@ -129,6 +129,7 @@ class fullDriveNode(Node):
         self.GYRO_ACCURACY = float(config['Parking']['gyro_accuracy'])
         self.STOP_DISTANCE_MAX_TURN = float(config['Parking']['stop_distance_max_turn'])
         self.STOP_DISTANCE_MIN_TURN = float(config['Parking']['stop_distance_min_turn'])
+        self.STOP_DISTANCE_DELTA = float(config['Parking']['stop_distance_delta'])
         self.STOP_DISTANCE_PARK = float(config['Parking']['stop_distance_park'])
         self.STOP_DISTANCE_MAX_FINAL = float(config['Parking']['stop_distance_max_final'])
         self.STOP_DISTANCE_MIN_FINAL = float(config['Parking']['stop_distance_min_final'])
@@ -506,7 +507,7 @@ class fullDriveNode(Node):
 
                 elif self._park_phase == 1:
                     dist = self.front_dist()
-                    delta = 0.10 if (G_clockwise and fwd_side_dist_left < fwd_side_dist_right) or \
+                    delta = self.STOP_DISTANCE_DELTA if (G_clockwise and fwd_side_dist_left < fwd_side_dist_right) or \
                         (not G_clockwise and fwd_side_dist_left > fwd_side_dist_right) else 0.00
                     #self.get_logger().info(f"Front distance: {dist}")
                     if self.STOP_DISTANCE_MIN_TURN < dist+delta < self.STOP_DISTANCE_MAX_TURN: # 1.45 < dist < 1.55
