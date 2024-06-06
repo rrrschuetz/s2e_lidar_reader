@@ -386,8 +386,9 @@ class fullDriveNode(Node):
                     self.get_logger().info(f"Calibration aft: {self._total_heading_change}")
 
                 if G_parking_lot > self.MIN_DETECTIONS_SPOT and abs(self._total_heading_change) >= (self.RACE_SECTIONS*360-10):
-                    if ((not G_clockwise and sum(G_color2_m) > self.MIN_DETECTIONS_TRIGGER) or
-                            (G_clockwise and sum(G_color1_m) > self.MIN_DETECTIONS_TRIGGER)):
+                    if (((not G_clockwise and sum(G_color2_m) > self.MIN_DETECTIONS_TRIGGER) or
+                            (G_clockwise and sum(G_color1_m) > self.MIN_DETECTIONS_TRIGGER)))
+                        and self.front_dist() < self.STOP_DISTANCE_MAX_TURN:
                         self.race_report()
                         self.prompt("Parking ...")
                         self._state = "PARK"
@@ -521,7 +522,7 @@ class fullDriveNode(Node):
                     if self.STOP_DISTANCE_MIN_TURN < dist+delta < self.STOP_DISTANCE_MAX_TURN: # 1.45 < dist < 1.55
                         self._park_phase = 2
                     else:
-                        self.move_m(dist+delta-self.STOP_DISTANCE_MIN_TURN)
+                        self.move_m(dist+delta-(self.STOP_DISTANCE_MIN_TURN+self.STOP_DISTANCE_MIN_TURN)/2)
 
                 elif self._park_phase == 2:
                     X = -1.0 if G_clockwise else 1.0
