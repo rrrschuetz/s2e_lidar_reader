@@ -75,7 +75,7 @@ class SpeedControlNode(Node):
         self.get_logger().info(f"PID Kp / Ki / Kd: {self.PID_Kp} / {self.PID_Ki} / {self.PID_Kd}")
         self.get_logger().info(f"Break intensity: {self.break_intensity}")
         self.get_logger().info(f"Average minimal speed: {self.average_min_speed}")
-        self.get_logger().info(f"Move peed: {self.average_min_speed}")
+        self.get_logger().info(f"Move speed: {self.move_speed}")
 
     def __del__(self):
         self.cleanup()
