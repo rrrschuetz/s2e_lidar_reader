@@ -366,6 +366,8 @@ class fullDriveNode(Node):
             side_dist_right = min(self.section_means[150:161])
             fwd_side_dist_left = min(self.section_means[30:41])
             fwd_side_dist_right = min(self.section_means[120:131])
+            self._cal_left = section_means[70]
+            self._cal_right = section_means[91]
 
             ########################
             # RACE
@@ -377,6 +379,11 @@ class fullDriveNode(Node):
                 heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
                 self._total_heading_change += heading_change
                 self._last_heading = self._current_heading
+
+                if abs(self._cal_left/self._cal_right -1) < 0.01 and self._cal_left+self._cal_right < 2:
+                    self.get_logger().info(f"Calibration")
+                    self._total_heading_change = int(self._total_heading_change/90)*90.0
+
                 if G_parking_lot > self.MIN_DETECTIONS_SPOT and abs(self._total_heading_change) >= (self.RACE_SECTIONS*360-10):
                     if ((not G_clockwise and sum(G_color2_m) > self.MIN_DETECTIONS_TRIGGER) or
                             (G_clockwise and sum(G_color1_m) > self.MIN_DETECTIONS_TRIGGER)):
@@ -509,7 +516,7 @@ class fullDriveNode(Node):
                     dist = self.front_dist()
                     delta = self.STOP_DISTANCE_DELTA if (G_clockwise and fwd_side_dist_left < fwd_side_dist_right) or \
                         (not G_clockwise and fwd_side_dist_left > fwd_side_dist_right) else 0.00
-                    #self.get_logger().info(f"Front distance: {dist}")
+                    self.get_logger().info(f"Front distance: {dist}")
                     if self.STOP_DISTANCE_MIN_TURN < dist+delta < self.STOP_DISTANCE_MAX_TURN: # 1.45 < dist < 1.55
                         self._park_phase = 2
                     else:
