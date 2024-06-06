@@ -366,8 +366,8 @@ class fullDriveNode(Node):
             side_dist_right = min(self.section_means[150:161])
             fwd_side_dist_left = min(self.section_means[30:41])
             fwd_side_dist_right = min(self.section_means[120:131])
-            self._cal_left = section_means[70]
-            self._cal_right = section_means[91]
+            self._cal_left = self.section_means[70]
+            self._cal_right = self.section_means[91]
 
             ########################
             # RACE
@@ -380,7 +380,7 @@ class fullDriveNode(Node):
                 self._total_heading_change += heading_change
                 self._last_heading = self._current_heading
 
-                if abs(self._cal_left/self._cal_right -1) < 0.01 and self._cal_left+self._cal_right < 2:
+                if abs(self._cal_left/self._cal_right -1) < 0.01 and self._cal_left+self._cal_right < 2.5:
                     self.get_logger().info(f"Calibration")
                     self._total_heading_change = int(self._total_heading_change/90)*90.0
 
