@@ -32,7 +32,7 @@ class ImuNode(Node):
         self.declare_parameters(
             namespace='',
             parameters=[
-                ('port', '/dev/ttyS0'),
+                ('port', '/dev/ttyUSB0'),
                 ('baud', 115200),
             ]
         )  #115200
