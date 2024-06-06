@@ -388,7 +388,7 @@ class fullDriveNode(Node):
                 if G_parking_lot > self.MIN_DETECTIONS_SPOT and abs(self._total_heading_change) >= (self.RACE_SECTIONS*360-10):
                     if ((not G_clockwise and sum(G_color2_m) > self.MIN_DETECTIONS_TRIGGER) or
                             (G_clockwise and sum(G_color1_m) > self.MIN_DETECTIONS_TRIGGER))\
-                            and self.front_dist() < self.STOP_DISTANCE_MAX_TURN:
+                            and self.STOP_DISTANCE_MIN_FINAL < self.front_dist() < self.STOP_DISTANCE_MAX_TURN:
                         self.race_report()
                         self.prompt("Parking ...")
                         self._state = "PARK"
