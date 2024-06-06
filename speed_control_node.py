@@ -69,11 +69,13 @@ class SpeedControlNode(Node):
         self.PID_Kd = float(config['Speed']['pid_Kd'])
         self.break_intensity = int(config['Speed']['break_intensity'])
         self.average_min_speed = int(config['Speed']['average_min_speed'])
+        self.move_speed = int(config['Speed']['move_speed'])
 
         self.get_logger().info(f"PID min / max setting: {self.pid_output_min} / {self.pid_output_max}")
         self.get_logger().info(f"PID Kp / Ki / Kd: {self.PID_Kp} / {self.PID_Ki} / {self.PID_Kd}")
         self.get_logger().info(f"Break intensity: {self.break_intensity}")
         self.get_logger().info(f"Average minimal speed: {self.average_min_speed}")
+        self.get_logger().info(f"Move peed: {self.average_min_speed}")
 
     def __del__(self):
         self.cleanup()
@@ -101,7 +103,7 @@ class SpeedControlNode(Node):
         self.impulse_history.clear()
         self.impulse_count = 0
         self.reset_pid()
-        self.pid.setpoint = 5
+        self.pid.setpoint = self.move_speed
 
         #power = self.impulse_speed_rev_med if impulse_goal < 0 else self.impulse_speed_fwd_med
         #self.y_pwm = self.neutral_pulse + power

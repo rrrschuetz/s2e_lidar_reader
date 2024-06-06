@@ -512,7 +512,7 @@ class fullDriveNode(Node):
                         self.steer(0,True)
                         self._park_phase = 1
                     self.steer(X,False)
-                    #self.get_logger().info(f"Heading: {orientation}")
+                    self.get_logger().info(f"Heading: {orientation}")
 
                 elif self._park_phase == 1:
                     dist = self.front_dist()
