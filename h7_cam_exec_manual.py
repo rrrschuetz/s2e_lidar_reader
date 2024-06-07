@@ -29,15 +29,17 @@ sensor.skip_frames(time = 2000)
 
 sensor.set_saturation(3)
 
-green =  (30, 100, -64, -8, -32, 32)  # generic green
+green1 =  (30, 100, -64, -8, -32, 32)  # generic green
+green2 = (0, 100, -128, -6, 0, 127)
 #green = (38,60,-9,-128,-128, 127)
 
-red =  (30, 100, 15, 127, 15, 127)    # generic red
+red1 =  (30, 100, 15, 127, 15, 127)    # generic red
+red2 = (0, 100, 44, 127, 127, -20)
 #red = (0,49,127,6,-2,20)
 
 magenta = (0, 100, 32, 127, 127, -94)
 
-thresholds=[green, red, magenta]
+thresholds=[green1, green2, red1, red2, magenta]
 roi = [0,0,320,140]
 
 while True:
