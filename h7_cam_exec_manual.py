@@ -39,7 +39,7 @@ red2 = (0, 100, 44, 127, 127, -20)
 
 magenta = (0, 100, 32, 127, 127, -94)
 
-thresholds=[green1, green2, red1, red2, magenta]
+thresholds=[green1, green2, red1, red1, magenta]
 roi = [0,0,320,140]
 
 while True:
@@ -48,6 +48,12 @@ while True:
 
     try:
         img = sensor.snapshot()
+
+
+
+
+
+
         img.lens_corr(strength=2.6, zoom=1.0)
         #img.gamma_corr(gamma = 2.0)
 
