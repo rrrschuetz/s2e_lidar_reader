@@ -366,8 +366,8 @@ class fullDriveNode(Node):
             side_dist_right = min(self.section_means[150:161])
             fwd_side_dist_left = min(self.section_means[30:41])
             fwd_side_dist_right = min(self.section_means[120:131])
-            self._cal_left = self.section_means[70]
-            self._cal_right = self.section_means[91]
+            self._cal_left = self.section_means[70]+self.section_means[60]
+            self._cal_right = self.section_means[91]+self.section_means[101]
 
             ########################
             # RACE
