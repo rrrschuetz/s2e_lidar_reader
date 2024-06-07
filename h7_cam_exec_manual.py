@@ -39,7 +39,7 @@ red2 = (0, 100, 44, 127, 127, -20)
 
 magenta = (0, 100, 32, 127, 127, -94)
 
-thresholds=[green1, green2, red1, red1, magenta]
+thresholds=[green1, green1, red1, red1, magenta]
 roi = [0,0,320,140]
 
 while True:
