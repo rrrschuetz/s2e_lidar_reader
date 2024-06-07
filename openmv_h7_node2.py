@@ -85,7 +85,7 @@ class openmvH7Node(Node):
 
         if blob_data:
             msg.data = self.cam_id + ","+",".join(blob_data)
-            #self.get_logger().info(f"*2* {msg.data}")
+            self.get_logger().info(f"*2* {msg.data}")
             self.publisher_.publish(msg)
             self.consolidated_data = {color_id: [] for color_id in color_ids}
 
