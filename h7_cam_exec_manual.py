@@ -48,12 +48,6 @@ while True:
 
     try:
         img = sensor.snapshot()
-
-
-
-
-
-
         img.lens_corr(strength=2.6, zoom=1.0)
         #img.gamma_corr(gamma = 2.0)
 
