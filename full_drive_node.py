@@ -634,7 +634,7 @@ class cameraNode(Node):
                 ix1 = int(x1)
                 ix2 = int(x2)
 
-                if color == 1:
+                if color == 1 or color == 2:
                     if cam == 1 and not G_clockwise:
                         G_cam_updates += 1
                         G_color1_g[ix1:ix2] = WEIGHT
@@ -643,7 +643,7 @@ class cameraNode(Node):
                         G_cam_updates += 1
                         G_color2_g[ix1:ix2] = WEIGHT
                         self.prompt('*,'+x1+','+x2+',G')
-                if color == 2:
+                if color == 4 or color == 8:
                     if cam == 1 and not G_clockwise:
                         G_cam_updates += 1
                         G_color1_r[ix1:ix2] = WEIGHT
@@ -652,7 +652,7 @@ class cameraNode(Node):
                         G_cam_updates += 1
                         G_color2_r[ix1:ix2] = WEIGHT
                         self.prompt('*,'+x1+','+x2+',R')
-                if color == 4:
+                if color == 16:
                     G_cam_updates += 1
                     if cam == 1: G_color1_m[ix1:ix2] = WEIGHT
                     if cam == 2: G_color2_m[ix1:ix2] = WEIGHT

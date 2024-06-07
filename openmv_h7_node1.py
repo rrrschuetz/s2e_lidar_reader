@@ -27,7 +27,7 @@ class openmvH7Node(Node):
         self.serial_port.reset_output_buffer()
 
         self.cam_id = ""
-        self.consolidated_data = {1: [], 2: [], 4:[]}
+        self.consolidated_data = {1: [], 2: [], 4:[], 8:[], 16:[]}
         self.latest_message = String()
         self.lock = threading.Lock()
         read_thread = threading.Thread(target=self.read_from_port)
@@ -75,7 +75,7 @@ class openmvH7Node(Node):
     def timer_callback(self):
         msg = String()
         blob_data = []
-        color_ids = [1, 2, 4]
+        color_ids = [1, 2, 4, 8, 16]
 
         for color_id in color_ids:
             if color_id in self.consolidated_data:
