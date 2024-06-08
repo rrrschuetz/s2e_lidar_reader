@@ -274,7 +274,7 @@ class fullDriveNode(Node):
         time.sleep(5.0)
 
     def move_m(self, dist):
-        if dist == np.nan: return
+        if np.isnan(dist): return
         dir = "F" if dist >= 0 else "R"
         self.move(dir+str(abs(int(dist*self.CALIBRATION_DISTANCE))))
 
@@ -345,8 +345,8 @@ class fullDriveNode(Node):
         #self.get_logger().info(f"Distances: {self.section_means}")
         if len(self.section_means) > 0:
             dist = max(self.section_means[78:83])
-            if dist == np.nan: dist = 0
-        if G_front_dist == np.nan: G_front_dist = 0
+            if np.isnan(dist): dist = 0
+        if np.isnan(G_front_dist): G_front_dist = 0
         return max(dist,G_front_dist)
 
     def lidar_callback(self, msg):
@@ -424,7 +424,7 @@ class fullDriveNode(Node):
 
                         self.get_logger().info(f"Obstacle: {min(side_dist_left,side_dist_right)}, {min_far_dist}, {min_near_dist}")
                         self.get_logger().info(f"Front distance: {self.front_dist()}")
-                        if not self.initial_race and (min_far_dist < 0.8 or min_near_dist < 0.2):
+                        if not self.initial_race and (np.isnan(min_far_dist) or min_far_dist < 0.8 or min_near_dist < 0.2):
                             self._backward = True
                             self.move_m(self.front_dist() - 2.3 )
                         elif not self.initial_race and self.front_dist() > 1.3:
