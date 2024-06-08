@@ -145,8 +145,10 @@ class fullDriveNode(Node):
         G_RIGHT_CAM_ID = str(config['Hardware']['right_cam_id'])
         self.DONGLE_ID1 = str(config['Hardware']['dongle_id1'])
         self.DONGLE_ID2 = str(config['Hardware']['dongle_id2'])
+        self.CALIBRATION =  float(config['Hardware']['calibration'])
         self.get_logger().info(f"Left / right camera IDs: {G_LEFT_CAM_ID} / {G_RIGHT_CAM_ID}")
         self.get_logger().info(f"Dongle ID: {self.DONGLE_ID1}:{self.DONGLE_ID2}")
+        self.get_logger().info(f"Calibration accuracy: {self.CALIBRATION}")
 
         # Initialize PCA9685
         G_pwm = PCA9685()
@@ -380,7 +382,7 @@ class fullDriveNode(Node):
                 self._total_heading_change += heading_change
                 self._last_heading = self._current_heading
 
-                if abs(self._cal_left/self._cal_right -1) < 0.01 and self._cal_left+self._cal_right < 2.5:
+                if abs(self._cal_left/self._cal_right -1) < self.CALIBRATION and self._cal_left+self._cal_right < 2.5:
                     self.get_logger().info(f"Calibration pre: {self._total_heading_change}")
                     add = -45 if G_clockwise else 45
                     self._total_heading_change = int((self._total_heading_change+add)/90)*90.0
