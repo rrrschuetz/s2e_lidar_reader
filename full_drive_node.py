@@ -126,7 +126,6 @@ class fullDriveNode(Node):
         self.MIN_DETECTIONS_SPOT = int(config['Parking']['min_detections_spot'])
         self.MIN_DETECTIONS_TRIGGER = int(config['Parking']['min_detections_trigger'])
         self.RACE_SECTIONS = int(config['Parking']['race_sections'])
-        self.GYRO_ACCURACY = float(config['Parking']['gyro_accuracy'])
         self.STOP_DISTANCE_MAX_TURN = float(config['Parking']['stop_distance_max_turn'])
         self.STOP_DISTANCE_MIN_TURN = float(config['Parking']['stop_distance_min_turn'])
         self.STOP_DISTANCE_DELTA = float(config['Parking']['stop_distance_delta'])

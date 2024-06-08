@@ -155,7 +155,7 @@ class SpeedControlNode(Node):
                 time.sleep(0.1)
                 self.pwm.set_pwm(1, 0, self.neutral_pulse)
             elif new_speed == "BOOST":
-                self.pid_output_min = 5
+                self.pid_output_min = 4
             elif new_speed =="RESET":
                 self.reverse = False
                 self.impulse_history.clear()
