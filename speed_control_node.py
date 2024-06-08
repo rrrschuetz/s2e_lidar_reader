@@ -155,6 +155,7 @@ class SpeedControlNode(Node):
                 time.sleep(0.1)
                 self.pwm.set_pwm(1, 0, self.neutral_pulse)
             elif new_speed =="RESET":
+                self.reverse = False
                 self.impulse_history.clear()
                 self.reset_pid()
             elif new_speed.startswith('F'):
@@ -168,6 +169,7 @@ class SpeedControlNode(Node):
                 self.reverse = True
                 self.move_to_impulse(-int(new_speed[1:]))
             else:
+                self.reverse = False
                 self.pid_steering = True
                 new_speedf = float(new_speed)
                 self.pid.setpoint = abs(new_speedf)  # Set PID setpoint to desired speed, including direction.
