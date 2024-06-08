@@ -404,7 +404,7 @@ class fullDriveNode(Node):
                         self.prompt("Parking ...")
                         self._state = "PARK"
                         self._processing = False
-                        self._park_phase = 0
+                        self._park_phase = 1
                         return
 
                 elif G_parking_lot <= self.MIN_DETECTIONS_SPOT and \
@@ -522,6 +522,9 @@ class fullDriveNode(Node):
                     self.get_logger().info(f"Heading gap, steer X: {gap}, {X}")
 
                 elif self._park_phase == 1:
+                    self.stop()
+                    self.steer(0,True)
+
                     dist = self.front_dist()
                     delta = self.STOP_DISTANCE_DELTA if (G_clockwise and fwd_side_dist_left < fwd_side_dist_right) or \
                         (not G_clockwise and fwd_side_dist_left > fwd_side_dist_right) else 0.00
