@@ -404,7 +404,7 @@ class fullDriveNode(Node):
                         self.prompt("Parking ...")
                         self._state = "PARK"
                         self._processing = False
-                        self._park_phase = 1
+                        self._park_phase = 0
                         return
 
                 elif G_parking_lot <= self.MIN_DETECTIONS_SPOT and \
@@ -503,28 +503,8 @@ class fullDriveNode(Node):
             elif self._state == 'PARK':
 
                 if self._park_phase == 0:
-                    self._current_heading = G_roll
-                    heading_change = self.calculate_heading_change(self._last_heading, self._current_heading)
-                    self._total_heading_change += heading_change
-                    self._last_heading = self._current_heading
-
-                    add = -45 if G_clockwise else 45
-                    gap = self._total_heading_change - int((self._total_heading_change+add)/90)*90.0
-                    X = 1.0 if gap > 0 else -1.0
-                    if not G_clockwise: X*=-1
-
-                    if abs(gap) < self.GYRO_ACCURACY:  #5
-                        X = 0
-                        self.stop()
-                        self.steer(0,True)
-                        self._park_phase = 1
-                    self.steer(X,False)
-                    self.get_logger().info(f"Heading gap, steer X: {gap}, {X}")
-
-                elif self._park_phase == 1:
                     self.stop()
                     self.steer(0,True)
-
                     dist = self.front_dist()
                     delta = self.STOP_DISTANCE_DELTA if (G_clockwise and fwd_side_dist_left < fwd_side_dist_right) or \
                         (not G_clockwise and fwd_side_dist_left > fwd_side_dist_right) else 0.00
@@ -743,7 +723,7 @@ class distanceNode(Node):
             self.get_logger().info('Collision detected, push back')
             G_tf_control = False
             fullDriveNode.steer(0.0,False)
-            fullDriveNode.steer(0.0,True)
+            time.sleep(5)
             fullDriveNode.move("R30")
             fullDriveNode.reset()
             G_tf_control = True
