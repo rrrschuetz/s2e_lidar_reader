@@ -723,6 +723,7 @@ class distanceNode(Node):
             self.get_logger().info('Collision detected, push back')
             G_tf_control = False
             fullDriveNode.steer(0.0,False)
+            self.get_logger().info('Steering ...')
             time.sleep(5)
             fullDriveNode.move("R30")
             fullDriveNode.reset()
