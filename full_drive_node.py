@@ -145,10 +145,12 @@ class fullDriveNode(Node):
         G_RIGHT_CAM_ID = str(config['Hardware']['right_cam_id'])
         self.DONGLE_ID1 = str(config['Hardware']['dongle_id1'])
         self.DONGLE_ID2 = str(config['Hardware']['dongle_id2'])
-        self.CALIBRATION =  float(config['Hardware']['calibration'])
+        self.CALIBRATION_GYRO =  float(config['Hardware']['calibration_gyro'])
+        self.CALIBRATION_DISTANCE =  float(config['Hardware']['calibration_distance'])
         self.get_logger().info(f"Left / right camera IDs: {G_LEFT_CAM_ID} / {G_RIGHT_CAM_ID}")
         self.get_logger().info(f"Dongle ID: {self.DONGLE_ID1}:{self.DONGLE_ID2}")
-        self.get_logger().info(f"Calibration accuracy: {self.CALIBRATION}")
+        self.get_logger().info(f"Calibration accuracy: {self.CALIBRATION_GYRO}")
+        self.get_logger().info(f"Calibration accuracy: {self.CALIBRATION_DISTANCE}")
 
         # Initialize PCA9685
         G_pwm = PCA9685()
@@ -275,7 +277,7 @@ class fullDriveNode(Node):
     def move_m(self, dist):
         if dist == np.nan: return
         dir = "F" if dist >= 0 else "R"
-        self.move(dir+str(abs(int(dist*130))))
+        self.move(dir+str(abs(int(dist*self.CALIBRATION_DISTANCE))))
 
     def start_race(self):
         global G_tf_control,G_parking_lot, G_roll
@@ -388,7 +390,7 @@ class fullDriveNode(Node):
                 self._total_heading_change += heading_change
                 self._last_heading = self._current_heading
 
-                if abs(self._cal_left/self._cal_right -1) < self.CALIBRATION and self._cal_left+self._cal_right < 5.0:
+                if abs(self._cal_left/self._cal_right -1) < self.CALIBRATION_GYRO and self._cal_left+self._cal_right < 5.0:
                     self.get_logger().info(f"Calibration pre: {self._total_heading_change}")
                     add = -45 if G_clockwise else 45
                     self._total_heading_change = int((self._total_heading_change+add)/90)*90.0
@@ -583,9 +585,11 @@ class fullDriveNode(Node):
         global G_tf_control
         if not G_tf_control:
 
-            self._button_time = self.get_clock().now()
-            self.get_logger().info('Start button pressed!')
-            self.start_race()
+            self.move_m(1.0)
+
+            #self._button_time = self.get_clock().now()
+            #self.get_logger().info('Start button pressed!')
+            #self.start_race()
         else:
             duration_in_seconds = (self.get_clock().now() - self._button_time).nanoseconds * 1e-9
             if duration_in_seconds > 5:
