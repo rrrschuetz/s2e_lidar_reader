@@ -716,22 +716,13 @@ class distanceNode(Node):
 
     def distance_sensor_callback(self, msg):
         global G_front_dist, G_tf_control, G_collision_detect
-        global G_pwm, G_servo_neutral
         G_front_dist = msg.data
         #self.get_logger().info(f"Distance: {msg.data}")
 
         if G_tf_control and G_collision_detect > 0 and G_front_dist < G_collision_detect:
             self.get_logger().info('Collision detected, push back')
             G_tf_control = False
-
-            G_pwm = PCA9685()
-            G_pwm.set_pwm_freq(50)  # Set frequency to 50Hz
-            G_pwm.set_pwm(0, 0, 320)
-
-            #fullDriveNode.steer(0.0,False)
-            self.get_logger().info('Steering ...')
-            time.sleep(5)
-
+            fullDriveNode.steer(0.0,True)
             fullDriveNode.move("R30")
             fullDriveNode.reset()
             G_tf_control = True
