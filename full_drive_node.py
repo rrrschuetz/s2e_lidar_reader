@@ -511,18 +511,7 @@ class fullDriveNode(Node):
                     add = -45 if G_clockwise else 45
                     gap = self._total_heading_change - int((self._total_heading_change+add)/90)*90.0
                     X = 1.0 if gap < 0 else -1.0
-                    if not G_clockwise: X*=-1
-
-                    #orientation = self._total_heading_change
-                    #if not G_clockwise:
-                    #    while orientation > 90: orientation -= 90
-                    #    X = 1.0 if orientation < 0 else -1.0
-                    #    gap = abs(orientation - 90)
-                    #else:
-                    #    while orientation < 0: orientation += 90
-                    #    X = 1.0 if orientation > 0 else -1.0
-                    #    gap = abs(orientation - 0)
-                    #self.steer(X,False)
+                    if G_clockwise: X*=-1
 
                     if abs(gap) < self.GYRO_ACCURACY:  #5
                         X = 0
@@ -530,7 +519,7 @@ class fullDriveNode(Node):
                         self.steer(0,True)
                         self._park_phase = 1
                     self.steer(X,False)
-                    self.get_logger().info(f"Heading gap: {gap}")
+                    self.get_logger().info(f"Heading gap, steer X: {gap}, {X}")
 
                 elif self._park_phase == 1:
                     dist = self.front_dist()
