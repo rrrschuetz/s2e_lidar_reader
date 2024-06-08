@@ -584,12 +584,9 @@ class fullDriveNode(Node):
     def gpio_callback(self, channel):
         global G_tf_control
         if not G_tf_control:
-
-            self.move_m(1.0)
-
-            #self._button_time = self.get_clock().now()
-            #self.get_logger().info('Start button pressed!')
-            #self.start_race()
+            self._button_time = self.get_clock().now()
+            self.get_logger().info('Start button pressed!')
+            self.start_race()
         else:
             duration_in_seconds = (self.get_clock().now() - self._button_time).nanoseconds * 1e-9
             if duration_in_seconds > 5:
