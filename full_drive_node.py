@@ -501,6 +501,7 @@ class fullDriveNode(Node):
                     add = -45 if G_clockwise else 45
                     gap = self._total_heading_change - int((self._total_heading_change+add)/90)*90.0
                     X = 1.0 if gap < 0 else -1.0
+                    if not G_clockwise: X*=-1
 
                     #orientation = self._total_heading_change
                     #if not G_clockwise:
