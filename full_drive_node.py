@@ -242,6 +242,12 @@ class fullDriveNode(Node):
         GPIO.cleanup()
 
     @classmethod
+    def boost(self):
+        msg = String()
+        msg.data = "BOOST"
+        G_speed_publisher.publish(msg)
+
+    @classmethod
     def reset(self):
         global G_clockwise, G_speed_publisher, G_FWD_SPEED, G_FWD_SPEEDU
         msg = String()
@@ -537,6 +543,7 @@ class fullDriveNode(Node):
                 elif self._park_phase == 2:
                     X = -1.0 if G_clockwise else 1.0
                     self.steer(X,True)
+                    self.boost()
                     self.reset()
                     self._park_phase = 3
 

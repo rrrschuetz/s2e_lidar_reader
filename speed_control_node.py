@@ -154,6 +154,8 @@ class SpeedControlNode(Node):
                 self.pwm.set_pwm(1, 0, self.neutral_pulse-self.break_intensity)  # brake mode
                 time.sleep(0.1)
                 self.pwm.set_pwm(1, 0, self.neutral_pulse)
+            elif new_speed == "BOOST":
+                self.pid_output_min = 5
             elif new_speed =="RESET":
                 self.reverse = False
                 self.impulse_history.clear()
