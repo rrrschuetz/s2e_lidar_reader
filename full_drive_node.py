@@ -219,16 +219,35 @@ class fullDriveNode(Node):
         self.log_timer = self.create_timer(10, self.log_timer_callback)
 
         # health self check
-        current_nodes = set(self.get_node_names())
-        print(f"Nodes detected: {current_nodes}")
-
-        self.prompt("Ready!")
-        self.get_logger().info('Ready.')
+        self.health_check()
 
 
     def __del__(self):
         self.get_logger().info('Switch off ESC')
         self.motor_off()
+
+
+    def health_check(self):
+        self.get_logger().info("Performing final health self check")
+
+        node_list = {'WT61_node',
+                     'distance_sensor_node',
+                     'full_drive_node',
+                     'sllidar_node',
+                     'openmv_h7_node2',
+                     'openmv_h7_node1',
+                     'display_node',
+                     'speed_control_node'
+                     }
+        current_nodes = set(self.get_node_names())
+        missing_nodes = node_list - current_nodes
+        if missing_nodes:
+            self.get_logger().info(f"Nodes missing: {missing_nodes}")
+            self.prompt("PANIC. Not ready.")
+            self.get_logger().error('PANIC. Not ready.')
+        else:
+            self.prompt("Ready!")
+            self.get_logger().info('Ready.')
 
     def log_timer_callback(self):
         self.get_logger().info(f"Heading change: {self._total_heading_change}, parking lot spotted: {G_parking_lot}")
