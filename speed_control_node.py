@@ -28,7 +28,6 @@ class SpeedControlNode(Node):
     def __init__(self):
         super().__init__('speed_control')
         self.subscriber_ = self.create_subscription(String, 'set_speed', self.set_speed_callback, 10)
-        self.publisher_ = self.create_publisher(String, 'collision', 10)
         self._msg = String()
 
         GPIO.setmode(GPIO.BCM)
