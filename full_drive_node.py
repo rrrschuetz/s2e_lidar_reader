@@ -724,7 +724,7 @@ class imuNode(Node):
             qos_profile
         )
 
-        logging.error("IMU test error message")
+        #logging.error("IMU test error message")
 
 
     def quaternion_to_euler(self,quaternion):
