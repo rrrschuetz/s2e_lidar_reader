@@ -1,4 +1,4 @@
-import time, configparser, os, logging
+import time, configparser, os, logging, subprocess
 import rclpy, math
 from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
@@ -220,7 +220,7 @@ class fullDriveNode(Node):
 
         self.log_timer = self.create_timer(10, self.log_timer_callback)
 
-        logging.error("Test error")
+        #logging.error("Test error")
 
         # health self check
         if not self.health_check():
@@ -241,7 +241,7 @@ class fullDriveNode(Node):
         healthy = True
         self.get_logger().info("Performing final health self check")
 
-        node_list = {'WT61_node',
+        self.node_list = {'WT61_node',
                      'distance_sensor_node',
                      'full_drive_node',
                      'sllidar_node',
@@ -251,10 +251,23 @@ class fullDriveNode(Node):
                      'speed_control_node'
                      }
         current_nodes = set(self.get_node_names())
-        missing_nodes = node_list - current_nodes
+        missing_nodes = self.node_list - current_nodes
+        for i in range(10):
+            if not missing_nodes: break
+            self.get_logger().info(f"Missing nodes at {i}. check: {missing_nodes}")
+            time.sleep(5)
         if missing_nodes:
-            self.get_logger().info(f"Missing nodes: {missing_nodes}")
-            healthy = False
+            result = subprocess.run(['ros2', 'node', 'list'], capture_output=True, text=True)
+            self.get_logger().info(f"Subprocess result: {result}")
+            current_nodes = set(result.stdout.split('\n'))
+            missing_nodes = self.node_list - current_nodes
+            if missing_nodes:
+                self.get_logger().error(f"Missing nodes after last check: {missing_nodes}")
+                healthy = False
+            else:
+                self.get_logger().info("All nodes accounted for after last check.")
+
+
         if G_handler.error_occurred:
             self.get_logger().info(f"Error message: {G_handler.error_message}")
             healthy = False
