@@ -72,7 +72,7 @@ class fullDriveNode(Node):
         global G_tf_control,G_parking_lot,G_clockwise,G_cam_updates
         global G_LEFT_CAM_ID, G_RIGHT_CAM_ID
         global G_speed_publisher, G_pwm, G_servo_neutral, G_servo_ctl_fwd, G_FWD_SPEED, G_FWD_SPEEDU
-        global G_collision_detect
+        global G_collision_detect, G_handler
 
         super().__init__('full_drive_node')
         self.publisher_ = self.create_publisher(String, 'main_logger', 10)
@@ -237,6 +237,7 @@ class fullDriveNode(Node):
 
 
     def health_check(self):
+        global G_handler
         healthy = True
         self.get_logger().info("Performing final health self check")
 
@@ -778,6 +779,7 @@ class ErrorLogHandler(logging.Handler):
             print(f"Error logged: {record.getMessage()}")
 
 def main(args=None):
+    global G_handler
 
     rclpy.init(args=args)
     G_handler = ErrorLogHandler()
