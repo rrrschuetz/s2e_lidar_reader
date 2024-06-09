@@ -1,4 +1,4 @@
-import time, configparser, os
+import time, configparser, os, logging
 import rclpy, math
 from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
@@ -14,6 +14,8 @@ from Adafruit_PCA9685 import PCA9685
 import RPi.GPIO as GPIO
 import usb.core
 import usb.util
+
+G_handler = None
 
 G_LEFT_CAM_ID = ""
 G_RIGHT_CAM_ID = ""
@@ -218,8 +220,15 @@ class fullDriveNode(Node):
 
         self.log_timer = self.create_timer(10, self.log_timer_callback)
 
+        self.get_logger().error("Test error")
+
         # health self check
-        self.health_check()
+        if not self.health_check():
+            self.prompt("PANIC. Not ready.")
+            self.get_logger().error('PANIC. Not ready.')
+        else:
+            self.prompt("Ready!")
+            self.get_logger().info('Ready.')
 
 
     def __del__(self):
@@ -228,6 +237,7 @@ class fullDriveNode(Node):
 
 
     def health_check(self):
+        healthy = True
         self.get_logger().info("Performing final health self check")
 
         node_list = {'WT61_node',
@@ -242,12 +252,13 @@ class fullDriveNode(Node):
         current_nodes = set(self.get_node_names())
         missing_nodes = node_list - current_nodes
         if missing_nodes:
-            self.get_logger().info(f"Nodes missing: {missing_nodes}")
-            self.prompt("PANIC. Not ready.")
-            self.get_logger().error('PANIC. Not ready.')
-        else:
-            self.prompt("Ready!")
-            self.get_logger().info('Ready.')
+            self.get_logger().info(f"Missing nodes: {missing_nodes}")
+            healthy = False
+        if G_handler.error_occured:
+            self.get_logger().info(f"Error message: {G_handler.error_message}")
+            healthy = False
+
+        return healthy
 
     def log_timer_callback(self):
         self.get_logger().info(f"Heading change: {self._total_heading_change}, parking lot spotted: {G_parking_lot}")
@@ -754,10 +765,24 @@ class distanceNode(Node):
             G_tf_control = True
             return
 
+class ErrorLogHandler(logging.Handler):
+    def __init__(self):
+        super().__init__()
+        self.error_occurred = False
+        self.error_message = None
+
+    def emit(self, record):
+        if record.levelno == logging.ERROR:
+            self.error_occurred = True
+            self.error_message = record.getMessage()
+            print(f"Error logged: {record.getMessage()}")
 
 def main(args=None):
 
     rclpy.init(args=args)
+    G_handler = ErrorLogHandler()
+    logging.getLogger().addHandler(G_handler)
+
     full_drive_node = fullDriveNode()
     cam1_node = cameraNode('openmv_topic1')
     cam2_node = cameraNode('openmv_topic2')
