@@ -148,10 +148,12 @@ class fullDriveNode(Node):
         self.DONGLE_ID2 = str(config['Hardware']['dongle_id2'])
         self.CALIBRATION_GYRO =  float(config['Hardware']['calibration_gyro'])
         self.CALIBRATION_DISTANCE =  float(config['Hardware']['calibration_distance'])
+        self.WAIT_FOR_HEALTH_CHECK =  float(config['Hardware']['wait_for_health_check'])
         self.get_logger().info(f"Left / right camera IDs: {G_LEFT_CAM_ID} / {G_RIGHT_CAM_ID}")
         self.get_logger().info(f"Dongle ID: {self.DONGLE_ID1}:{self.DONGLE_ID2}")
         self.get_logger().info(f"Calibration accuracy: {self.CALIBRATION_GYRO}")
         self.get_logger().info(f"Calibration accuracy: {self.CALIBRATION_DISTANCE}")
+        self.get_logger().info(f"Wait time for health check: {self.WAIT_FOR_HEALTH_CHECK} sec")
 
         # Initialize PCA9685
         G_pwm = PCA9685()
@@ -223,10 +225,13 @@ class fullDriveNode(Node):
         #logging.error("Test error")
 
         # health self check
-        time.sleep(10)
+        time.sleep(self.WAIT_FOR_HEALTH_CHECK)
         if not self.health_check():
             self.prompt("PANIC. Not ready.")
             self.get_logger().error('PANIC. Not ready.')
+            self.motor_off()
+            self.get_logger().info(f"ROS2 shutdown requested")
+            rclpy.shutdown()
         else:
             self.prompt("Ready!")
             self.get_logger().info('Ready.')
