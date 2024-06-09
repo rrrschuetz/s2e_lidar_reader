@@ -254,7 +254,7 @@ class fullDriveNode(Node):
         if missing_nodes:
             self.get_logger().info(f"Missing nodes: {missing_nodes}")
             healthy = False
-        if G_handler.error_occured:
+        if G_handler.error_occurred:
             self.get_logger().info(f"Error message: {G_handler.error_message}")
             healthy = False
 
