@@ -701,6 +701,7 @@ class cameraNode(Node):
 class imuNode(Node):
     def __init__(self):
         super().__init__("imu_node")
+        self.get_logger().info("imu_node initialized")
 
         qos_profile = QoSProfile(
             depth=1,
@@ -749,7 +750,7 @@ class imuNode(Node):
         G_roll = math.degrees(roll)
         G_pitch = math.degrees(pitch)
         G_yaw = math.degrees(yaw)
-        #self.get_logger().info(f"Roll: {G_roll}, Pitch: {G_pitch}, Yaw: {G_yaw}")
+        self.get_logger().info(f"Roll: {G_roll}, Pitch: {G_pitch}, Yaw: {G_yaw}")
 
     def imu_warning_callback(self, msg):
         self.get_logger().error(f"IMU problem: {msg.data}")
@@ -810,11 +811,11 @@ def main(args=None):
     logging.getLogger().addHandler(G_handler)
     logging.getLogger().setLevel(logging.DEBUG)  # Set a low threshold to capture all log levels
 
-    full_drive_node = fullDriveNode()
     cam1_node = cameraNode('openmv_topic1')
     cam2_node = cameraNode('openmv_topic2')
     imu_node = imuNode()
     distance_node = distanceNode()
+    full_drive_node = fullDriveNode()
 
     # Use MultiThreadedExecutor to allow parallel callback execution
     executor = MultiThreadedExecutor(num_threads=6)
