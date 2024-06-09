@@ -218,6 +218,10 @@ class fullDriveNode(Node):
 
         self.log_timer = self.create_timer(10, self.log_timer_callback)
 
+        # health self check
+        current_nodes = set(self.get_node_names())
+        print(f"Nodes detected: {current_nodes}")
+
         self.prompt("Ready!")
         self.get_logger().info('Ready.')
 
