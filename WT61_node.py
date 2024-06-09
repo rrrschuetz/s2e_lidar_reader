@@ -98,7 +98,7 @@ class ImuNode(Node):
 
     def check_imu_data_timeout(self):
         if (self.get_clock().now() - self.last_received_time).nanoseconds > 1e9:
-            self.get_logger().info('No IMU data for 1 second, resetting device...')
+            self.get_logger().error('No IMU data for 1 second, resetting device...')
             self.reset_device()
 
     def reset_device(self):

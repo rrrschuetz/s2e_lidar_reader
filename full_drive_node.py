@@ -220,7 +220,7 @@ class fullDriveNode(Node):
 
         self.log_timer = self.create_timer(10, self.log_timer_callback)
 
-        self.get_logger().error("Test error")
+        logging.error("Test error")
 
         # health self check
         if not self.health_check():
@@ -528,9 +528,11 @@ class fullDriveNode(Node):
 
                 except ValueError as e:
                     self.get_logger().error('Model rendered nan: %s' % str(e))
+                    logging.error('Model rendered nan: %s' % str(e))
 
                 except IOError as e:
                     self.get_logger().error('IOError I2C occurred: %s' % str(e))
+                    logging.error('IOError I2C occurred: %s' % str(e))
 
             ########################
             # PARK
@@ -685,6 +687,7 @@ class cameraNode(Node):
 
         except Exception as e:
             self.get_logger().error(f"Faulty cam msg received: {msg.data} {e}")
+            logging.error(f"Faulty cam msg received: {msg.data} {e}")
         finally:
             self._busy = False
 
@@ -766,7 +769,7 @@ class distanceNode(Node):
             G_tf_control = True
             return
 
-class ErrorLogHandler(logging.Handler):
+class errorLogHandler(logging.Handler):
     def __init__(self):
         super().__init__()
         self.error_occurred = False
@@ -782,8 +785,10 @@ def main(args=None):
     global G_handler
 
     rclpy.init(args=args)
-    G_handler = ErrorLogHandler()
+    G_handler = errorLogHandler()
+    G_handler.setLevel(logging.ERROR)
     logging.getLogger().addHandler(G_handler)
+    logging.getLogger().setLevel(logging.DEBUG)  # Set a low threshold to capture all log levels
 
     full_drive_node = fullDriveNode()
     cam1_node = cameraNode('openmv_topic1')
