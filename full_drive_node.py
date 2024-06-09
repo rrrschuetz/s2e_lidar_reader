@@ -717,10 +717,9 @@ class distanceNode(Node):
     def distance_sensor_callback(self, msg):
         global G_front_dist, G_tf_control, G_collision_detect
         G_front_dist = msg.data
-        #self.get_logger().info(f"Distance: {msg.data}")
+        self.get_logger().info(f"Distance: {msg.data}")
 
-        #if G_tf_control and G_collision_detect > 0 and G_front_dist < G_collision_detect:
-        if G_tf_control and G_front_dist < G_collision_detect:
+        if G_tf_control and G_collision_detect > 0 and G_front_dist < G_collision_detect:
             self.get_logger().info(f"Collision detected: {G_front_dist}, push back")
             G_tf_control = False
             fullDriveNode.stop()
