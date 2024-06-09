@@ -234,8 +234,8 @@ class fullDriveNode(Node):
                      'distance_sensor_node',
                      'full_drive_node',
                      'sllidar_node',
-                     'openmv_h7_node2',
                      'openmv_h7_node1',
+                     'openmv_h7_node2',
                      'display_node',
                      'speed_control_node'
                      }
