@@ -474,8 +474,8 @@ class fullDriveNode(Node):
                         if not self.initial_race and (np.isnan(min_far_dist) or min_far_dist < 0.8 or min_near_dist < 0.2):
                             self._backward = True
                             self.move_m(self.front_dist() - 2.3 )
-                        elif not self.initial_race and self.front_dist() > 1.3:
-                            self.move_m(self.front_dist() - 1.3)
+                        elif self.front_dist() > 1.3:
+                            self.move_m(self.front_dist() - 1.3 ) 
                         self._processing = False
                         return
 
