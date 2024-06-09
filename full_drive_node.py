@@ -223,6 +223,7 @@ class fullDriveNode(Node):
         #logging.error("Test error")
 
         # health self check
+        time.sleep(10)
         if not self.health_check():
             self.prompt("PANIC. Not ready.")
             self.get_logger().error('PANIC. Not ready.')
@@ -750,7 +751,7 @@ class imuNode(Node):
         G_roll = math.degrees(roll)
         G_pitch = math.degrees(pitch)
         G_yaw = math.degrees(yaw)
-        self.get_logger().info(f"Roll: {G_roll}, Pitch: {G_pitch}, Yaw: {G_yaw}")
+        #self.get_logger().info(f"Roll: {G_roll}, Pitch: {G_pitch}, Yaw: {G_yaw}")
 
     def imu_warning_callback(self, msg):
         self.get_logger().error(f"IMU problem: {msg.data}")
@@ -811,9 +812,9 @@ def main(args=None):
     logging.getLogger().addHandler(G_handler)
     logging.getLogger().setLevel(logging.DEBUG)  # Set a low threshold to capture all log levels
 
+    imu_node = imuNode()
     cam1_node = cameraNode('openmv_topic1')
     cam2_node = cameraNode('openmv_topic2')
-    imu_node = imuNode()
     distance_node = distanceNode()
     full_drive_node = fullDriveNode()
 
