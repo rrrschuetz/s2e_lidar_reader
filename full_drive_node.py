@@ -715,6 +715,16 @@ class imuNode(Node):
             qos_profile
         )
 
+        self.subscription_imu = self.create_subscription(
+            String,
+            'imu_warnings',
+            self.imu_warning_callback,
+            qos_profile
+        )
+
+        logging.error("IMU test error message")
+
+
     def quaternion_to_euler(self,quaternion):
         x, y, z, w = quaternion.x, quaternion.y, quaternion.z, quaternion.w
         t0 = +2.0 * (w * x + y * z)
@@ -740,6 +750,10 @@ class imuNode(Node):
         G_pitch = math.degrees(pitch)
         G_yaw = math.degrees(yaw)
         #self.get_logger().info(f"Roll: {G_roll}, Pitch: {G_pitch}, Yaw: {G_yaw}")
+
+    def imu_warning_callback(self, msg):
+        self.get_logger().error(f"IMU problem: {msg.data}")
+        logging.error(f"IMU problem: {msg.data}")
 
 class distanceNode(Node):
     def __init__(self):

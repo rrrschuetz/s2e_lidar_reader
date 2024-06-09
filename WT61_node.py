@@ -29,6 +29,7 @@ def quaternion_from_euler(roll, pitch, yaw):
 class ImuNode(Node):
     def __init__(self):
         super().__init__('imu_node')
+        self.warning_pub = self.create_publisher(String, 'imu_warnings', 10)
         self.declare_parameters(
             namespace='',
             parameters=[
@@ -69,7 +70,10 @@ class ImuNode(Node):
 
     def process_packet(self, packet):
         if not self.check_sum(packet):
-            self.get_logger().warn('Checksum failed')
+            self.get_logger().warn('IMU checksum failed')
+            warning_msg = String()
+            warning_msg.data = 'IMU checksum failed'
+            self.warning_pub.publish(warning_msg)
             self.reset_device()
             return
 
@@ -98,7 +102,10 @@ class ImuNode(Node):
 
     def check_imu_data_timeout(self):
         if (self.get_clock().now() - self.last_received_time).nanoseconds > 1e9:
-            self.get_logger().error('No IMU data for 1 second, resetting device...')
+            self.get_logger().error('No IMU data for 1 second')
+            warning_msg = String()
+            warning_msg.data = 'No IMU data for 1 second'
+            self.warning_pub.publish(warning_msg)
             self.reset_device()
 
     def reset_device(self):
